@@ -13,9 +13,34 @@
 		3ACE92122344EB3000F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
 		3ACE92132344EB3200F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
 		3ACE92142344EB3200F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
+		3ACE921A2344EF8C00F36E71 /* Texture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92192344EF8C00F36E71 /* Texture.swift */; };
+		3ACE921B2344EF8C00F36E71 /* Texture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92192344EF8C00F36E71 /* Texture.swift */; };
+		3ACE921C2344EF8C00F36E71 /* Texture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92192344EF8C00F36E71 /* Texture.swift */; };
+		3ACE921E2344F03700F36E71 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE921D2344F03700F36E71 /* Protocols.swift */; };
+		3ACE921F2344F03700F36E71 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE921D2344F03700F36E71 /* Protocols.swift */; };
+		3ACE92202344F03700F36E71 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE921D2344F03700F36E71 /* Protocols.swift */; };
+		3ACE92222344F07100F36E71 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92212344F07100F36E71 /* Types.swift */; };
+		3ACE92232344F07100F36E71 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92212344F07100F36E71 /* Types.swift */; };
+		3ACE92242344F07100F36E71 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92212344F07100F36E71 /* Types.swift */; };
+		3ACE92262344F2F000F36E71 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92252344F2F000F36E71 /* Logger.swift */; };
+		3ACE92272344F2F000F36E71 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92252344F2F000F36E71 /* Logger.swift */; };
+		3ACE92282344F2F000F36E71 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92252344F2F000F36E71 /* Logger.swift */; };
+		3ACE922A2344F31B00F36E71 /* Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92292344F31B00F36E71 /* Engine.swift */; };
+		3ACE922B2344F31B00F36E71 /* Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92292344F31B00F36E71 /* Engine.swift */; };
+		3ACE922C2344F31B00F36E71 /* Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92292344F31B00F36E71 /* Engine.swift */; };
+		3ACE922F2344F4BC00F36E71 /* NODE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE922E2344F4BC00F36E71 /* NODE.swift */; };
+		3ACE92302344F4BC00F36E71 /* NODE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE922E2344F4BC00F36E71 /* NODE.swift */; };
+		3ACE92312344F4BC00F36E71 /* NODE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE922E2344F4BC00F36E71 /* NODE.swift */; };
+		3ACE92332344FB1300F36E71 /* NODELinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92322344FB1300F36E71 /* NODELinks.swift */; };
+		3ACE92342344FB1300F36E71 /* NODELinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92322344FB1300F36E71 /* NODELinks.swift */; };
+		3ACE92352344FB1300F36E71 /* NODELinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92322344FB1300F36E71 /* NODELinks.swift */; };
+		4E6652F6A62007E479D467E5 /* Pods_RenderKit_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBDDD2EFDCF7FDEFE7B6F27D /* Pods_RenderKit_tvOS.framework */; };
+		DD44ECFCAAC7453911B38987 /* Pods_RenderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8048D9D5B1E6A6D52F99A759 /* Pods_RenderKit.framework */; };
+		F768C6DF1D2DEC394EEA90F7 /* Pods_RenderKit_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91E73DE9D89D12621E9FDCB6 /* Pods_RenderKit_macOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		06202A42AFFCAD8048BF8025 /* Pods-RenderKit-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-tvOS.release.xcconfig"; path = "Target Support Files/Pods-RenderKit-tvOS/Pods-RenderKit-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		3ACE91EA2344EA9100F36E71 /* RenderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACE91ED2344EA9100F36E71 /* RenderKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderKit.h; sourceTree = "<group>"; };
 		3ACE91FA2344EAA300F36E71 /* RenderKit_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -24,6 +49,21 @@
 		3ACE92072344EAAD00F36E71 /* RenderKit_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACE92092344EAAD00F36E71 /* RenderKit_tvOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderKit_tvOS.h; sourceTree = "<group>"; };
 		3ACE92112344EB3000F36E71 /* Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Render.swift; sourceTree = "<group>"; };
+		3ACE92192344EF8C00F36E71 /* Texture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Texture.swift; sourceTree = "<group>"; };
+		3ACE921D2344F03700F36E71 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
+		3ACE92212344F07100F36E71 /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		3ACE92252344F2F000F36E71 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		3ACE92292344F31B00F36E71 /* Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Engine.swift; sourceTree = "<group>"; };
+		3ACE922E2344F4BC00F36E71 /* NODE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NODE.swift; sourceTree = "<group>"; };
+		3ACE92322344FB1300F36E71 /* NODELinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NODELinks.swift; sourceTree = "<group>"; };
+		5AD276983DDC4D68F685012A /* Pods-RenderKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit/Pods-RenderKit.debug.xcconfig"; sourceTree = "<group>"; };
+		5E206D512CD9DD3C3B3C4D08 /* Pods-RenderKit-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-macOS.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit-macOS/Pods-RenderKit-macOS.debug.xcconfig"; sourceTree = "<group>"; };
+		622953E5FDD5BD6D9A0EBC13 /* Pods-RenderKit-macOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-macOS.release.xcconfig"; path = "Target Support Files/Pods-RenderKit-macOS/Pods-RenderKit-macOS.release.xcconfig"; sourceTree = "<group>"; };
+		8048D9D5B1E6A6D52F99A759 /* Pods_RenderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		91E73DE9D89D12621E9FDCB6 /* Pods_RenderKit_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		99F84430F1BE26D6328BA24B /* Pods-RenderKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit.release.xcconfig"; path = "Target Support Files/Pods-RenderKit/Pods-RenderKit.release.xcconfig"; sourceTree = "<group>"; };
+		CBDDD2EFDCF7FDEFE7B6F27D /* Pods_RenderKit_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EDB654E7F5BF92E68E84CB02 /* Pods-RenderKit-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit-tvOS/Pods-RenderKit-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD44ECFCAAC7453911B38987 /* Pods_RenderKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F768C6DF1D2DEC394EEA90F7 /* Pods_RenderKit_macOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,18 +87,44 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E6652F6A62007E479D467E5 /* Pods_RenderKit_tvOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		39153A66147E7FBC7E45AE89 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8048D9D5B1E6A6D52F99A759 /* Pods_RenderKit.framework */,
+				91E73DE9D89D12621E9FDCB6 /* Pods_RenderKit_macOS.framework */,
+				CBDDD2EFDCF7FDEFE7B6F27D /* Pods_RenderKit_tvOS.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3946A1A0FBC3519E220784FD /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				5AD276983DDC4D68F685012A /* Pods-RenderKit.debug.xcconfig */,
+				99F84430F1BE26D6328BA24B /* Pods-RenderKit.release.xcconfig */,
+				5E206D512CD9DD3C3B3C4D08 /* Pods-RenderKit-macOS.debug.xcconfig */,
+				622953E5FDD5BD6D9A0EBC13 /* Pods-RenderKit-macOS.release.xcconfig */,
+				EDB654E7F5BF92E68E84CB02 /* Pods-RenderKit-tvOS.debug.xcconfig */,
+				06202A42AFFCAD8048BF8025 /* Pods-RenderKit-tvOS.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		3ACE91E02344EA9100F36E71 = {
 			isa = PBXGroup;
 			children = (
 				3ACE91EC2344EA9100F36E71 /* Source */,
 				3ACE91FB2344EAA300F36E71 /* Resources */,
 				3ACE91EB2344EA9100F36E71 /* Products */,
+				3946A1A0FBC3519E220784FD /* Pods */,
+				39153A66147E7FBC7E45AE89 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -77,6 +145,12 @@
 				3ACE91FC2344EAA300F36E71 /* RenderKit_macOS.h */,
 				3ACE92092344EAAD00F36E71 /* RenderKit_tvOS.h */,
 				3ACE92112344EB3000F36E71 /* Render.swift */,
+				3ACE921D2344F03700F36E71 /* Protocols.swift */,
+				3ACE92212344F07100F36E71 /* Types.swift */,
+				3ACE92192344EF8C00F36E71 /* Texture.swift */,
+				3ACE92292344F31B00F36E71 /* Engine.swift */,
+				3ACE92252344F2F000F36E71 /* Logger.swift */,
+				3ACE922D2344F47500F36E71 /* NODE */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -87,6 +161,15 @@
 				3ACE91FD2344EAA300F36E71 /* Info.plist */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		3ACE922D2344F47500F36E71 /* NODE */ = {
+			isa = PBXGroup;
+			children = (
+				3ACE922E2344F4BC00F36E71 /* NODE.swift */,
+				3ACE92322344FB1300F36E71 /* NODELinks.swift */,
+			);
+			path = NODE;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -123,6 +206,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE91F22344EA9100F36E71 /* Build configuration list for PBXNativeTarget "RenderKit" */;
 			buildPhases = (
+				7546C6299AE90C4E54410B6B /* [CP] Check Pods Manifest.lock */,
 				3ACE91E52344EA9100F36E71 /* Headers */,
 				3ACE91E62344EA9100F36E71 /* Sources */,
 				3ACE91E72344EA9100F36E71 /* Frameworks */,
@@ -141,6 +225,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE91FF2344EAA300F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-macOS" */;
 			buildPhases = (
+				DA0FCD05F47DB33AF8309FB5 /* [CP] Check Pods Manifest.lock */,
 				3ACE91F52344EAA300F36E71 /* Headers */,
 				3ACE91F62344EAA300F36E71 /* Sources */,
 				3ACE91F72344EAA300F36E71 /* Frameworks */,
@@ -159,6 +244,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE920C2344EAAD00F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-tvOS" */;
 			buildPhases = (
+				B547A8AF16ECF5945D01C219 /* [CP] Check Pods Manifest.lock */,
 				3ACE92022344EAAD00F36E71 /* Headers */,
 				3ACE92032344EAAD00F36E71 /* Sources */,
 				3ACE92042344EAAD00F36E71 /* Frameworks */,
@@ -238,12 +324,88 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		7546C6299AE90C4E54410B6B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B547A8AF16ECF5945D01C219 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-tvOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DA0FCD05F47DB33AF8309FB5 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-macOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		3ACE91E62344EA9100F36E71 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3ACE921E2344F03700F36E71 /* Protocols.swift in Sources */,
+				3ACE922A2344F31B00F36E71 /* Engine.swift in Sources */,
 				3ACE92122344EB3000F36E71 /* Render.swift in Sources */,
+				3ACE92262344F2F000F36E71 /* Logger.swift in Sources */,
+				3ACE921A2344EF8C00F36E71 /* Texture.swift in Sources */,
+				3ACE92222344F07100F36E71 /* Types.swift in Sources */,
+				3ACE922F2344F4BC00F36E71 /* NODE.swift in Sources */,
+				3ACE92332344FB1300F36E71 /* NODELinks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +413,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3ACE921F2344F03700F36E71 /* Protocols.swift in Sources */,
+				3ACE922B2344F31B00F36E71 /* Engine.swift in Sources */,
 				3ACE92132344EB3200F36E71 /* Render.swift in Sources */,
+				3ACE92272344F2F000F36E71 /* Logger.swift in Sources */,
+				3ACE921B2344EF8C00F36E71 /* Texture.swift in Sources */,
+				3ACE92232344F07100F36E71 /* Types.swift in Sources */,
+				3ACE92302344F4BC00F36E71 /* NODE.swift in Sources */,
+				3ACE92342344FB1300F36E71 /* NODELinks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,7 +428,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3ACE92202344F03700F36E71 /* Protocols.swift in Sources */,
+				3ACE922C2344F31B00F36E71 /* Engine.swift in Sources */,
 				3ACE92142344EB3200F36E71 /* Render.swift in Sources */,
+				3ACE92282344F2F000F36E71 /* Logger.swift in Sources */,
+				3ACE921C2344EF8C00F36E71 /* Texture.swift in Sources */,
+				3ACE92242344F07100F36E71 /* Types.swift in Sources */,
+				3ACE92312344F4BC00F36E71 /* NODE.swift in Sources */,
+				3ACE92352344FB1300F36E71 /* NODELinks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,6 +564,7 @@
 		};
 		3ACE91F32344EA9100F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5AD276983DDC4D68F685012A /* Pods-RenderKit.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -415,6 +592,7 @@
 		};
 		3ACE91F42344EA9100F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 99F84430F1BE26D6328BA24B /* Pods-RenderKit.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -441,6 +619,7 @@
 		};
 		3ACE92002344EAA300F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5E206D512CD9DD3C3B3C4D08 /* Pods-RenderKit-macOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -468,6 +647,7 @@
 		};
 		3ACE92012344EAA300F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 622953E5FDD5BD6D9A0EBC13 /* Pods-RenderKit-macOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -495,6 +675,7 @@
 		};
 		3ACE920D2344EAAD00F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EDB654E7F5BF92E68E84CB02 /* Pods-RenderKit-tvOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -522,6 +703,7 @@
 		};
 		3ACE920E2344EAAD00F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 06202A42AFFCAD8048BF8025 /* Pods-RenderKit-tvOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
