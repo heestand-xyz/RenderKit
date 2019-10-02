@@ -8,16 +8,40 @@
 
 /* Begin PBXBuildFile section */
 		3ACE91EF2344EA9100F36E71 /* RenderKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ACE91ED2344EA9100F36E71 /* RenderKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3ACE920F2344EAEA00F36E71 /* RenderKit_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ACE91FC2344EAA300F36E71 /* RenderKit_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3ACE92102344EAF200F36E71 /* RenderKit_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ACE92092344EAAD00F36E71 /* RenderKit_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3ACE92122344EB3000F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
+		3ACE92132344EB3200F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
+		3ACE92142344EB3200F36E71 /* Render.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACE92112344EB3000F36E71 /* Render.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3ACE91EA2344EA9100F36E71 /* RenderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACE91ED2344EA9100F36E71 /* RenderKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderKit.h; sourceTree = "<group>"; };
-		3ACE91EE2344EA9100F36E71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3ACE91FA2344EAA300F36E71 /* RenderKit_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3ACE91FC2344EAA300F36E71 /* RenderKit_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderKit_macOS.h; sourceTree = "<group>"; };
+		3ACE91FD2344EAA300F36E71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3ACE92072344EAAD00F36E71 /* RenderKit_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RenderKit_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3ACE92092344EAAD00F36E71 /* RenderKit_tvOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderKit_tvOS.h; sourceTree = "<group>"; };
+		3ACE92112344EB3000F36E71 /* Render.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Render.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		3ACE91E72344EA9100F36E71 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE91F72344EAA300F36E71 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE92042344EAAD00F36E71 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -30,7 +54,8 @@
 		3ACE91E02344EA9100F36E71 = {
 			isa = PBXGroup;
 			children = (
-				3ACE91EC2344EA9100F36E71 /* RenderKit */,
+				3ACE91EC2344EA9100F36E71 /* Source */,
+				3ACE91FB2344EAA300F36E71 /* Resouces */,
 				3ACE91EB2344EA9100F36E71 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -39,17 +64,29 @@
 			isa = PBXGroup;
 			children = (
 				3ACE91EA2344EA9100F36E71 /* RenderKit.framework */,
+				3ACE91FA2344EAA300F36E71 /* RenderKit_macOS.framework */,
+				3ACE92072344EAAD00F36E71 /* RenderKit_tvOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3ACE91EC2344EA9100F36E71 /* RenderKit */ = {
+		3ACE91EC2344EA9100F36E71 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				3ACE91ED2344EA9100F36E71 /* RenderKit.h */,
-				3ACE91EE2344EA9100F36E71 /* Info.plist */,
+				3ACE91FC2344EAA300F36E71 /* RenderKit_macOS.h */,
+				3ACE92092344EAAD00F36E71 /* RenderKit_tvOS.h */,
+				3ACE92112344EB3000F36E71 /* Render.swift */,
 			);
-			path = RenderKit;
+			path = Source;
+			sourceTree = "<group>";
+		};
+		3ACE91FB2344EAA300F36E71 /* Resouces */ = {
+			isa = PBXGroup;
+			children = (
+				3ACE91FD2344EAA300F36E71 /* Info.plist */,
+			);
+			path = Resouces;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,6 +97,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				3ACE91EF2344EA9100F36E71 /* RenderKit.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE91F52344EAA300F36E71 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ACE920F2344EAEA00F36E71 /* RenderKit_macOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE92022344EAAD00F36E71 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ACE92102344EAF200F36E71 /* RenderKit_tvOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +137,42 @@
 			productReference = 3ACE91EA2344EA9100F36E71 /* RenderKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		3ACE91F92344EAA300F36E71 /* RenderKit-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3ACE91FF2344EAA300F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-macOS" */;
+			buildPhases = (
+				3ACE91F52344EAA300F36E71 /* Headers */,
+				3ACE91F62344EAA300F36E71 /* Sources */,
+				3ACE91F72344EAA300F36E71 /* Frameworks */,
+				3ACE91F82344EAA300F36E71 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RenderKit-macOS";
+			productName = "RenderKit-macOS";
+			productReference = 3ACE91FA2344EAA300F36E71 /* RenderKit_macOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		3ACE92062344EAAD00F36E71 /* RenderKit-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3ACE920C2344EAAD00F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-tvOS" */;
+			buildPhases = (
+				3ACE92022344EAAD00F36E71 /* Headers */,
+				3ACE92032344EAAD00F36E71 /* Sources */,
+				3ACE92042344EAAD00F36E71 /* Frameworks */,
+				3ACE92052344EAAD00F36E71 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RenderKit-tvOS";
+			productName = "RenderKit-tvOS";
+			productReference = 3ACE92072344EAAD00F36E71 /* RenderKit_tvOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -94,6 +183,13 @@
 				ORGANIZATIONNAME = Hexagons;
 				TargetAttributes = {
 					3ACE91E92344EA9100F36E71 = {
+						CreatedOnToolsVersion = 11.0;
+						LastSwiftMigration = 1100;
+					};
+					3ACE91F92344EAA300F36E71 = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					3ACE92062344EAAD00F36E71 = {
 						CreatedOnToolsVersion = 11.0;
 					};
 				};
@@ -112,12 +208,28 @@
 			projectRoot = "";
 			targets = (
 				3ACE91E92344EA9100F36E71 /* RenderKit */,
+				3ACE91F92344EAA300F36E71 /* RenderKit-macOS */,
+				3ACE92062344EAAD00F36E71 /* RenderKit-tvOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		3ACE91E82344EA9100F36E71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE91F82344EAA300F36E71 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE92052344EAAD00F36E71 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,6 +243,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3ACE92122344EB3000F36E71 /* Render.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE91F62344EAA300F36E71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ACE92132344EB3200F36E71 /* Render.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3ACE92032344EAAD00F36E71 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3ACE92142344EB3200F36E71 /* Render.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,13 +389,40 @@
 		3ACE91F32344EA9100F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 2QHTY6FMW2;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = RenderKit/Info.plist;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = se.hexagons.RenderKit;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3ACE91F42344EA9100F36E71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2QHTY6FMW2;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -279,9 +435,61 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
+			name = Release;
+		};
+		3ACE92002344EAA300F36E71 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2QHTY6FMW2;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = "se.hexagons.RenderKit-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
 			name = Debug;
 		};
-		3ACE91F42344EA9100F36E71 /* Release */ = {
+		3ACE92012344EAA300F36E71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2QHTY6FMW2;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = "se.hexagons.RenderKit-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		3ACE920D2344EAAD00F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -290,18 +498,46 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = RenderKit/Info.plist;
+				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = se.hexagons.RenderKit;
+				PRODUCT_BUNDLE_IDENTIFIER = "se.hexagons.RenderKit-tvOS";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
+			};
+			name = Debug;
+		};
+		3ACE920E2344EAAD00F36E71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2QHTY6FMW2;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "se.hexagons.RenderKit-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
 			};
 			name = Release;
 		};
@@ -322,6 +558,24 @@
 			buildConfigurations = (
 				3ACE91F32344EA9100F36E71 /* Debug */,
 				3ACE91F42344EA9100F36E71 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3ACE91FF2344EAA300F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3ACE92002344EAA300F36E71 /* Debug */,
+				3ACE92012344EAA300F36E71 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3ACE920C2344EAAD00F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3ACE920D2344EAAD00F36E71 /* Debug */,
+				3ACE920E2344EAAD00F36E71 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
