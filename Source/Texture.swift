@@ -6,6 +6,7 @@
 //  Open Source - MIT License
 //
 
+import LiveValues
 import MetalKit
 import VideoToolbox
 
@@ -19,9 +20,12 @@ public struct Texture {
         case mipmap
     }
     
-    public static func buffer(from image: CGImage, at size: CGSize?) -> CVPixelBuffer? {
+    public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil) -> CVPixelBuffer? {
+        guard let bits = bits ?? LiveColor.Bits(rawValue: image.bitsPerPixel) else {
+            return nil
+        }
         #if os(iOS) || os(tvOS)
-        return buffer(from: UIImage(cgImage: image))
+        return buffer(from: UIImage(cgImage: image), bits: bits)
         #elseif os(macOS)
         guard size != nil else { return nil }
         return buffer(from: NSImage(cgImage: image, size: size!))
@@ -33,7 +37,7 @@ public struct Texture {
     #elseif os(macOS)
     public typealias _Image = NSImage
     #endif
-    public static func buffer(from image: _Image) -> CVPixelBuffer? {
+    public static func buffer(from image: _Image, bits: LiveColor.Bits) -> CVPixelBuffer? {
         
         #if os(iOS) || os(tvOS)
         let scale: CGFloat = image.scale
@@ -57,7 +61,7 @@ public struct Texture {
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          Int(width),
                                          Int(height),
-                                         Render.main.bits.os,
+                                         bits.os,
                                          attrs,
                                          &pixelBuffer)
         guard (status == kCVReturnSuccess) else {
@@ -139,7 +143,7 @@ public struct Texture {
     }
     #endif
     
-    public static func makeTexture(from pixelBuffer: CVPixelBuffer, with commandBuffer: MTLCommandBuffer, force8bit: Bool = false) throws -> MTLTexture {
+    public static func makeTexture(from pixelBuffer: CVPixelBuffer, with commandBuffer: MTLCommandBuffer, force8bit: Bool = false, on metalDevice: MTLDevice) throws -> MTLTexture {
 //        let width = CVPixelBufferGetWidth(pixelBuffer)
 //        let height = CVPixelBufferGetHeight(pixelBuffer)
 //        var cvTextureOut: CVMetalTexture?
@@ -171,11 +175,11 @@ public struct Texture {
         guard let image = cgImage else {
             throw TextureError.pixelBuffer(-4)
         }
-        return try makeTexture(from: image, with: commandBuffer)
+        return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
     }
 
-    public static func makeTexture(from image: CGImage, with commandBuffer: MTLCommandBuffer) throws -> MTLTexture {
-        let textureLoader = MTKTextureLoader(device: Render.main.metalDevice)
+    public static func makeTexture(from image: CGImage, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice) throws -> MTLTexture {
+        let textureLoader = MTKTextureLoader(device: metalDevice)
         let texture: MTLTexture = try textureLoader.newTexture(cgImage: image, options: nil)
         try mipmap(texture: texture, with: commandBuffer)
         return texture
@@ -190,24 +194,27 @@ public struct Texture {
         commandEncoder.endEncoding()
     }
     
-    public static func emptyTexture(size: CGSize) throws -> MTLTexture {
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: Render.main.bits.mtl, width: Int(size.width), height: Int(size.height), mipmapped: true)
+    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
         descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue)
-        guard let texture = Render.main.metalDevice.makeTexture(descriptor: descriptor) else {
+        guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
             throw TextureError.emptyFail
         }
         return texture
     }
     
-    public static func copyTexture<N: NODE>(from node: N) throws -> MTLTexture {
+    public static func copyTexture<N: NODE>(from node: N, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
         guard let texture = node.texture else {
             throw TextureError.copy("NODE Texture is nil.")
         }
-        return try copy(texture: texture)
+        return try copy(texture: texture, on: metalDevice, in: commandQueue)
     }
     
-    public static func copy(texture: MTLTexture) throws -> MTLTexture {
-        let textureCopy = try emptyTexture(size: CGSize(width: texture.width, height: texture.height))
+    public static func copy(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.copy("Bits not found.")
+        }
+        let textureCopy = try emptyTexture(size: CGSize(width: texture.width, height: texture.height), bits: bits, on: metalDevice)
         guard let commandBuffer = commandQueue.makeCommandBuffer() else {
             throw TextureError.copy("Command Buffer make failed.")
         }
@@ -221,14 +228,14 @@ public struct Texture {
         return textureCopy
     }
     
-    public static func makeMultiTexture(from textures: [MTLTexture], with commandBuffer: MTLCommandBuffer, in3D: Bool = false) throws -> MTLTexture {
+    public static func makeMultiTexture(from textures: [MTLTexture], with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, in3D: Bool = false) throws -> MTLTexture {
         
         guard !textures.isEmpty else {
             throw TextureError.multi("Passed Textures array is empty.")
         }
         
         let descriptor = MTLTextureDescriptor()
-        descriptor.pixelFormat = bits.mtl
+        descriptor.pixelFormat = textures.first!.pixelFormat
         descriptor.textureType = in3D ? .type3D : .type2DArray
         descriptor.width = textures.first!.width
         descriptor.height = textures.first!.height
@@ -272,139 +279,13 @@ public struct Texture {
         return multiTexture
     }
     
-    public static func textures(from node: NODE, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?) {
-
-        var generator: Bool = false
-        var custom: Bool = false
-        var inputTexture: MTLTexture? = nil
-        var secondInputTexture: MTLTexture? = nil
-        if let nodeContent = node as? NODEContent {
-            if let nodeResource = nodeContent as? NODEResource {
-                guard let pixelBuffer = nodeResource.pixelBuffer else {
-                    throw RenderError.texture("Pixel Buffer is nil.")
-                }
-                let force8bit: Bool
-                #if os(tvOS)
-                force8bit = false
-                #else
-                force8bit = (node as? CameraNODE) != nil
-                #endif
-                inputTexture = try makeTexture(from: pixelBuffer, with: commandBuffer, force8bit: force8bit)
-            } else if nodeContent is NODEGenerator {
-                generator = true
-            } else if let nodeSprite = nodeContent as? NODESprite {
-                guard let spriteTexture = nodeSprite.sceneView.texture(from: nodeSprite.scene) else {
-                    throw RenderError.texture("Sprite Texture fail.")
-                }
-                let spriteImage: CGImage = spriteTexture.cgImage()
-                guard let spriteBuffer = buffer(from: spriteImage, at: nodeSprite.res.size.cg) else {
-                    throw RenderError.texture("Sprite Buffer fail.")
-                }
-                inputTexture = try makeTexture(from: spriteBuffer, with: commandBuffer)
-            } else if nodeContent is NODECustom {
-                custom = true
-            }
-        } else if let nodeIn = node as? NODE & NODEInIO {
-            if let nodeInMulti = nodeIn as? NODEInMulti {
-                var inTextures: [MTLTexture] = []
-                for (i, nodeOut) in nodeInMulti.inNodes.enumerated() {
-                    guard let nodeOutTexture = nodeOut.texture else {
-                        throw RenderError.texture("IO Texture \(i) not found for: \(nodeOut)")
-                    }
-                    try mipmap(texture: nodeOutTexture, with: commandBuffer)
-                    inTextures.append(nodeOutTexture)
-                }
-                inputTexture = try makeMultiTexture(from: inTextures, with: commandBuffer)
-            } else {
-                guard let nodeOut = nodeIn.nodeInList.first else {
-                    throw RenderError.texture("inNode not connected.")
-                }
-                var feed = false
-                if let feedbackNode = nodeIn as? FeedbackNODE {
-                    if feedbackNode.readyToFeed && feedbackNode.feedActive {
-                        guard let feedTexture = feedbackNode.feedTexture else {
-                            throw RenderError.texture("Feed Texture not avalible.")
-                        }
-                        inputTexture = feedTexture
-                        feed = true
-                    }
-                }
-                if !feed {
-                    guard let nodeOutTexture = nodeOut.texture else {
-                        throw RenderError.texture("IO Texture not found for: \(nodeOut)")
-                    }
-                    inputTexture = nodeOutTexture // CHECK copy?
-                    if node is NODEInMerger {
-                        let nodeOutB = nodeIn.nodeInList[1]
-                        guard let nodeOutTextureB = nodeOutB.texture else {
-                            throw RenderError.texture("IO Texture B not found for: \(nodeOutB)")
-                        }
-                        secondInputTexture = nodeOutTextureB // CHECK copy?
-                    }
-                }
-            }
-        }
-        
-        guard generator || custom || inputTexture != nil else {
-            throw RenderError.texture("Input Texture missing.")
-        }
-        
-        if custom {
-            return (nil, nil, nil)
-        }
-        
-        // Mipmap
-        
-        if inputTexture != nil {
-            try mipmap(texture: inputTexture!, with: commandBuffer)
-        }
-        if secondInputTexture != nil {
-            try mipmap(texture: secondInputTexture!, with: commandBuffer)
-        }
-        
-        // MARK: Custom Render
-        
-        var customTexture: MTLTexture?
-        if !generator && node.customRenderActive {
-            guard let customRenderDelegate = node.customRenderDelegate else {
-                throw RenderError.custom("PixelCustomRenderDelegate not implemented.")
-            }
-            if let customRenderedTexture = customRenderDelegate.customRender(inputTexture!, with: commandBuffer) {
-                inputTexture = nil
-                customTexture = customRenderedTexture
-            }
-        }
-        
-        if node is NODEInMerger {
-            if !generator && node.customMergerRenderActive {
-                guard let customMergerRenderDelegate = node.customMergerRenderDelegate else {
-                    throw RenderError.custom("PixelCustomMergerRenderDelegate not implemented.")
-                }
-                let customRenderedTextures = customMergerRenderDelegate.customRender(a: inputTexture!, b: secondInputTexture!, with: commandBuffer)
-                if let customRenderedTexture = customRenderedTextures {                
-                    inputTexture = nil
-                    secondInputTexture = nil
-                    customTexture = customRenderedTexture
-                }
-            }
-        }
-        
-        if let timeMachineNode = node as? TimeMachineNODE {
-            let textures = timeMachineNode.customRender(inputTexture!, with: commandBuffer)
-            inputTexture = try makeMultiTexture(from: textures, with: commandBuffer, in3D: true)
-        }
-        
-        return (inputTexture, secondInputTexture, customTexture)
-        
-    }
-    
     // MARK: - Conversions
     
-    public static func ciImage(from texture: MTLTexture) -> CIImage? {
-        CIImage(mtlTexture: texture, options: [.colorSpace: PixelKit.main.colorSpace.cg])
+    public static func ciImage(from texture: MTLTexture, colorSpace: LiveColor.Space) -> CIImage? {
+        CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace.cg])
     }
     
-    public static func cgImage(from ciImage: CIImage, at size: CGSize) -> CGImage? {
+    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
         #if os(iOS) || os(tvOS)
         return cgImage
@@ -426,21 +307,22 @@ public struct Texture {
         #endif
     }
 
-    public static func image(from texture: MTLTexture) -> _Image? {
+    public static func image(from texture: MTLTexture, colorSpace: LiveColor.Space) -> _Image? {
         let size = CGSize(width: texture.width, height: texture.height)
-        guard let ciImage = ciImage(from: texture) else { return nil }
-        guard let cgImage = cgImage(from: ciImage, at: size) else { return nil }
+        guard let ciImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else { return nil }
+        guard let cgImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits) else { return nil }
         return image(from: cgImage, at: size)
     }
     
-    public static func texture(from image: _Image) -> MTLTexture? {
+    public static func texture(from image: _Image, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) -> MTLTexture? {
         #if os(iOS) || os(tvOS)
         guard let cgImage = image.cgImage else { return nil }
         #elseif os(macOS)
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
         #endif
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return nil }
-        return try? makeTexture(from: cgImage, with: commandBuffer)
+        return try? makeTexture(from: cgImage, with: commandBuffer, on: metalDevice)
     }
     
 }

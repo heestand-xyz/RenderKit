@@ -8,7 +8,16 @@
 
 import Foundation
 
-class Logger<N: NODE> {
+protocol LoggerDelegate {
+    func loggerFrameIndex() -> Int
+    func loggerLinkIndex(of node: NODE) -> Int?
+}
+
+class Logger {
+    
+    var delegate: LoggerDelegate?
+    
+    let prefix: String
     
     public var active: Bool = true
     public var level: LogLevel = .error
@@ -22,7 +31,7 @@ class Logger<N: NODE> {
     public var padding = false
     public var extra = false
 
-    public var synamicShaderCode = false
+    public var dynamicShaderCode = false
     
     public var callback: ((Log) -> ())?
     
@@ -43,12 +52,12 @@ class Logger<N: NODE> {
         public let id: UUID
         public let name: String?
         public let type: String
-//        public let linkIndex: Int?
-        init(for node: N) {
+        public let linkIndex: Int?
+        init(for node: NODE, linkIndex: Int?) {
             id = node.id
             name = node.name
             type = String(String(describing: node).split(separator: ".").last ?? "")
-//            linkIndex = Render.main.linkIndex(of: node)
+            self.linkIndex = linkIndex
         }
     }
     
@@ -100,34 +109,45 @@ class Logger<N: NODE> {
         source = true
     }
     
-    public static func log(prefix: String = "PixelKit", node: N? = nil, _ level: LogLevel, _ category: LogCategory?, _ message: String, loop: Bool = false, clean: Bool = false, e error: Error? = nil, _ file: String = #file, _ function: String = #function, _ line: Int = #line) {
+    init(name: String) {
+        prefix = name
+    }
+    
+    public func log(prefix: String? = nil, node: NODE? = nil, _ level: LogLevel, _ category: LogCategory?, _ message: String, loop: Bool = false, clean: Bool = false, e error: Error? = nil, _ file: String = #file, _ function: String = #function, _ line: Int = #line) {
+        
+        guard delegate != nil else {
+            print("Logger delegate not set...")
+            return
+        }
+        
+        let prefix = prefix ?? self.prefix
         
         let time = Date()
-        let nodeRef = node != nil ? NODERef(for: node!) : nil
+        let nodeRef = node != nil ? NODERef(for: node!, linkIndex: delegate!.loggerLinkIndex(of: node!)) : nil
         let codeRef = CodeRef(file: file, function: function, line: line)
         
         let log = Log(prefix: prefix, level: level, category: category, time: time, codeRef: codeRef, nodeRef: nodeRef, message: message, error: error, loop: loop)
         
         guard level != .fatal else {
-            logCallback?(log)
+            callback?(log)
             fatalError(formatClean(log: log))
         }
         
-        guard logActive && level.index <= logLevel.index else {
+        guard active && level.index <= self.level.index else {
             return
         }
         
-        if loop && logLoopLimitActive && frame > logLoopLimitFrameCount {
-            if !logLoopLimitIndicated {
+        if loop && loopLimitActive && delegate!.loggerFrameIndex() > loopLimitFrameCount {
+            if !loopLimitIndicated {
                 print("PixelKit running...")
-                logLoopLimitIndicated = true
+                loopLimitIndicated = true
             }
             return
         }
         
         if clean {
             print(formatClean(log: log))
-            logCallback?(log)
+            callback?(log)
             return
         }
         
@@ -139,7 +159,7 @@ class Logger<N: NODE> {
         
         print(format(log: log))
         
-        logCallback?(log)
+        callback?(log)
         
     }
     
@@ -163,10 +183,11 @@ class Logger<N: NODE> {
         
         logList.append(log.prefix)
         
-        logList.append("#\(frame < 10 ? "0" : "")\(frame)")
+        let frameIndex = delegate!.loggerFrameIndex()
+        logList.append("#\(frameIndex < 10 ? "0" : "")\(frameIndex)")
         
         var tc = 0
-        if logTime {
+        if time {
             let df = DateFormatter()
             let f = "HH:mm:ss.SSS"
             tc = f.count + 2
@@ -178,7 +199,7 @@ class Logger<N: NODE> {
         logList.append(log.level.rawValue)
         
         var ext = 0
-        if logExtra {
+        if extra {
             ext += 5
             if log.level == .warning {
                 logList.append("⚠️"); ext -= 1
@@ -187,7 +208,7 @@ class Logger<N: NODE> {
             }
         }
         
-        if logPadding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         
         if let nodeRef = log.nodeRef {
             if let nr = nodeRef.linkIndex {
@@ -196,7 +217,7 @@ class Logger<N: NODE> {
             logList.append(nodeRef.type)
         }
         
-        if logPadding { padding += 30; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 30; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         
         if let nodeRef = log.nodeRef {
             if let nodeName = nodeRef.name {
@@ -204,13 +225,13 @@ class Logger<N: NODE> {
             }
         }
         
-        if logPadding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         
         if let c = log.category {
             logList.append(c.rawValue)
         }
         
-        if logPadding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         else { logList.append(">>>") }
         
         logList.append(log.message)
@@ -219,8 +240,8 @@ class Logger<N: NODE> {
             logList.append("Error: \(e) LD: \"\(e.localizedDescription)\"")
         }
         
-        if logSource {
-            if logPadding { padding += 50; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if source {
+            if self.padding { padding += 50; logList.append(spaces(tc + ext + padding - logLength(logList))) }
             else { logList.append("<<<") }
             let fileName = log.codeRef.file.split(separator: "/").last!
             logList.append("\(fileName):\(log.codeRef.function):\(log.codeRef.line)")

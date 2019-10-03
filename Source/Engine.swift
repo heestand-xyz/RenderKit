@@ -6,20 +6,27 @@
 //  Open Source - MIT License
 //
 
+import LiveValues
 import CoreGraphics
-import MetalKit
+import Metal
 
-public struct Engine {
+public protocol EngineDelegate {
+    func textures(from node: NODE, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
+}
+
+protocol EngineInternalDelegate {
+    var linkedNodes: [NODE] { get set }
+    var commandQueue: MTLCommandQueue! { get set }
+    var metalDevice: MTLDevice! { get set }
+    var bits: LiveColor.Bits { get set }
+    var quadVertecis: Vertices! { get set }
+    func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction) throws -> MTLSamplerState
+}
+
+public class Engine {
     
-    public enum MetalErrorCode {
-        case IOAF(Int)
-        public var info: String {
-            switch self {
-            case .IOAF(let code):
-                return "IOAF code \(code)"
-            }
-        }
-    }
+    var deleagte: EngineDelegate?
+    var internalDelegate: EngineInternalDelegate!
     
     public enum RenderMode {
         case manual
@@ -30,18 +37,134 @@ public struct Engine {
         case instantQueueSemaphore
         case direct
     }
+    public var renderMode: Engine.RenderMode = .frameLoop
+    
+    var frameTreeRendering: Bool = false
+    
+    let logger: Logger
+
+    public enum MetalErrorCode {
+        case IOAF(Int)
+        public var info: String {
+            switch self {
+            case .IOAF(let code):
+                return "IOAF code \(code)"
+            }
+        }
+    }
+    
+    var instantQueueActivated: Bool = false
+    
+    public var metalErrorCodeCallback: ((Engine.MetalErrorCode) -> ())?
+    
+    // MARK: Manual Render
+    
+    public var manualRenderDelegate: ManualRenderDelegate?
+    
+    var manualRenderInProgress: Bool = false
+    var manualRenderCallback: (() -> ())?
+    
+    // MARK: - Life Cycle
+    
+    init() {
+        self.logger = Logger(name: "RenderKit Engine")
+    }
+    
+    // MARK: - Frame Loop
+    
+    func frameLoop() {
+        if self.renderMode == .frameTree {
+            if !self.frameTreeRendering {
+                self.renderNODEsTree()
+            }
+        } else if [.frameLoop, .frameLoopQueue].contains(self.renderMode) {
+            self.renderNODEs()
+        } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
+            if !self.instantQueueActivated {
+                DispatchQueue.global(qos: .background).async {
+                    while true {
+                        self.renderNODEs()
+                    }
+                }
+                self.instantQueueActivated = true
+            }
+        } else if self.renderMode == .manual {
+            self.checkManualRender()
+        }
+    }
+    
+    // MARK: - Maual Render
+    
+    enum ManualRenderError: Error {
+        case renderInProgress
+    }
+    
+    public func manuallyRender(_ done: @escaping () -> ()) throws {
+        guard !manualRenderInProgress else {
+            throw ManualRenderError.renderInProgress
+        }
+        logger.log(.info, .render, "Manual Render Started.")
+        manualRenderInProgress = true
+        manualRenderCallback = done
+    }
+    
+    func checkManualRender() {
+        
+        var someNodesNeedsRender: Bool = false
+        for node in internalDelegate.linkedNodes {
+            if node.needsRender {
+                someNodesNeedsRender = true
+                break
+            }
+        }
+        
+        guard manualRenderInProgress else {
+            if someNodesNeedsRender {
+                manualRenderDelegate?.pixelNeedsManualRender()
+            }
+            return
+        }
+        
+        if someNodesNeedsRender {
+            
+            self.renderNODEs()
+            
+        } else {
+        
+            var someNodesAreInRender: Bool = false
+            for node in internalDelegate.linkedNodes {
+                if node.inRender {
+                    someNodesAreInRender = true
+                    break
+                }
+            }
+            
+            if !someNodesAreInRender {
+
+                logger.log(.info, .render, "Manual Render Done.")
+                manualRenderCallback!()
+                manualRenderCallback = nil
+                manualRenderInProgress = false
+                
+            }
+            
+        }
+        
+    }
+    
+    // MARK: - Render
     
     func renderNODEsTree() {
-        let nodesNeedsRender: [NODE] = linkedNodes.filter { node -> Bool in
+        let nodesNeedsRender: [NODE] = internalDelegate.linkedNodes.filter { node -> Bool in
             return node.needsRender
         }
         guard !nodesNeedsRender.isEmpty else { return }
-        self.frameTreeRendering = true
+        frameTreeRendering = true
         DispatchQueue.global(qos: .background).async {
-            self.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-")
+            self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-")
             var renderedNodes: [NODE] = []
             func render(_ node: NODE) {
-                self.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"")
                 let semaphore = DispatchSemaphore(value: 0)
                 DispatchQueue.main.async {                
                     if node.view.superview != nil {
@@ -49,26 +172,26 @@ public struct Engine {
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
                         let size = node.resolution.size
-//                            self.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
+//                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
                         node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width.cg, height: size.height.cg))
                         #endif
-                        self.log(node: node, .detail, .render, "View Render requested.", loop: true)
+                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
-                            self.log(node: node, .error, .render, "Current Drawable not found.")
+                            self.logger.log(node: node, .error, .render, "Current Drawable not found.")
                             return
                         }
                         node.view.metalView.readyToRender = {
                             node.view.metalView.readyToRender = nil
                             self.renderNODE(node, with: currentDrawable, done: { success in
-                                self.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name ?? "#")\"")
+                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name ?? "#")\"")
                                 semaphore.signal()
                             })
                         }
                     } else {
                         self.renderNODE(node, done: { success in
-                            self.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name ?? "#")\"")
+                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name ?? "#")\"")
                             semaphore.signal()
                         })
                     }
@@ -77,9 +200,9 @@ public struct Engine {
                 renderedNodes.append(node)
             }
             func reverse(_ inNode: NODE & NODEInIO) {
-                self.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"")
                 for subNode in inNode.nodeInList {
-                    if !renderedNodes.contains(subNode) {
+                    if !subNode.contained(in: renderedNodes) {
                         if let subInNode = subNode as? NODE & NODEInIO {
                             reverse(subInNode)
                         }
@@ -88,14 +211,14 @@ public struct Engine {
                 }
             }
             func traverse(_ node: NODE) {
-                self.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"")
                 if let outNode = node as? NODEOutIO {
                     for inNodePath in outNode.nodeOutPathList {
                         let inNode = inNodePath.nodeIn as! NODE & NODEInIO
-                        self.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"")
+                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"")
                         var allInsRendered = true
                         for subNode in inNode.nodeInList {
-                            if !renderedNodes.contains(subNode) {
+                            if !subNode.contained(in: renderedNodes) {
                                 allInsRendered = false
                                 break
                             }
@@ -103,7 +226,7 @@ public struct Engine {
                         if !allInsRendered {
                             reverse(inNode)
                         }
-                        if !renderedNodes.contains(inNode) {
+                        if !inNode.contained(in: renderedNodes) {
                             render(inNode)
                             traverse(inNode)
                         }
@@ -111,29 +234,29 @@ public struct Engine {
                 }
             }
             for node in nodesNeedsRender {
-                if !renderedNodes.contains(node) {
+                if !node.contained(in: renderedNodes) {
                     render(node)
                     traverse(node)
                 }
             }
-            self.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-")
+            self.logger.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-")
             self.frameTreeRendering = false
         }
     }
     
     func renderNODEs() {
-        loop: for node in linkedNodes {
+        loop: for node in internalDelegate.linkedNodes {
             if node.needsRender {
                 
                 if [.frameLoopQueue, .instantQueue, .instantQueueSemaphore].contains(renderMode) {
                     guard !node.rendering else {
-                        self.log(node: node, .warning, .render, "Render in progress.", loop: true)
+                        logger.log(node: node, .warning, .render, "Render in progress.", loop: true)
                         continue
                     }
                     if let nodeIn = node as? NODEInIO {
                         for nodeOut in nodeIn.nodeInList {
                             guard node.renderIndex + 1 == nodeOut.renderIndex else {
-                                log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)")
+                                logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)")
                                 continue
                             }
 //                            log(node: node, .warning, .render, ">>> Queue In: \(node.renderIndex) + 1 == \(nodeOut.renderIndex)")
@@ -142,7 +265,7 @@ public struct Engine {
                     if let nodeOut = node as? NODEOutIO {
                         for nodeOutPath in nodeOut.nodeOutPathList {
                             guard node.renderIndex == nodeOutPath.nodeIn.renderIndex else {
-                                log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)")
+                                logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)")
                                 continue
                             }
 //                            log(node: node, .warning, .render, ">>> Queue Out: \(node.renderIndex) == \(nodeOutPath.nodeIn.renderIndex)")
@@ -177,15 +300,15 @@ public struct Engine {
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
                         let size = node.resolution.size
-//                            self.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
+//                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
                         node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width.cg, height: size.height.cg))
                         #endif
-                        self.log(node: node, .detail, .render, "View Render requested.", loop: true)
+                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         let currentDrawable: CAMetalDrawable? = node.view.metalView.currentDrawable
                         if currentDrawable == nil {
-                            self.log(node: node, .error, .render, "Current Drawable not found.")
+                            self.logger.log(node: node, .error, .render, "Current Drawable not found.")
                         }
                         node.view.metalView.readyToRender = {
                             node.view.metalView.readyToRender = nil
@@ -213,13 +336,15 @@ public struct Engine {
     }
     
     func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
+        
+        var node = node
         guard !node.bypass || node is NODEGenerator else {
-            self.log(node: node, .info, .render, "Render bypassed.", loop: true)
+            logger.log(node: node, .info, .render, "Render bypassed.", loop: true)
             done(nil)
             return
         }
         guard !node.rendering else {
-            self.log(node: node, .debug, .render, "Render in progress...", loop: true)
+            logger.log(node: node, .debug, .render, "Render in progress...", loop: true)
             done(nil)
             return
         }
@@ -231,7 +356,7 @@ public struct Engine {
 //            }
             let renderStartTime = CFAbsoluteTimeGetCurrent()
 //        let renderStartFrame = frame
-            self.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
+            logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
 //        for flowTime in flowTimes {
 //            if flowTime.fromNodeRenderState.ref.id == node.id {
 //                if !flowTime.fromNodeRenderState.requested {
@@ -248,7 +373,7 @@ public struct Engine {
                     let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
                     let renderTimeMs = CGFloat(Int(round(renderTime * 10_000))) / 10
 //                let renderFrames = self.frame - renderStartFrame
-                    self.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
+                    self.logger.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
 //                for flowTime in self.flowTimes {
 //                    if flowTime.fromNodeRenderState.requested {
 //                        if !flowTime.fromNodeRenderState.rendered {
@@ -272,19 +397,20 @@ public struct Engine {
                             ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
                         }
                     }
-                    self.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
+                    self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
 //                    DispatchQueue.main.async {
                         node.inRender = false
                         done(false)
 //                    }
                 })
             } catch {
-                self.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+                logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
             }
 //        }
     }
     
     enum RenderError: Error {
+        case delegateMissing
         case commandBuffer
         case texture(String)
         case custom(String)
@@ -296,27 +422,36 @@ public struct Engine {
         case nilCustomTexture
     }
     
+    // MARK: - Main Render
+    
     func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
+        
+        var node = node
+        
+        guard deleagte != nil else {
+            logger.log(node: node, .error, .render, "Engine deleagte is not set.")
+            throw RenderError.delegateMissing
+        }
 
         // Render Time
         let globalRenderTime = CFAbsoluteTimeGetCurrent()
         var localRenderTime = CFAbsoluteTimeGetCurrent()
         var renderTime: Double = -1
         var renderTimeMs: Double = -1
-        log(node: node, .debug, .metal, "Render Timer: Started")
+        logger.log(node: node, .debug, .metal, "Render Timer: Started")
 
         
         // MARK: Command Buffer
         
-        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+        guard let commandBuffer = internalDelegate.commandQueue.makeCommandBuffer() else {
             throw RenderError.commandBuffer
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Buffer ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Buffer ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -336,43 +471,40 @@ public struct Engine {
         let generator: Bool = node is NODEGenerator
         var (inputTexture, secondInputTexture, customTexture): (MTLTexture?, MTLTexture?, MTLTexture?)
         if !template {
-            (inputTexture, secondInputTexture, customTexture) = try textures(from: node, with: commandBuffer)
+            (inputTexture, secondInputTexture, customTexture) = try deleagte!.textures(from: node, with: commandBuffer)
         }
         
         // MARK: Drawable
         
-        let res = node.resolution
-//        guard let res = node.resolution else {
-//            throw RenderError.drawable("NODE Resolution not set.")
-//        }
+        let resolution = node.renderResolution
         
         var viewDrawable: CAMetalDrawable? = nil
         let drawableTexture: MTLTexture
         if currentDrawable != nil {
             viewDrawable = currentDrawable!
             drawableTexture = currentDrawable!.texture
-        } else if node.texture != nil && res == NODE.Res.custom(w: node.texture!.width, h: node.texture!.height) {
+        } else if node.texture != nil && resolution == Resolution.custom(w: node.texture!.width, h: node.texture!.height) {
             drawableTexture = node.texture!
         } else {
-            drawableTexture = try emptyTexture(size: res.size.cg)
+            drawableTexture = try Texture.emptyTexture(size: resolution.size.cg, bits: internalDelegate.bits, on: internalDelegate.metalDevice)
         }
         
-        if logHighResWarnings {
-            let drawRes = NODE.Res(texture: drawableTexture)
+        if logger.highResWarnings {
+            let drawRes = Resolution(texture: drawableTexture)
             if (drawRes >= ._16384) != false {
-                log(node: node, .detail, .render, "Epic res: \(drawRes)")
+                logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
             } else if (drawRes >= ._8192) != false {
-                log(node: node, .detail, .render, "Extreme res: \(drawRes)")
+                logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
             } else if (drawRes >= ._4096) != false {
-                log(node: node, .detail, .render, "High res: \(drawRes)")
+                logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
             }
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Drawable ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Drawable ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -391,10 +523,10 @@ public struct Engine {
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
 
@@ -411,10 +543,10 @@ public struct Engine {
         commandEncoder.setRenderPipelineState(node.pipeline)
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Encoder ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Encoder ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -432,15 +564,15 @@ public struct Engine {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
         if template {
-            unifroms.append(Float(res.width.cg))
-            unifroms.append(Float(res.height.cg))
+            unifroms.append(Float(resolution.width.cg))
+            unifroms.append(Float(resolution.height.cg))
         }
         if node.shaderNeedsAspect || template {
-            unifroms.append(Float(res.aspect.cg))
+            unifroms.append(Float(resolution.aspect.cg))
         }
         if !unifroms.isEmpty {
             let size = MemoryLayout<Float>.size * unifroms.count
-            guard let uniformsBuffer = metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
@@ -450,10 +582,10 @@ public struct Engine {
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniforms ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -489,13 +621,13 @@ public struct Engine {
                     uniformArray.removeLast()
                     uniformArrayActive.removeLast()
                 }
-                log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)")
+                logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)")
             }
             
             var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
             
             let size: Int = MemoryLayout<Float>.size * uniformFlatMap.count
-            guard let uniformsArraysBuffer = metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsArraysBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
@@ -504,7 +636,7 @@ public struct Engine {
             commandEncoder.setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: 1)
             
             let activeSize: Int = MemoryLayout<Bool>.size * uniformArrayActive.count
-            guard let uniformsArraysActiveBuffer = metalDevice.makeBuffer(length: activeSize, options: []) else {
+            guard let uniformsArraysActiveBuffer = internalDelegate.metalDevice.makeBuffer(length: activeSize, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
@@ -515,10 +647,10 @@ public struct Engine {
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniform Arrays ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniform Arrays ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -536,10 +668,10 @@ public struct Engine {
         commandEncoder.setFragmentSamplerState(node.sampler, index: 0)
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Fragment Texture ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Fragment Texture ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -554,7 +686,7 @@ public struct Engine {
             }
             vertices = customVertices
         } else {
-            vertices = quadVertecis
+            vertices = internalDelegate.quadVertecis
         }
         
         if vertices.wireframe {
@@ -567,7 +699,7 @@ public struct Engine {
         
         if !node.customMatrices.isEmpty {
             var matrices = node.customMatrices
-            guard let uniformBuffer = metalDevice.makeBuffer(length: MemoryLayout<Float>.size * 16 * matrices.count, options: []) else {
+            guard let uniformBuffer = internalDelegate.metalDevice.makeBuffer(length: MemoryLayout<Float>.size * 16 * matrices.count, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
@@ -577,10 +709,10 @@ public struct Engine {
         }
 
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertices ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertices ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -590,7 +722,7 @@ public struct Engine {
         var vertexUnifroms: [Float] = node.vertexUniforms.map { uniform -> Float in return Float(uniform) }
         if !vertexUnifroms.isEmpty {
             let size = MemoryLayout<Float>.size * vertexUnifroms.count
-            guard let uniformsBuffer = metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
@@ -600,10 +732,10 @@ public struct Engine {
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertex Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertex Uniforms ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -619,16 +751,16 @@ public struct Engine {
             
             commandEncoder.setVertexTexture(vtxNodeInTexture, index: 0)
             
-            let sampler = try makeSampler(interpolate: .linear, extend: .clampToEdge, mipFilter: .linear)
+            let sampler = try internalDelegate.makeSampler(interpolate: .linear, extend: .clampToEdge, mipFilter: .linear, compare: .never)
             commandEncoder.setVertexSamplerState(sampler, index: 0)
             
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom Vertex Texture ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom Vertex Texture ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -638,10 +770,10 @@ public struct Engine {
         commandEncoder.drawPrimitives(type: vertices.type, vertexStart: 0, vertexCount: vertices.vertexCount, instanceCount: 1)
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Draw ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Draw ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -655,18 +787,18 @@ public struct Engine {
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Encode ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Encode ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
         // Render Time
-        if logTime {
+        if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU ")
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU ")
         }
         
         
@@ -690,17 +822,17 @@ public struct Engine {
             }
             
             // Render Time
-            if self.logTime {
+            if self.logger.time {
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] GPU ")
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU + GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU + GPU ")
                 
-                self.log(node: node, .debug, .metal, "Render Timer: Ended")
+                self.logger.log(node: node, .debug, .metal, "Render Timer: Ended")
                 
             }
 

@@ -12,7 +12,7 @@ import CoreGraphics
 import MetalKit
 import simd
 
-public class Render<N: NODE> {
+public class Render: LoggerDelegate {
     
     public weak var delegate: RenderDelegate?
     
@@ -20,25 +20,18 @@ public class Render<N: NODE> {
     
     let metalLibName: String
     
-    // MARK: Render
+    // MARK: Engine
     
-    public var renderMode: Engine.RenderMode = .frameLoop
-    
-    // MARK: Manual Render
-    
-    public var manualRenderDelegate: ManualRenderDelegate?
-    
-    var manualRenderInProgress: Bool = false
-    var manualRenderCallback: (() -> ())?
+    public let engine: Engine
     
     // MARK: Checker
     
     public var backgroundAlphaCheckerActive: Bool = true
     
     // MARK: Log
-
-    public var metalErrorCodeCallback: ((Engine.MetalErrorCode) -> ())?
     
+    let logger: Logger
+
     // MARK: Color
     
     public var bits: LiveColor.Bits = ._8
@@ -46,21 +39,10 @@ public class Render<N: NODE> {
     
     // MARK: Linked NODEs
     
-    public var finalNode: N?
+    public var finalNode: NODE?
     
-    public var nodeLinks: NODELinks<N> = NODELinks<N>([])
-    public var linkedNodes: [N] {
-        return nodeLinks.reduce([], { arr, node -> [N] in
-            var arr = arr
-            if node != nil {
-                arr.append(node!)
-            }
-            return arr
-        })
-    }
+    public var linkedNodes: [NODE] = []
     
-    var frameTreeRendering: Bool = false
-
 //    struct RenderedNODE {
 //        let node: NODE
 //        let rendered: Bool
@@ -83,10 +65,9 @@ public class Render<N: NODE> {
 //        return true
 //    }
 
-    func linkIndex(of node: N) -> Int? {
-        for (i, linkedNode) in nodeLinks.enumerated() {
-            guard linkedNode != nil else { continue }
-            if linkedNode! == node {
+    func linkIndex(of node: NODE) -> Int? {
+        for (i, linkedNode) in linkedNodes.enumerated() {
+            if linkedNode.isEqual(to: node) {
                 return i
             }
         }
@@ -125,8 +106,6 @@ public class Render<N: NODE> {
         #endif
     } else { return -1 } }
     
-    var instantQueueActivated: Bool = false
-    
     // MARK: Metal
     
     public var metalDevice: MTLDevice!
@@ -143,15 +122,22 @@ public class Render<N: NODE> {
         
         self.metalLibName = metalLibName
         
+        engine = Engine()
+        
+        logger = Logger(name: "RenderKit")
+        
+        
+        logger.delegate = self
+        
         metalDevice = MTLCreateSystemDefaultDevice()
         guard metalDevice != nil else {
-            Logger.log(.fatal, .pixelKit, "Metal Device not found.")
+            logger.log(.fatal, .pixelKit, "Metal Device not found.")
             return
         }
         
         commandQueue = metalDevice.makeCommandQueue()
         guard commandQueue != nil else {
-            Logger.log(.fatal, .pixelKit, "Command Queue failed to make.")
+            logger.log(.fatal, .pixelKit, "Command Queue failed to make.")
             return
         }
         
@@ -161,7 +147,7 @@ public class Render<N: NODE> {
             quadVertecis = try makeQuadVertecis()
             quadVertexShader = try loadQuadVertexShader()
         } catch {
-            Logger.log(.fatal, .pixelKit, "Initialization failed.", e: error)
+            logger.log(.fatal, .pixelKit, "Initialization failed.", e: error)
         }
         
         #if os(iOS) || os(tvOS)
@@ -182,7 +168,7 @@ public class Render<N: NODE> {
         CVDisplayLinkStart(displayLink!)
         #endif
         
-        Logger.log(.info, .pixelKit, "ready to render.", clean: true)
+        logger.log(.info, .pixelKit, "ready to render.", clean: true)
         
     }
 
@@ -195,103 +181,25 @@ public class Render<N: NODE> {
             for frameCallback in self.frameCallbacks {
                 frameCallback.callback()
             }
-            self.checkAutoRes()
+//            self.checkAutoRes()
             self.checkAllLive()
-            if self.renderMode == .frameTree {
-                if !self.frameTreeRendering {
-                    self.renderNODEsTree()
-                }
-            } else if [.frameLoop, .frameLoopQueue].contains(self.renderMode) {
-                self.renderNODEs()
-            } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
-                if !self.instantQueueActivated {
-                    DispatchQueue.global(qos: .background).async {
-                        while true {
-                            self.renderNODEs()
-                        }
-                    }
-                    self.instantQueueActivated = true
-                }
-            } else if self.renderMode == .manual {
-                self.checkManualRender()
-            }
+            self.engine.frameLoop()
+            self.calcFPS()
         }
-//        DispatchQueue(label: "pixelKit-frame-loop").async {}
-        calcFPS()
     }
     
     // MARK: - Check Auto Res
     
-    func checkAutoRes() {
-        for node in linkedNodes {
-//            Logger.log(node: node, .info, .render, "Res Check: \(node.resolution.size.cg) - \(node.view.resSize)")
-            if node.resolution.size.cg != node.view.resSize {
-                Logger.log(node: node, .info, .render, "Res Change Detected.")
-                node.applyRes {
-                    node.setNeedsRender()
-                }
-            }
-        }
-    }
-    
-    // MARK: - Maual Render
-    
-    enum ManualRenderError: Error {
-        case renderInProgress
-    }
-    
-    public func manuallyRender(_ done: @escaping () -> ()) throws {
-        guard !manualRenderInProgress else {
-            throw ManualRenderError.renderInProgress
-        }
-        Logger.log(.info, .render, "Manual Render Started.")
-        manualRenderInProgress = true
-        manualRenderCallback = done
-    }
-    
-    func checkManualRender() {
-        
-        var someNodesNeedsRender: Bool = false
-        for node in linkedNodes {
-            if node.needsRender {
-                someNodesNeedsRender = true
-                break
-            }
-        }
-        
-        guard manualRenderInProgress else {
-            if someNodesNeedsRender {
-                manualRenderDelegate?.pixelNeedsManualRender()
-            }
-            return
-        }
-        
-        if someNodesNeedsRender {
-            
-            self.renderNODEs()
-            
-        } else {
-        
-            var someNodesAreInRender: Bool = false
-            for node in linkedNodes {
-                if node.inRender {
-                    someNodesAreInRender = true
-                    break
-                }
-            }
-            
-            if !someNodesAreInRender {
-
-                Logger.log(.info, .render, "Manual Render Done.")
-                manualRenderCallback!()
-                manualRenderCallback = nil
-                manualRenderInProgress = false
-                
-            }
-            
-        }
-        
-    }
+//    func checkAutoRes() {
+//        for node in linkedNodes {
+//            if node.resolution.size.cg != node.view.resSize {
+//                logger.log(node: node, .info, .render, "Res Change Detected.")
+//                node.applyRes {
+//                    node.setNeedsRender()
+//                }
+//            }
+//        }
+//    }
     
     // MARK: - Live
     
@@ -383,13 +291,13 @@ public class Render<N: NODE> {
 //        public let requestTime: Date = Date()
 //        public var startTime: Date!
 //        public var renderedFrames: Int = 0
-//        public var fromNodeRenderState: NodeRenderState
+//        public var fromNodeRenderState: NODEodeRenderState
 //        public var thoughNodeRenderStates: [NodeRenderState] = []
-//        public var toNodeRenderState: NodeRenderState
+//        public var toNodeRenderState: NODEodeRenderState
 //        public var renderedSeconds: CGFloat!
 //        public var endTime: Date!
 //        var callback: (FlowTime) -> ()
-//        init(from fromNodeRenderState: NodeRenderState, to toNodeRenderState: NodeRenderState, callback: @escaping (FlowTime) -> ()) {
+//        init(from fromNodeRenderState: NODEodeRenderState, to toNodeRenderState: NODEodeRenderState, callback: @escaping (FlowTime) -> ()) {
 //            self.fromNodeRenderState = fromNodeRenderState
 //            self.toNodeRenderState = toNodeRenderState
 //            self.callback = callback
@@ -422,11 +330,16 @@ public class Render<N: NODE> {
     // MARK: - NODE Linking
     
     func add(node: NODE) {
-        nodeLinks.append(node)
+        linkedNodes.append(node)
     }
     
     func remove(node: NODE) {
-        nodeLinks.remove(node)
+        for (i, linkedNode) in linkedNodes.enumerated() {
+            if linkedNode.isEqual(to: node) {
+                linkedNodes.remove(at: i)
+                break
+            }
+        }
     }
     
     
@@ -567,7 +480,7 @@ public class Render<N: NODE> {
             let metalFrag = try makeMetalFrag(code: metalCode, name: shaderName)
             frag = metalFrag
         } catch {
-            Logger.log(.error, nil, "Metal code in \"\(shaderName)\".", e: error)
+            logger.log(.error, nil, "Metal code in \"\(shaderName)\".", e: error)
             guard let errorFrag = metalLibrary.makeFunction(name: "error") else {
                 throw ShaderError.metalErrorError
             }
@@ -596,7 +509,7 @@ public class Render<N: NODE> {
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = customVertexShader ?? quadVertexShader
         pipelineStateDescriptor.fragmentFunction = fragmentShader
-        pipelineStateDescriptor.colorAttachments[0].pixelFormat = bits.mtl
+        pipelineStateDescriptor.colorAttachments[0].pixelFormat = bits.pixelFormat
         pipelineStateDescriptor.colorAttachments[0].isBlendingEnabled = true
         if addMode {
             pipelineStateDescriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
@@ -633,7 +546,7 @@ public class Render<N: NODE> {
     // MARK: - Raw
     
     func raw8(texture: MTLTexture) -> [UInt8]? {
-        guard bits == ._8 else { Logger.log(.error, .pixelKit, "Raw 8 - To access this data, change: \"pixelKit.bits = ._8\"."); return nil }
+        guard bits == ._8 else { logger.log(.error, .pixelKit, "Raw 8 - To access this data, change: \"pixelKit.bits = ._8\"."); return nil }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
         var raw = Array<UInt8>(repeating: 0, count: texture.width * texture.height * 4)
         raw.withUnsafeMutableBytes {
@@ -645,7 +558,7 @@ public class Render<N: NODE> {
     
     // CHECK needs testing
     func raw16(texture: MTLTexture) -> [Float]? {
-        guard bits == ._16 else { Logger.log(.error, .pixelKit, "Raw 16 - To access this data, change: \"pixelKit.bits = ._16\"."); return nil }
+        guard bits == ._16 else { logger.log(.error, .pixelKit, "Raw 16 - To access this data, change: \"pixelKit.bits = ._16\"."); return nil }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
         var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * 4)
         raw.withUnsafeMutableBytes {
@@ -657,7 +570,7 @@ public class Render<N: NODE> {
     
     // CHECK needs testing
     func raw32(texture: MTLTexture) -> [float4]? {
-        guard bits != ._32 else { Logger.log(.error, .pixelKit, "Raw 32 - To access this data, change: \"pixelKit.bits = ._32\"."); return nil }
+        guard bits != ._32 else { logger.log(.error, .pixelKit, "Raw 32 - To access this data, change: \"pixelKit.bits = ._32\"."); return nil }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
         var raw = Array<float4>(repeating: float4(0), count: texture.width * texture.height)
         raw.withUnsafeMutableBytes {
@@ -709,7 +622,7 @@ public class Render<N: NODE> {
             let comment = "/// PixelKit Dynamic Shader Code"
             metalCode = try insert("\(comment)\n\n\n\(code)\n", in: metalCode, at: "code")
             #if DEBUG
-            if logDynamicShaderCode {
+            if logger.dynamicShaderCode {
                 print("\nDYNAMIC SHADER CODE\n\n>>>>>>>>>>>>>>>>>\n\n\(metalCode)\n<<<<<<<<<<<<<<<<<\n")
             }
             #endif
@@ -742,6 +655,16 @@ public class Render<N: NODE> {
             throw MetalError.placeholder("Placeholder <\(placeholder)> not found.")
         }
         return code.replacingOccurrences(of: placeholderComment, with: snippet)
+    }
+    
+    // MARK: - Logger Delegate
+    
+    func loggerFrameIndex() -> Int {
+        frame
+    }
+    
+    func loggerLinkIndex(of node: NODE) -> Int? {
+        linkIndex(of: node)
     }
     
 }
