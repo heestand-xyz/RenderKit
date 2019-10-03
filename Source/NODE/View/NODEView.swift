@@ -57,20 +57,20 @@ public typealias _View = UIView
 #elseif os(macOS)
 public typealias _View = NSView
 #endif
-public class NODEView: _View {
+open class NODEView: _View {
     
     let render: Render
     
-    let metalView: NODEMetalView
+    public let metalView: NODEMetalView
 
-    var res: Resolution? {
+    public var resolution: Resolution? {
         didSet {
-            resSize = res?.size.cg
+            resolutionSize = resolution?.size.cg
         }
     }
-    var resSize: CGSize?
+    var resolutionSize: CGSize?
 
-    var boundsReady: Bool { return bounds.width > 0 }
+    public var boundsReady: Bool { return bounds.width > 0 }
 
     public enum Placement {
         case aspectFit
@@ -93,7 +93,7 @@ public class NODEView: _View {
     public override var frame: NSRect { didSet { _ = layoutPlacement(); checkAutoRes() } }
     #endif
     
-    init(with render: Render) {
+    public init(with render: Render) {
         
         self.render = render
         
@@ -116,7 +116,7 @@ public class NODEView: _View {
         
     }
     
-    func autoLayout() {
+    open func autoLayout() {
         
         checkerView.translatesAutoresizingMaskIntoConstraints = false
         checkerView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
@@ -137,7 +137,7 @@ public class NODEView: _View {
     func layoutPlacement() {
         
         guard boundsReady else { return }
-        guard let res = res else { return }
+        guard let res = resolution else { return }
         
         let resolutionAspect = res.width.cg / res.height.cg
         let viewAspect = bounds.width / bounds.height
@@ -177,11 +177,11 @@ public class NODEView: _View {
         
     }
     
-    func setRes(_ newRes: Resolution?) {
+    func setResolution(_ newResolution: Resolution?) {
         
-        if let newRes = newRes {
-            res = newRes
-            metalView.res = newRes
+        if let resolution = newResolution {
+            self.resolution = resolution
+            metalView.resolution = resolution
             layoutPlacement()
         } else {
             widthLayoutConstraint.constant = 0
@@ -189,7 +189,7 @@ public class NODEView: _View {
             #if os(iOS) || os(tvOS)
             checkerView.setNeedsDisplay()
             #endif
-            metalView.res = nil
+            metalView.resolution = nil
         }
         
         // FIXME: Set by user..
@@ -220,7 +220,7 @@ public class NODEView: _View {
     func checkAutoRes() {
         for node in render.linkedNodes {
             if let nodeRes = node as? NODEResolution {
-                if nodeRes.resolution == res {
+                if nodeRes.resolution == resolution {
                     node.applyResolution {
                         node.setNeedsRender()
                     }
@@ -229,7 +229,7 @@ public class NODEView: _View {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     

@@ -13,11 +13,6 @@ public protocol NODEDelegate: class {
     func nodeDidRender(_ node: NODE)
 }
 
-public struct NODEOutPath {
-    var nodeIn: NODE & NODEIn
-    let inIndex: Int
-}
-
 public protocol NODEIn {}
 public protocol NODEOut {}
 
@@ -42,13 +37,13 @@ public protocol NODEOutIO: NODEOut {
     var connectedOut: Bool { get }
 }
 
-protocol NODEMetal {
+public protocol NODEMetal {
     var metalFileName: String { get }
     var metalCode: String? { get }
     var metalUniforms: [MetalUniform] { get }
 }
 
-protocol NODEResolution {
+public protocol NODEResolution {
     var resolution: Resolution { get set }
     init(resolution: Resolution)
 }

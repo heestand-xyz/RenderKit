@@ -15,6 +15,8 @@ public protocol NODE {
     var id: UUID { get }
     var name: String? { get }
     
+    var delegate: NODEDelegate? { get set }
+    
     var shaderName: String { get }
     
     var view: NODEView { get }
@@ -51,7 +53,9 @@ public protocol NODE {
     var customVertexTextureActive: Bool { get }
     var customVertexNodeIn: (NODE & NODEOut)? { get }
     var customMatrices: [matrix_float4x4] { get }
-    var customlinkedNodes: [NODE] { get set }
+    var customLinkedNodes: [NODE] { get set }
+    
+    var destroyed: Bool { get set }
     
     var texture: MTLTexture? { get set }
     
@@ -61,12 +65,6 @@ public protocol NODE {
     func checkLive()
     func destroy()
     
-    static func == (lhs: NODE, rhs: NODE) -> Bool
-    static func == (lhs: NODE?, rhs: NODE) -> Bool
-    static func == (lhs: NODE, rhs: NODE?) -> Bool
-    static func != (lhs: NODE, rhs: NODE) -> Bool
-    static func != (lhs: NODE?, rhs: NODE) -> Bool
-    static func != (lhs: NODE, rhs: NODE?) -> Bool
     func isEqual(to node: NODE) -> Bool
     
 }
@@ -111,4 +109,15 @@ public protocol NODEMergerEffect: NODEEffect {
 }
 public protocol NODEMultiEffect: NODEEffect {
     
+}
+
+// MARK: - Out Path
+
+public struct NODEOutPath {
+    public var nodeIn: NODE & NODEIn
+    public let inIndex: Int
+    public init(nodeIn: NODE & NODEIn, inIndex: Int) {
+        self.nodeIn = nodeIn
+        self.inIndex = inIndex
+    }
 }

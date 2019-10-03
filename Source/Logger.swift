@@ -13,7 +13,7 @@ protocol LoggerDelegate {
     func loggerLinkIndex(of node: NODE) -> Int?
 }
 
-class Logger {
+public class Logger {
     
     var delegate: LoggerDelegate?
     
@@ -109,7 +109,7 @@ class Logger {
         source = true
     }
     
-    init(name: String) {
+    public init(name: String) {
         prefix = name
     }
     

@@ -9,14 +9,14 @@
 import LiveValues
 import MetalKit
 
-class NODEMetalView: MTKView {
+public class NODEMetalView: MTKView {
     
     let render: Render
     
-    var res: Resolution? {
+    public var resolution: Resolution? {
         didSet {
-            guard let res = res else { return }
-            drawableSize = res.size.cg
+            guard let resolution = resolution else { return }
+            drawableSize = resolution.size.cg
         }
     }
     
@@ -50,7 +50,7 @@ class NODEMetalView: MTKView {
     override public func draw(_ rect: CGRect) {
         autoreleasepool { // CHECK
             if rect.width > 0 && rect.height > 0 {
-                if res != nil {
+                if resolution != nil {
                     render.logger.log(.detail, .view, "Ready to Render.", loop: true)
                     readyToRender?()
                 } else {

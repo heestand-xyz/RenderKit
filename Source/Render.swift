@@ -118,7 +118,7 @@ public class Render: LoggerDelegate {
     
     // MARK: - Life Cycle
     
-    init(with metalLibName: String) {
+    public init(with metalLibName: String) {
         
         self.metalLibName = metalLibName
         
@@ -329,11 +329,11 @@ public class Render: LoggerDelegate {
     
     // MARK: - NODE Linking
     
-    func add(node: NODE) {
+    public func add(node: NODE) {
         linkedNodes.append(node)
     }
     
-    func remove(node: NODE) {
+    public func remove(node: NODE) {
         for (i, linkedNode) in linkedNodes.enumerated() {
             if linkedNode.isEqual(to: node) {
                 linkedNodes.remove(at: i)
@@ -380,11 +380,11 @@ public class Render: LoggerDelegate {
         }
     }
     
-    func makeQuadVertecis() throws -> Vertices {
+    public func makeQuadVertecis() throws -> Vertices {
         return Vertices(buffer: try makeQuadVertexBuffer(), vertexCount: 6)
     }
     
-    func makeQuadVertexBuffer() throws -> MTLBuffer {
+    public func makeQuadVertexBuffer() throws -> MTLBuffer {
 //        #if os(iOS) || os(tvOS)
         let vUp: CGFloat = 0.0
         let vDown: CGFloat = 1.0
@@ -417,7 +417,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Vertex
     
-    func makeVertexShader(_ vertexShaderName: String, with customMetalLibrary: MTLLibrary? = nil) throws -> MTLFunction {
+    public func makeVertexShader(_ vertexShaderName: String, with customMetalLibrary: MTLLibrary? = nil) throws -> MTLFunction {
         let lib = (customMetalLibrary ?? metalLibrary)!
         guard let vtxShader = lib.makeFunction(name: vertexShaderName) else {
             throw QuadError.runtimeERROR("Custom Vertex Shader failed to make.")
@@ -431,7 +431,7 @@ public class Render: LoggerDelegate {
         case runtimeERROR(String)
     }
     
-    func makeTextureCache() throws -> CVMetalTextureCache {
+    public func makeTextureCache() throws -> CVMetalTextureCache {
         var textureCache: CVMetalTextureCache?
         if CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, metalDevice, nil, &textureCache) != kCVReturnSuccess {
             throw CacheError.runtimeERROR("Texture Cache failed to create.")
@@ -457,7 +457,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Frag
     
-    func makeFrag(_ shaderName: String, with customMetalLibrary: MTLLibrary? = nil, from node: NODE) throws -> MTLFunction {
+    public func makeFrag(_ shaderName: String, with customMetalLibrary: MTLLibrary? = nil, from node: NODE) throws -> MTLFunction {
         let frag: MTLFunction
         if let metalNode = node as? NODEMetal {
             return try makeMetalFrag(shaderName, from: metalNode)
@@ -471,7 +471,7 @@ public class Render: LoggerDelegate {
         return frag
     }
     
-    func makeMetalFrag(_ shaderName: String, from metalNode: NODEMetal) throws -> MTLFunction {
+    public func makeMetalFrag(_ shaderName: String, from metalNode: NODEMetal) throws -> MTLFunction {
         let frag: MTLFunction
         do {
             guard let metalCode = metalNode.metalCode else {
@@ -491,7 +491,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Metal
     
-    func makeMetalFrag(code: String, name: String) throws -> MTLFunction {
+    public func makeMetalFrag(code: String, name: String) throws -> MTLFunction {
         do {
             let codeLib = try metalDevice!.makeLibrary(source: code, options: nil)
             guard let frag = codeLib.makeFunction(name: name) else {
@@ -505,7 +505,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Pipeline
     
-    func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false) throws -> MTLRenderPipelineState {
+    public func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false) throws -> MTLRenderPipelineState {
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = customVertexShader ?? quadVertexShader
         pipelineStateDescriptor.fragmentFunction = fragmentShader
@@ -528,7 +528,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Sampler
     
-    func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction = .never) throws -> MTLSamplerState {
+    public func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction = .never) throws -> MTLSamplerState {
         let samplerInfo = MTLSamplerDescriptor()
         samplerInfo.minFilter = interpolate
         samplerInfo.magFilter = interpolate
