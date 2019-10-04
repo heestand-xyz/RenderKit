@@ -6,12 +6,12 @@
 //  Open Source - MIT License
 //
 
+import LiveValues
 #if os(iOS) || os(tvOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
-import LiveValues
 
 public enum Resolution: Equatable {
     

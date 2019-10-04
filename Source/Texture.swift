@@ -29,7 +29,7 @@ public struct Texture {
         return buffer(from: UIImage(cgImage: image), bits: bits)
         #elseif os(macOS)
         guard size != nil else { return nil }
-        return buffer(from: NSImage(cgImage: image, size: size!))
+        return buffer(from: NSImage(cgImage: image, size: size!), bits: bits)
         #endif
     }
     
@@ -328,7 +328,7 @@ public struct Texture {
     
     // MARK: - Raw
     
-    func raw8(texture: MTLTexture) throws -> [UInt8] {
+    public static func raw8(texture: MTLTexture) throws -> [UInt8] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
         }
@@ -345,7 +345,7 @@ public struct Texture {
     }
     
     // CHECK needs testing
-    func raw16(texture: MTLTexture) throws -> [Float] {
+    public static func raw16(texture: MTLTexture) throws -> [Float] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
         }
@@ -362,7 +362,7 @@ public struct Texture {
     }
     
     // CHECK needs testing
-    func raw32(texture: MTLTexture) throws -> [float4] {
+    public static func raw32(texture: MTLTexture) throws -> [float4] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 32 - Texture bits out of range.")
         }
@@ -378,7 +378,7 @@ public struct Texture {
         return raw
     }
     
-    func rawNormalized(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+    public static func rawNormalized(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8, ._10:

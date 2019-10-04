@@ -171,7 +171,7 @@ public class Engine {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
-                        let size = node.resolution.size
+                        let size = node.renderResolution.size
 //                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
@@ -201,7 +201,7 @@ public class Engine {
             }
             func reverse(_ inNode: NODE & NODEInIO) {
                 self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"")
-                for subNode in inNode.nodeInList {
+                for subNode in inNode.inputList {
                     if !subNode.contained(in: renderedNodes) {
                         if let subInNode = subNode as? NODE & NODEInIO {
                             reverse(subInNode)
@@ -213,11 +213,11 @@ public class Engine {
             func traverse(_ node: NODE) {
                 self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"")
                 if let outNode = node as? NODEOutIO {
-                    for inNodePath in outNode.nodeOutPathList {
+                    for inNodePath in outNode.outputPathList {
                         let inNode = inNodePath.nodeIn as! NODE & NODEInIO
                         self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"")
                         var allInsRendered = true
-                        for subNode in inNode.nodeInList {
+                        for subNode in inNode.inputList {
                             if !subNode.contained(in: renderedNodes) {
                                 allInsRendered = false
                                 break
@@ -254,7 +254,7 @@ public class Engine {
                         continue
                     }
                     if let nodeIn = node as? NODEInIO {
-                        for nodeOut in nodeIn.nodeInList {
+                        for nodeOut in nodeIn.inputList {
                             guard node.renderIndex + 1 == nodeOut.renderIndex else {
                                 logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)")
                                 continue
@@ -263,7 +263,7 @@ public class Engine {
                         }
                     }
                     if let nodeOut = node as? NODEOutIO {
-                        for nodeOutPath in nodeOut.nodeOutPathList {
+                        for nodeOutPath in nodeOut.outputPathList {
                             guard node.renderIndex == nodeOutPath.nodeIn.renderIndex else {
                                 logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)")
                                 continue
@@ -274,7 +274,7 @@ public class Engine {
                 }
                 
 //                if let nodeIn = node as? NODE & NODEInIO {
-//                    let nodeOuts = nodeIn.nodeInList
+//                    let nodeOuts = nodeIn.inputList
 //                    for (i, nodeOut) in nodeOuts.enumerated() {
 //                        if nodeOut.texture == nil {
 //                            log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
@@ -299,7 +299,7 @@ public class Engine {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
-                        let size = node.resolution.size
+                        let size = node.renderResolution.size
 //                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
@@ -458,7 +458,7 @@ public class Engine {
         // MARK: Template
         
         let needsInTexture = node is NODEInIO
-        let hasInTexture = needsInTexture && (node as! NODEInIO).nodeInList.first?.texture != nil
+        let hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
         let needsContent = node.contentLoaded != nil
         let hasContent = node.contentLoaded == true
         let needsGenerated = node is NODEGenerator

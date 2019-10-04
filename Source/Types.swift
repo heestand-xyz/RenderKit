@@ -13,27 +13,45 @@ import MetalPerformanceShaders
 
 // MARK: - Vector
 
-struct Vector {
-    let x: CGFloat
-    let y: CGFloat
-    let z: CGFloat
+public struct Vector {
+    public let x: CGFloat
+    public let y: CGFloat
+    public let z: CGFloat
+    public init(x: CGFloat, y: CGFloat, z: CGFloat) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
 }
 
 // MARK: - #xel
 
-struct Pixel {
+public struct Pixel {
     public let x: Int
     public let y: Int
     public let uv: CGVector
     public let color: LiveColor
+    public init(x: Int, y: Int, uv: CGVector, color: LiveColor) {
+        self.x = x
+        self.y = y
+        self.uv = uv
+        self.color = color
+    }
 }
 
-struct Voxel {
+public struct Voxel {
     public let x: Int
     public let y: Int
     public let z: Int
     public let uvw: Vector
     public let color: LiveColor
+    public init(x: Int, y: Int, z: Int, uvw: Vector, color: LiveColor) {
+        self.x = x
+        self.y = y
+        self.z = z
+        self.uvw = uvw
+        self.color = color
+    }
 }
 
 // MARK: - Vertices
@@ -48,6 +66,20 @@ public struct Vertices {
         self.vertexCount = vertexCount
         self.type = type
         self.wireframe = wireframe
+    }
+}
+
+public struct Vertex {
+    public var x,y,z: LiveFloat
+    public var s,t: LiveFloat
+    public var buffer: [Float] {
+        return [x,y,s,t].map({ v -> Float in return Float(v.uniform) })
+    }
+    public var buffer3d: [Float] {
+        return [x,y,z,s,t].map({ v -> Float in return Float(v.uniform) })
+    }
+    public init(x: LiveFloat, y: LiveFloat, z: LiveFloat = 0.0, s: LiveFloat, t: LiveFloat) {
+        self.x = x; self.y = y; self.z = z; self.s = s; self.t = t
     }
 }
 

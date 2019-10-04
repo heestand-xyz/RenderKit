@@ -87,12 +87,15 @@ extension NODE {
 
 public protocol NODEContent: NODE {}
 
+public protocol NODEResource: NODE {
+    var pixelBuffer: CVPixelBuffer? { get set }
+}
+
 public protocol NODEGenerator: NODEContent {
     var premultiply: Bool { get set }
 }
 
 public protocol NODECustom: NODEContent {
-    
     func customRender(_ texture: MTLTexture, with commandBuffer: MTLCommandBuffer) -> MTLTexture?
 }
 
@@ -100,16 +103,23 @@ public protocol NODECustom: NODEContent {
 
 public protocol NODEEffect: NODE {}
 
-public protocol NODESingleEffect: NODEEffect {
-    
-}
+public protocol NODESingleEffect: NODEEffect {}
 public protocol NODEMergerEffect: NODEEffect {
-    
     var placement: Placement { get set }
-    
 }
-public protocol NODEMultiEffect: NODEEffect {
-    
+public protocol NODEMultiEffect: NODEEffect {}
+
+// MARK: - Other
+
+public protocol NODEResolution {
+    var resolution: Resolution { get set }
+    init(at resolution: Resolution)
+}
+
+public protocol NODEMetal {
+    var metalFileName: String { get }
+    var metalCode: String? { get }
+    var metalUniforms: [MetalUniform] { get }
 }
 
 // MARK: - Out Path

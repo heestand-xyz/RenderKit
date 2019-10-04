@@ -154,26 +154,33 @@ public class Render: LoggerDelegate {
         displayLink = CADisplayLink(target: self, selector: #selector(self.frameLoop))
         displayLink!.add(to: RunLoop.main, forMode: .common)
         #elseif os(macOS)
-        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-        let displayLinkOutputCallback: CVDisplayLinkOutputCallback = { (displayLink: CVDisplayLink,
-                                                                        inNow: UnsafePointer<CVTimeStamp>,
-                                                                        inOutputTime: UnsafePointer<CVTimeStamp>,
-                                                                        flagsIn: CVOptionFlags,
-                                                                        flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-                                                                        displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn in
-            PixelKit.main.frameLoop()
-            return kCVReturnSuccess
-        }
-        CVDisplayLinkSetOutputCallback(displayLink!, displayLinkOutputCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
-        CVDisplayLinkStart(displayLink!)
+//        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
+//        let displayLinkOutputCallback: CVDisplayLinkOutputCallback = {
+//                (displayLink: CVDisplayLink,
+//                inNow: UnsafePointer<CVTimeStamp>,
+//                inOutputTime: UnsafePointer<CVTimeStamp>,
+//                flagsIn: CVOptionFlags,
+//                flagsOut: UnsafeMutablePointer<CVOptionFlags>,
+//                displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn in
+//            self.frameLoop()
+//            return kCVReturnSuccess
+//        }
+//        CVDisplayLinkSetOutputCallback(displayLink!, displayLinkOutputCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
+//        CVDisplayLinkStart(displayLink!)
+        RunLoop.current.add(Timer(timeInterval: 1.0 / Double(self.fpsMax), repeats: true, block: { _ in
+            self.frameLoop()
+        }), forMode: .common)
         #endif
         
         logger.log(.info, .pixelKit, "ready to render.", clean: true)
         
     }
-
     
     // MARK: - Frame Loop
+    
+    #if os(macOS)
+    
+    #endif
     
     @objc func frameLoop() {
         DispatchQueue.main.async {
@@ -366,20 +373,6 @@ public class Render: LoggerDelegate {
         case runtimeERROR(String)
     }
     
-    public struct Vertex {
-        public var x,y,z: LiveFloat
-        public var s,t: LiveFloat
-        public var buffer: [Float] {
-            return [x,y,s,t].map({ v -> Float in return Float(v.uniform) })
-        }
-        public var buffer3d: [Float] {
-            return [x,y,z,s,t].map({ v -> Float in return Float(v.uniform) })
-        }
-        public init(x: LiveFloat, y: LiveFloat, z: LiveFloat = 0.0, s: LiveFloat, t: LiveFloat) {
-            self.x = x; self.y = y; self.z = z; self.s = s; self.t = t
-        }
-    }
-    
     public func makeQuadVertecis() throws -> Vertices {
         return Vertices(buffer: try makeQuadVertexBuffer(), vertexCount: 6)
     }
@@ -446,7 +439,7 @@ public class Render: LoggerDelegate {
     
     // MARK: - Shader
     
-    enum ShaderError: Error {
+    public enum ShaderError: Error {
         case metal(String)
         case sampler(String)
         case metalCode
@@ -550,7 +543,7 @@ public class Render: LoggerDelegate {
         case placeholder(String)
     }
     
-    func embedMetalCode(uniforms: [MetalUniform], code: String, fileName: String) throws -> String {
+    public func embedMetalCode(uniforms: [MetalUniform], code: String, fileName: String) throws -> String {
         guard let metalFile = Bundle(for: type(of: self)).url(forResource: fileName, withExtension: "txt") else {
             throw MetalError.fileNotFound(fileName)
         }

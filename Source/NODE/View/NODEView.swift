@@ -68,7 +68,7 @@ open class NODEView: _View {
             resolutionSize = resolution?.size.cg
         }
     }
-    var resolutionSize: CGSize?
+    public var resolutionSize: CGSize?
 
     public var boundsReady: Bool { return bounds.width > 0 }
 
@@ -177,7 +177,7 @@ open class NODEView: _View {
         
     }
     
-    func setResolution(_ newResolution: Resolution?) {
+    public func setResolution(_ newResolution: Resolution?) {
         
         if let resolution = newResolution {
             self.resolution = resolution

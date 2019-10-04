@@ -17,35 +17,24 @@ public protocol NODEIn {}
 public protocol NODEOut {}
 
 public protocol NODEInSingle: NODEIn {
-    var inNode: (NODE & NODEOut)? { get set }
+    var input: (NODE & NODEOut)? { get set }
 }
 public protocol NODEInMerger: NODEIn {
-    var inNodeA: (NODE & NODEOut)? { get set }
-    var inNodeB: (NODE & NODEOut)? { get set }
+    var inputA: (NODE & NODEOut)? { get set }
+    var inputB: (NODE & NODEOut)? { get set }
 }
 public protocol NODEInMulti: NODEIn {
-    var inNodes: [NODE & NODEOut] { get set }
+    var inputs: [NODE & NODEOut] { get set }
 }
 
 public protocol NODEInIO: NODEIn {
-    var nodeInList: [NODE & NODEOut] { get set }
+    var inputList: [NODE & NODEOut] { get set }
     var connectedIn: Bool { get }
 }
 public protocol NODEOutIO: NODEOut {
-//    var nodeOutPathList: NODE.WeakOutPaths { get set }
-    var nodeOutPathList: [NODEOutPath] { get set }
+//    var outputPathList: NODE.WeakOutPaths { get set }
+    var outputPathList: [NODEOutPath] { get set }
     var connectedOut: Bool { get }
-}
-
-public protocol NODEMetal {
-    var metalFileName: String { get }
-    var metalCode: String? { get }
-    var metalUniforms: [MetalUniform] { get }
-}
-
-public protocol NODEResolution {
-    var resolution: Resolution { get set }
-    init(resolution: Resolution)
 }
 
 
@@ -61,20 +50,20 @@ public protocol NODEUI {
 @available(OSX 10.15, *)
 @available(tvOS 13.0.0, *)
 public protocol NODEUISingleEffect: NODEUI {
-    var inNode: NODE & NODEOut { get }
+    var input: NODE & NODEOut { get }
 }
 @available(iOS 13.0.0, *)
 @available(OSX 10.15, *)
 @available(tvOS 13.0.0, *)
 public protocol NODEUIMergerEffect: NODEUI {
-    var inNodeA: NODE & NODEOut { get }
-    var inNodeB: NODE & NODEOut { get }
+    var inputA: NODE & NODEOut { get }
+    var inputB: NODE & NODEOut { get }
 }
 @available(iOS 13.0.0, *)
 @available(OSX 10.15, *)
 @available(tvOS 13.0.0, *)
 public protocol NODEUIMultiEffect: NODEUI {
-    var inNodes: [NODE & NODEOut] { get }
+    var inputs: [NODE & NODEOut] { get }
 }
 
 @available(iOS 13.0.0, *)
