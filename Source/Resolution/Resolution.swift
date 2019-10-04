@@ -13,7 +13,7 @@ import UIKit
 import AppKit
 #endif
 
-public enum Resolution: Equatable {
+public enum Resolution: ResolutionStandard {
     
     case auto(render: Render)
     
@@ -151,6 +151,10 @@ public enum Resolution: Equatable {
     }
     
     // MARK: Raw
+    
+    public var rawWidth: Int { w }
+    public var rawHeight: Int { h }
+    public var rawDepth: Int { 1 }
     
     public struct Raw {
         public let w: Int

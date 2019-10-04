@@ -13,7 +13,7 @@ import MetalPerformanceShaders
 
 // MARK: - Vector
 
-public struct Vector {
+public struct Vector: Equatable {
     public let x: CGFloat
     public let y: CGFloat
     public let z: CGFloat
