@@ -18,6 +18,7 @@ public struct Texture {
         case copy(String)
         case multi(String)
         case mipmap
+        case raw(String)
     }
     
     public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil) -> CVPixelBuffer? {
@@ -315,7 +316,7 @@ public struct Texture {
         return image(from: cgImage, at: size)
     }
     
-    public static func texture(from image: _Image, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) -> MTLTexture? {
+    public static func texture(from image: _Image, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) -> MTLTexture? {
         #if os(iOS) || os(tvOS)
         guard let cgImage = image.cgImage else { return nil }
         #elseif os(macOS)
@@ -323,6 +324,80 @@ public struct Texture {
         #endif
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return nil }
         return try? makeTexture(from: cgImage, with: commandBuffer, on: metalDevice)
+    }
+    
+    // MARK: - Raw
+    
+    func raw8(texture: MTLTexture) throws -> [UInt8] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 8 - Texture bits out of range.")
+        }
+        guard bits == ._8 else {
+            throw TextureError.raw("Raw 8 - To access this data, the texture needs to be in 8 bit.")
+        }
+        let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
+        var raw = Array<UInt8>(repeating: 0, count: texture.width * texture.height * 4)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<UInt8>.size * texture.width * 4
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
+        }
+        return raw
+    }
+    
+    // CHECK needs testing
+    func raw16(texture: MTLTexture) throws -> [Float] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 16 - Texture bits out of range.")
+        }
+        guard bits == ._16 else {
+            throw TextureError.raw("Raw 16 - To access this data, the texture needs to be in 16 bit.")
+        }
+        let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
+        var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * 4)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
+        }
+        return raw
+    }
+    
+    // CHECK needs testing
+    func raw32(texture: MTLTexture) throws -> [float4] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 32 - Texture bits out of range.")
+        }
+        guard bits == ._32 else {
+            throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
+        }
+        let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
+        var raw = Array<float4>(repeating: float4(0), count: texture.width * texture.height)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<float4>.size * texture.width
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
+        }
+        return raw
+    }
+    
+    func rawNormalized(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+        let raw: [CGFloat]
+        switch bits {
+        case ._8, ._10:
+            raw = try raw8(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) / (pow(2, 8) - 1) })
+        case ._16:
+            raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+        case ._32:
+            let rawArr = try raw32(texture: texture)
+            var rawFlatArr: [CGFloat] = []
+            for pixel in rawArr {
+                // CHECK normalize
+                rawFlatArr.append(CGFloat(pixel.x))
+                rawFlatArr.append(CGFloat(pixel.y))
+                rawFlatArr.append(CGFloat(pixel.z))
+                rawFlatArr.append(CGFloat(pixel.w))
+            }
+            raw = rawFlatArr
+        }
+        return raw
     }
     
 }

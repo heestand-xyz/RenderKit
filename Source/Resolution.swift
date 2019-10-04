@@ -1,6 +1,6 @@
 //
 //  PIXResolution.swift
-//  PixelKit
+//  RenderKit
 //
 //  Created by Hexagons on 2018-08-07.
 //  Open Source - MIT License
@@ -15,7 +15,7 @@ import LiveValues
 
 public enum Resolution: Equatable {
     
-//    case auto
+    case auto(render: Render)
     
     case _720p
     case _1080p
@@ -107,7 +107,7 @@ public enum Resolution: Equatable {
     
     public var name: String {
         switch self {
-//        case .auto: return "Auto"
+        case .auto: return "Auto"
         case ._720p: return "720p"
         case ._1080p: return "1080p"
         case ._4K: return "4K"
@@ -163,14 +163,14 @@ public enum Resolution: Equatable {
     
     public var raw: Raw {
         switch self {
-//        case .auto:
-//            let scale = Resolution.scale.cg
-//            for pix in PixelKit.main.linkedPixs {
-//                guard let superview = pix.view.superview else { continue }
-//                let size = superview.frame.size
-//                return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
-//            }
-//            return Resolution._128.raw
+        case .auto(let render):
+            let scale = Resolution.scale.cg
+            for node in render.linkedNodes {
+                guard let superview = node.view.superview else { continue }
+                let size = superview.frame.size
+                return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
+            }
+            return Resolution._128.raw
         case ._720p: return Raw(w: 1280, h: 720)
         case ._1080p: return Raw(w: 1920, h: 1080)
         case ._4K: return Raw(w: 3840, h: 2160)

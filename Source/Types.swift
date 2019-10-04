@@ -69,7 +69,7 @@ public enum Placement: String, Codable, CaseIterable {
     case aspectFit
     case aspectFill
     case custom
-    var index: Int {
+    public var index: Int {
         switch self {
         case .fill: return 0
         case .aspectFit: return 1
@@ -100,7 +100,7 @@ public enum BlendMode: String, Codable, CaseIterable {
     case inside
     case outside
     case exclusiveOr
-    var index: Int {
+    public var index: Int {
         switch self {
         case .over: return 0
         case .under: return 1

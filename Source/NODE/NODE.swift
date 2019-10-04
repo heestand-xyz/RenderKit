@@ -34,6 +34,7 @@ public protocol NODE {
     var renderIndex: Int { get set }
     var bypass: Bool { get set }
     var contentLoaded: Bool? { get set }
+    
     var renderResolution: Resolution { get }
 
     var vertexUniforms: [CGFloat] { get }
