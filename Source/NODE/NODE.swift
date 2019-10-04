@@ -83,6 +83,12 @@ extension NODE {
     
 }
 
+// MARK: - 3D
+
+public protocol NODE3D: NODE {
+    var renderedResolution3d: Resolution3D { get }
+}
+
 // MARK: - Content
 
 public protocol NODEContent: NODE {}
@@ -114,6 +120,11 @@ public protocol NODEMultiEffect: NODEEffect {}
 public protocol NODEResolution {
     var resolution: Resolution { get set }
     init(at resolution: Resolution)
+}
+
+public protocol NODEResolution3D {
+    var resolution: Resolution3D { get set }
+    init(at resolution: Resolution3D)
 }
 
 public protocol NODEMetal {
