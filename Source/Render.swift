@@ -12,13 +12,14 @@ import CoreGraphics
 import MetalKit
 import simd
 
-public class Render: LoggerDelegate {
+public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public weak var delegate: RenderDelegate?
     
     // MARK: Metal Lib
     
     let metalLibName: String
+    let metalLibBundle: Bundle
     
     // MARK: Engine
     
@@ -30,7 +31,7 @@ public class Render: LoggerDelegate {
     
     // MARK: Log
     
-    let logger: Logger
+    public let logger: Logger
 
     // MARK: Color
     
@@ -65,7 +66,7 @@ public class Render: LoggerDelegate {
 //        return true
 //    }
 
-    func linkIndex(of node: NODE) -> Int? {
+    public func linkIndex(of node: NODE) -> Int? {
         for (i, linkedNode) in linkedNodes.enumerated() {
             if linkedNode.isEqual(to: node) {
                 return i
@@ -118,15 +119,17 @@ public class Render: LoggerDelegate {
     
     // MARK: - Life Cycle
     
-    public init(with metalLibName: String) {
+    public init(with metalLibName: String, in metalLibBundle: Bundle) {
         
         self.metalLibName = metalLibName
+        self.metalLibBundle = metalLibBundle
         
         engine = Engine()
         
         logger = Logger(name: "RenderKit")
         
         
+        engine.internalDelegate = self
         logger.delegate = self
         
         metalDevice = MTLCreateSystemDefaultDevice()
@@ -359,8 +362,8 @@ public class Render: LoggerDelegate {
     }
     
     func loadMetalShaderLibrary() throws -> MTLLibrary {
-        guard let libraryFile = Bundle(for: type(of: self)).path(forResource: metalLibName, ofType: "metallib") else {
-            throw MetalLibraryError.runtimeERROR("PixelKit Shaders: Metal Library not found.")
+        guard let libraryFile = metalLibBundle.path(forResource: metalLibName, ofType: "metallib") else {
+            throw MetalLibraryError.runtimeERROR("Metal Library \"\(metalLibName)\" not found.")
         }
         do {
             return try metalDevice.makeLibrary(filepath: libraryFile)
@@ -591,11 +594,11 @@ public class Render: LoggerDelegate {
     
     // MARK: - Logger Delegate
     
-    func loggerFrameIndex() -> Int {
+    public func loggerFrameIndex() -> Int {
         frame
     }
     
-    func loggerLinkIndex(of node: NODE) -> Int? {
+    public func loggerLinkIndex(of node: NODE) -> Int? {
         linkIndex(of: node)
     }
     

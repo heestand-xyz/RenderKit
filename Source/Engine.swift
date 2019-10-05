@@ -21,11 +21,13 @@ protocol EngineInternalDelegate {
     var bits: LiveColor.Bits { get set }
     var quadVertecis: Vertices! { get set }
     func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction) throws -> MTLSamplerState
+    func loggerFrameIndex() -> Int
+    func loggerLinkIndex(of node: NODE) -> Int?
 }
 
-public class Engine {
+public class Engine: LoggerDelegate {
     
-    var deleagte: EngineDelegate?
+    public var deleagte: EngineDelegate?
     var internalDelegate: EngineInternalDelegate!
     
     public enum RenderMode {
@@ -68,6 +70,7 @@ public class Engine {
     
     init() {
         self.logger = Logger(name: "RenderKit Engine")
+        self.logger.delegate = self
     }
     
     // MARK: - Frame Loop
@@ -409,7 +412,7 @@ public class Engine {
 //        }
     }
     
-    enum RenderError: Error {
+    public enum RenderError: Error {
         case delegateMissing
         case commandBuffer
         case texture(String)
@@ -849,6 +852,16 @@ public class Engine {
 //            sharedCaptureManager.defaultCaptureScope?.end()
 //        }
         
+    }
+    
+    // MARK: - Logger Delegate
+    
+    public func loggerFrameIndex() -> Int {
+        internalDelegate.loggerFrameIndex()
+    }
+    
+    public func loggerLinkIndex(of node: NODE) -> Int? {
+        internalDelegate.loggerLinkIndex(of: node)
     }
     
 }

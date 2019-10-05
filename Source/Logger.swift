@@ -8,14 +8,14 @@
 
 import Foundation
 
-protocol LoggerDelegate {
+public protocol LoggerDelegate {
     func loggerFrameIndex() -> Int
     func loggerLinkIndex(of node: NODE) -> Int?
 }
 
 public class Logger {
     
-    var delegate: LoggerDelegate?
+    public var delegate: LoggerDelegate?
     
     let prefix: String
     
