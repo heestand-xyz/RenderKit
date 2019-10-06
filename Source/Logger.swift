@@ -105,8 +105,8 @@ public class Logger {
         level = .debug
         loopLimitActive = false
         time = true
-        padding = true
-        source = true
+//        padding = true
+//        source = true
     }
     
     public init(name: String) {

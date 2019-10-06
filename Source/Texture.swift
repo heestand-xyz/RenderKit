@@ -204,6 +204,29 @@ public struct Texture {
         return texture
     }
     
+    public static func emptyTextureCube(size: Int, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+        let descriptor = MTLTextureDescriptor.textureCubeDescriptor(pixelFormat: bits.pixelFormat, size: size, mipmapped: false)
+        descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue)
+        guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
+            throw TextureError.emptyFail
+        }
+        return texture
+    }
+    
+    public static func emptyTexture3D(at resolution: Resolution3D, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+        let descriptor = MTLTextureDescriptor()
+        descriptor.pixelFormat = bits.pixelFormat
+        descriptor.textureType = .type3D
+        descriptor.width = resolution.raw.x
+        descriptor.height = resolution.raw.y
+        descriptor.depth = resolution.raw.z
+        descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue)
+        guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
+            throw TextureError.emptyFail
+        }
+        return texture
+    }
+    
     public static func copyTexture<N: NODE>(from node: N, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
         guard let texture = node.texture else {
             throw TextureError.copy("NODE Texture is nil.")
@@ -344,6 +367,23 @@ public struct Texture {
         return raw
     }
     
+    public static func raw3d8(texture: MTLTexture) throws -> [UInt8] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 8 - Texture bits out of range.")
+        }
+        guard bits == ._8 else {
+            throw TextureError.raw("Raw 8 - To access this data, the texture needs to be in 8 bit.")
+        }
+        let region = MTLRegionMake3D(0, 0, 0, texture.width, texture.height, texture.depth)
+        var raw = Array<UInt8>(repeating: 0, count: texture.width * texture.height * texture.depth * 4)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<UInt8>.size * texture.width * 4
+            let bytesPerImage = MemoryLayout<UInt8>.size * texture.width * texture.height * 4
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, bytesPerImage: bytesPerImage, from: region, mipmapLevel: 0, slice: 0)
+        }
+        return raw
+    }
+    
     // CHECK needs testing
     public static func raw16(texture: MTLTexture) throws -> [Float] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
@@ -357,6 +397,24 @@ public struct Texture {
         raw.withUnsafeMutableBytes {
             let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
+        }
+        return raw
+    }
+    
+    // CHECK needs testing
+    public static func raw3d16(texture: MTLTexture) throws -> [Float] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 16 - Texture bits out of range.")
+        }
+        guard bits == ._16 else {
+            throw TextureError.raw("Raw 16 - To access this data, the texture needs to be in 16 bit.")
+        }
+        let region = MTLRegionMake3D(0, 0, 0, texture.width, texture.height, texture.depth)
+        var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * texture.depth * 4)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
+            let bytesPerImage = MemoryLayout<Float>.size * texture.width * texture.height * 4
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, bytesPerImage: bytesPerImage, from: region, mipmapLevel: 0, slice: 0)
         }
         return raw
     }
@@ -378,15 +436,59 @@ public struct Texture {
         return raw
     }
     
+    // CHECK needs testing
+    public static func raw3d32(texture: MTLTexture) throws -> [float4] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 32 - Texture bits out of range.")
+        }
+        guard bits == ._32 else {
+            throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
+        }
+        let region = MTLRegionMake3D(0, 0, 0, texture.width, texture.height, texture.depth)
+        var raw = Array<float4>(repeating: float4(0), count: texture.width * texture.height * texture.depth * 4)
+        raw.withUnsafeMutableBytes {
+            let bytesPerRow = MemoryLayout<float4>.size * texture.width * 4
+            let bytesPerImage = MemoryLayout<float4>.size * texture.width * texture.height * 4
+            texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, bytesPerImage: bytesPerImage, from: region, mipmapLevel: 0, slice: 0)
+        }
+        return raw
+    }
+    
     public static func rawNormalized(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
-        case ._8, ._10:
+        case ._8:
             raw = try raw8(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) / (pow(2, 8) - 1) })
+        case ._10:
+            throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
             raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
         case ._32:
             let rawArr = try raw32(texture: texture)
+            var rawFlatArr: [CGFloat] = []
+            for pixel in rawArr {
+                // CHECK normalize
+                rawFlatArr.append(CGFloat(pixel.x))
+                rawFlatArr.append(CGFloat(pixel.y))
+                rawFlatArr.append(CGFloat(pixel.z))
+                rawFlatArr.append(CGFloat(pixel.w))
+            }
+            raw = rawFlatArr
+        }
+        return raw
+    }
+    
+    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+        let raw: [CGFloat]
+        switch bits {
+        case ._8:
+            raw = try raw3d8(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) / (pow(2, 8) - 1) })
+        case ._10:
+            throw TextureError.raw("Raw 10 - Not supported.")
+        case ._16:
+            raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+        case ._32:
+            let rawArr = try raw3d32(texture: texture)
             var rawFlatArr: [CGFloat] = []
             for pixel in rawArr {
                 // CHECK normalize

@@ -87,6 +87,7 @@ extension NODE {
 
 public protocol NODE3D: NODE {
     var renderedResolution3d: Resolution3D { get }
+    var pipeline3d: MTLComputePipelineState! { get set }
 }
 
 // MARK: - Content

@@ -522,6 +522,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         } catch { throw error }
     }
     
+    public func makeShaderPipeline3d(_ computeShader: MTLFunction) throws -> MTLComputePipelineState {
+        do {
+            return try metalDevice.makeComputePipelineState(function: computeShader)
+        } catch { throw error }
+    }
+    
     // MARK: Sampler
     
     public func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction = .never) throws -> MTLSamplerState {

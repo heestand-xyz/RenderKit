@@ -43,7 +43,7 @@ public class Engine: LoggerDelegate {
     
     var frameTreeRendering: Bool = false
     
-    let logger: Logger
+    public let logger: Logger
 
     public enum MetalErrorCode {
         case IOAF(Int)
@@ -429,6 +429,9 @@ public class Engine: LoggerDelegate {
     
     func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
         
+        let bits = internalDelegate.bits
+        let device = internalDelegate.metalDevice!
+        
         var node = node
         
         guard deleagte != nil else {
@@ -466,7 +469,7 @@ public class Engine: LoggerDelegate {
         let hasContent = node.contentLoaded == true
         let needsGenerated = node is NODEGenerator
         let hasGenerated = !node.bypass
-        let template = (needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)
+        let template = ((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
         
         
         // MARK: Input Texture
@@ -479,27 +482,48 @@ public class Engine: LoggerDelegate {
         
         // MARK: Drawable
         
-        let resolution = node.renderResolution
+        let width: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
+        let height: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
+        let depth: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
         
         var viewDrawable: CAMetalDrawable? = nil
         let drawableTexture: MTLTexture
-        if currentDrawable != nil {
+        if currentDrawable != nil && !(node is NODE3D) {
             viewDrawable = currentDrawable!
             drawableTexture = currentDrawable!.texture
-        } else if node.texture != nil && resolution == Resolution.custom(w: node.texture!.width, h: node.texture!.height) {
+            logger.log(node: node, .detail, .render, "Drawable Texture - Current")
+        } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth {
+            // ^ CHECK NODE3D depth is not 1
             drawableTexture = node.texture!
+            logger.log(node: node, .detail, .render, "Drawable Texture - Reuse")
         } else {
-            drawableTexture = try Texture.emptyTexture(size: resolution.size.cg, bits: internalDelegate.bits, on: internalDelegate.metalDevice)
+            if node is NODE3D {
+                drawableTexture = try Texture.emptyTexture3D(at: .custom(x: width, y: height, z: depth), bits: bits, on: device)
+            } else {
+                drawableTexture = try Texture.emptyTexture(size: CGSize(width: width, height: height), bits: bits, on: device)
+            }
+            logger.log(node: node, .detail, .render, "Drawable Texture - New")
         }
         
         if logger.highResWarnings {
-            let drawRes = Resolution(texture: drawableTexture)
-            if (drawRes >= ._16384) != false {
-                logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
-            } else if (drawRes >= ._8192) != false {
-                logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
-            } else if (drawRes >= ._4096) != false {
-                logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
+            if node is NODE3D {
+                let drawRes = Resolution3D(texture: drawableTexture)
+                if (drawRes >= ._1024) != false {
+                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
+                } else if (drawRes >= ._512) != false {
+                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
+                } else if (drawRes >= ._256) != false {
+                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
+                }
+            } else {
+                let drawRes = Resolution(texture: drawableTexture)
+                if (drawRes >= ._16384) != false {
+                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
+                } else if (drawRes >= ._8192) != false {
+                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
+                } else if (drawRes >= ._4096) != false {
+                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
+                }
             }
         }
         
@@ -536,14 +560,28 @@ public class Engine: LoggerDelegate {
         
         // MARK: Command Encoder
         
-        let renderPassDescriptor = MTLRenderPassDescriptor()
-        renderPassDescriptor.colorAttachments[0].texture = drawableTexture
-        renderPassDescriptor.colorAttachments[0].loadAction = .clear
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
-        guard let commandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
-            throw RenderError.commandEncoder
+        let commandEncoder: MTLCommandEncoder
+        if node is NODE3D {
+            guard let computeCommandEncoder: MTLComputeCommandEncoder = commandBuffer.makeComputeCommandEncoder() else {
+                throw RenderError.commandEncoder
+            }
+            commandEncoder = computeCommandEncoder
+        } else {
+            let renderPassDescriptor = MTLRenderPassDescriptor()
+            renderPassDescriptor.colorAttachments[0].texture = drawableTexture
+            renderPassDescriptor.colorAttachments[0].loadAction = .clear
+            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
+            guard let renderCommandEncoder: MTLRenderCommandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+                throw RenderError.commandEncoder
+            }
+            commandEncoder = renderCommandEncoder
         }
-        commandEncoder.setRenderPipelineState(node.pipeline)
+        
+        if let node3d = node as? NODE3D {
+            (commandEncoder as! MTLComputeCommandEncoder).setComputePipelineState(node3d.pipeline3d)
+        } else {
+            (commandEncoder as! MTLRenderCommandEncoder).setRenderPipelineState(node.pipeline)
+        }
         
         // Render Time
         if logger.time {
@@ -567,21 +605,25 @@ public class Engine: LoggerDelegate {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
         if template {
-            unifroms.append(Float(resolution.width.cg))
-            unifroms.append(Float(resolution.height.cg))
+            unifroms.append(Float(width))
+            unifroms.append(Float(height))
         }
         if node.shaderNeedsAspect || template {
-            unifroms.append(Float(resolution.aspect.cg))
+            unifroms.append(Float(width) / Float(height))
         }
         if !unifroms.isEmpty {
             let size = MemoryLayout<Float>.size * unifroms.count
-            guard let uniformsBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformsBuffer.contents()
             memcpy(bufferPointer, &unifroms, size)
-            commandEncoder.setFragmentBuffer(uniformsBuffer, offset: 0, index: 0)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsBuffer, offset: 0, index: 0)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsBuffer, offset: 0, index: 0)
+            }
         }
         
         // Render Time
@@ -630,22 +672,30 @@ public class Engine: LoggerDelegate {
             var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
             
             let size: Int = MemoryLayout<Float>.size * uniformFlatMap.count
-            guard let uniformsArraysBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformsArraysBuffer.contents()
             memcpy(bufferPointer, &uniformFlatMap, size)
-            commandEncoder.setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: 1)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: 1)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: 1)
+            }
             
             let activeSize: Int = MemoryLayout<Bool>.size * uniformArrayActive.count
-            guard let uniformsArraysActiveBuffer = internalDelegate.metalDevice.makeBuffer(length: activeSize, options: []) else {
+            guard let uniformsArraysActiveBuffer = device.makeBuffer(length: activeSize, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let activeBufferPointer = uniformsArraysActiveBuffer.contents()
             memcpy(activeBufferPointer, &uniformArrayActive, activeSize)
-            commandEncoder.setFragmentBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+            }
             
         }
         
@@ -660,15 +710,31 @@ public class Engine: LoggerDelegate {
         
         // MARK: Fragment Texture
         
+        if generator && node is NODE3D {
+            (commandEncoder as! MTLComputeCommandEncoder).setTexture(drawableTexture, index: 0)
+        }
+        
         if !generator && !template {
-            commandEncoder.setFragmentTexture(inputTexture!, index: 0)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setTexture(inputTexture!, index: 0)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(inputTexture!, index: 0)
+            }
         }
         
         if secondInputTexture != nil {
-            commandEncoder.setFragmentTexture(secondInputTexture!, index: 1)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setTexture(secondInputTexture!, index: 1)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(secondInputTexture!, index: 1)
+            }
         }
         
-        commandEncoder.setFragmentSamplerState(node.sampler, index: 0)
+        if node is NODE3D {
+            (commandEncoder as! MTLComputeCommandEncoder).setSamplerState(node.sampler, index: 0)
+        } else {
+            (commandEncoder as! MTLRenderCommandEncoder).setFragmentSamplerState(node.sampler, index: 0)
+        }
         
         // Render Time
         if logger.time {
@@ -693,22 +759,28 @@ public class Engine: LoggerDelegate {
         }
         
         if vertices.wireframe {
-            commandEncoder.setTriangleFillMode(.lines)
+            if !(node is NODE3D) {
+                (commandEncoder as! MTLRenderCommandEncoder).setTriangleFillMode(.lines)
+            }
         }
 
-        commandEncoder.setVertexBuffer(vertices.buffer, offset: 0, index: 0)
+        if !(node is NODE3D) {
+            (commandEncoder as! MTLRenderCommandEncoder).setVertexBuffer(vertices.buffer, offset: 0, index: 0)
+        }
         
         // MARK: Matrix
         
         if !node.customMatrices.isEmpty {
             var matrices = node.customMatrices
-            guard let uniformBuffer = internalDelegate.metalDevice.makeBuffer(length: MemoryLayout<Float>.size * 16 * matrices.count, options: []) else {
+            guard let uniformBuffer = device.makeBuffer(length: MemoryLayout<Float>.size * 16 * matrices.count, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformBuffer.contents()
             memcpy(bufferPointer, &matrices, MemoryLayout<Float>.size * 16 * matrices.count)
-            commandEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 1)
+            if !(node is NODE3D) {
+                (commandEncoder as! MTLRenderCommandEncoder).setVertexBuffer(uniformBuffer, offset: 0, index: 1)
+            }
         }
 
         // Render Time
@@ -725,13 +797,15 @@ public class Engine: LoggerDelegate {
         var vertexUnifroms: [Float] = node.vertexUniforms.map { uniform -> Float in return Float(uniform) }
         if !vertexUnifroms.isEmpty {
             let size = MemoryLayout<Float>.size * vertexUnifroms.count
-            guard let uniformsBuffer = internalDelegate.metalDevice.makeBuffer(length: size, options: []) else {
+            guard let uniformsBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformsBuffer.contents()
             memcpy(bufferPointer, &vertexUnifroms, size)
-            commandEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
+            if !(node is NODE3D) {
+                (commandEncoder as! MTLRenderCommandEncoder).setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
+            }
         }
         
         // Render Time
@@ -752,10 +826,14 @@ public class Engine: LoggerDelegate {
                 throw RenderError.vertexTexture
             }
             
-            commandEncoder.setVertexTexture(vtxNodeInTexture, index: 0)
+            if !(node is NODE3D) {
+                (commandEncoder as! MTLRenderCommandEncoder).setVertexTexture(vtxNodeInTexture, index: 0)
+            }
             
             let sampler = try internalDelegate.makeSampler(interpolate: .linear, extend: .clampToEdge, mipFilter: .linear, compare: .never)
-            commandEncoder.setVertexSamplerState(sampler, index: 0)
+            if !(node is NODE3D) {
+                (commandEncoder as! MTLRenderCommandEncoder).setVertexSamplerState(sampler, index: 0)
+            }
             
         }
         
@@ -770,7 +848,9 @@ public class Engine: LoggerDelegate {
         
         // MARK: Draw
         
-        commandEncoder.drawPrimitives(type: vertices.type, vertexStart: 0, vertexCount: vertices.vertexCount, instanceCount: 1)
+        if !(node is NODE3D) {
+            (commandEncoder as! MTLRenderCommandEncoder).drawPrimitives(type: vertices.type, vertexStart: 0, vertexCount: vertices.vertexCount, instanceCount: 1)
+        }
         
         // Render Time
         if logger.time {
@@ -778,6 +858,24 @@ public class Engine: LoggerDelegate {
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
             logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Draw ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
+        }
+        
+        
+        // MARK: Threads
+        
+        if let node3d = node as? NODE3D {
+//            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
+//            let width = node3d.pipeline3d.threadExecutionWidth
+//            let w = width
+//            let h = max / w
+//            let l = 1
+//            let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: l)
+//            let threadsPerGrid = MTLSize(width: Int(ceil(CGFloat(width) / CGFloat(w))),
+//                                         height: Int(ceil(CGFloat(height) / CGFloat(h))),
+//                                         depth: Int(ceil(CGFloat(depth) / CGFloat(l))))
+            let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
+            let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
+            (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         }
         
         
@@ -816,6 +914,9 @@ public class Engine: LoggerDelegate {
 //            sharedCaptureManager.defaultCaptureScope = myCaptureScope
 //            myCaptureScope.begin()
 //        }
+        
+        // CHECK
+//        //commandBuffer.waitUntilCompleted()
         
         commandBuffer.addCompletedHandler({ _ in
             node.rendering = false

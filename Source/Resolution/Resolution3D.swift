@@ -19,13 +19,13 @@ public enum Resolution3D: ResolutionStandard {
     case _256
     case _512
     case _1024
-    public static var squareCases: [Resolution3D] {
+    public static var cubeCases: [Resolution3D] {
         return [._8, ._16, ._32, ._64, ._128, ._256, ._512, ._1024]
     }
     
     case vec(_ vec: LiveVec)
     case custom(x: Int, y: Int, z: Int)
-    case square(_ val: Int)
+    case cube(_ val: Int)
     case raw(_ rax: Raw)
     
     // MARK: Name
@@ -61,7 +61,7 @@ public enum Resolution3D: ResolutionStandard {
         case ._1024: return Raw(x: 1024, y: 1024, z: 1024)
         case .vec(let vec): return Raw(x: Int(vec.x.cg), y: Int(vec.y.cg), z: Int(vec.z.cg))
         case .custom(let x, let y, let z): return Raw(x: x, y: y, z: z)
-        case .square(let val): return Raw(x: val, y: val, z: val)
+        case .cube(let val): return Raw(x: val, y: val, z: val)
         case .raw(let raw): return raw
         }
     }
@@ -107,6 +107,7 @@ public enum Resolution3D: ResolutionStandard {
     }
     
     public init(texture: MTLTexture) {
+        // CHECK depth is more than 1
         self = .custom(x: texture.width, y: texture.height, z: texture.depth)
     }
     
