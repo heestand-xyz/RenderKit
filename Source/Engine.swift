@@ -718,27 +718,28 @@ public class Engine: LoggerDelegate {
         
         // MARK: Texture
         
-        var _3dInTex = false
+        var tex3dIndex = 0
         
         if !generator && !template {
             if node is NODE3D {
                 (commandEncoder as! MTLComputeCommandEncoder).setTexture(inputTexture!, index: 0)
-                _3dInTex = true
+                tex3dIndex = 1
             } else {
                 (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(inputTexture!, index: 0)
             }
         }
         
-        if node is NODE3D {
-            (commandEncoder as! MTLComputeCommandEncoder).setTexture(drawableTexture, index: _3dInTex ? 1 : 0)
-        }
-        
         if secondInputTexture != nil {
             if node is NODE3D {
                 (commandEncoder as! MTLComputeCommandEncoder).setTexture(secondInputTexture!, index: 1)
+                tex3dIndex = 2
             } else {
                 (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(secondInputTexture!, index: 1)
             }
+        }
+        
+        if node is NODE3D {
+            (commandEncoder as! MTLComputeCommandEncoder).setTexture(drawableTexture, index: tex3dIndex)
         }
         
         // MARK: Sampler
