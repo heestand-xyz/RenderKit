@@ -139,7 +139,7 @@ public class Logger {
         
         if loop && loopLimitActive && delegate!.loggerFrameIndex() > loopLimitFrameCount {
             if !loopLimitIndicated {
-                print("PixelKit running...")
+                print("\(prefix) running...")
                 loopLimitIndicated = true
             }
             return
