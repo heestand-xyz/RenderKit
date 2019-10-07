@@ -537,9 +537,16 @@ public class Engine: LoggerDelegate {
         }
         
         // Custom
-        
-        if let nodeCustom = node as? NODECustom, node.customRenderActive {
+        if let nodeCustom = node as? NODECustom {
             guard let customRenderedTexture = nodeCustom.customRender(drawableTexture, with: commandBuffer) else {
+                throw RenderError.nilCustomTexture
+            }
+            customTexture = customRenderedTexture
+        } else if node.customRenderActive {
+            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
+                throw RenderError.custom("CustomRenderDelegate not set")
+            }
+            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
                 throw RenderError.nilCustomTexture
             }
             customTexture = customRenderedTexture
