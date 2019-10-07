@@ -536,6 +536,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         samplerInfo.magFilter = interpolate
         samplerInfo.sAddressMode = extend
         samplerInfo.tAddressMode = extend
+        samplerInfo.rAddressMode = extend
         samplerInfo.compareFunction = compare
         samplerInfo.mipFilter = mipFilter
         guard let sampler = metalDevice.makeSamplerState(descriptor: samplerInfo) else {

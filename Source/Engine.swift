@@ -249,6 +249,7 @@ public class Engine: LoggerDelegate {
     
     func renderNODEs() {
         loop: for node in internalDelegate.linkedNodes {
+            var node = node
             if node.needsRender {
                 
                 if [.frameLoopQueue, .instantQueue, .instantQueueSemaphore].contains(renderMode) {
@@ -276,16 +277,16 @@ public class Engine: LoggerDelegate {
                     }
                 }
                 
-//                if let nodeIn = node as? NODE & NODEInIO {
-//                    let nodeOuts = nodeIn.inputList
-//                    for (i, nodeOut) in nodeOuts.enumerated() {
-//                        if nodeOut.texture == nil {
-//                            log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
-//                            node.needsRender = false // CHECK
-//                            continue loop
-//                        }
-//                    }
-//                }
+                if let nodeIn = node as? NODE & NODEInIO {
+                    let nodeOuts = nodeIn.inputList
+                    for (i, nodeOut) in nodeOuts.enumerated() {
+                        if nodeOut.texture == nil {
+                            logger.log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
+                            node.needsRender = false // CHECK
+                            continue loop
+                        }
+                    }
+                }
                 
                 var semaphore: DispatchSemaphore?
                 if renderMode == .instantQueueSemaphore {
@@ -708,18 +709,21 @@ public class Engine: LoggerDelegate {
         }
         
         
-        // MARK: Fragment Texture
+        // MARK: Texture
         
-        if generator && node is NODE3D {
-            (commandEncoder as! MTLComputeCommandEncoder).setTexture(drawableTexture, index: 0)
-        }
+        var _3dInTex = false
         
         if !generator && !template {
             if node is NODE3D {
                 (commandEncoder as! MTLComputeCommandEncoder).setTexture(inputTexture!, index: 0)
+                _3dInTex = true
             } else {
                 (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(inputTexture!, index: 0)
             }
+        }
+        
+        if node is NODE3D {
+            (commandEncoder as! MTLComputeCommandEncoder).setTexture(drawableTexture, index: _3dInTex ? 1 : 0)
         }
         
         if secondInputTexture != nil {
@@ -729,6 +733,8 @@ public class Engine: LoggerDelegate {
                 (commandEncoder as! MTLRenderCommandEncoder).setFragmentTexture(secondInputTexture!, index: 1)
             }
         }
+        
+        // MARK: Sampler
         
         if node is NODE3D {
             (commandEncoder as! MTLComputeCommandEncoder).setSamplerState(node.sampler, index: 0)
