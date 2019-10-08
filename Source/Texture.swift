@@ -252,6 +252,24 @@ public struct Texture {
         return textureCopy
     }
     
+    public static func copy3D(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.copy("Bits not found.")
+        }
+        let textureCopy = try emptyTexture3D(at: .custom(x: texture.width, y: texture.height, z: texture.depth), bits: bits, on: metalDevice)
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            throw TextureError.copy("Command Buffer make failed.")
+        }
+        guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+            throw TextureError.copy("Blit Command Encoder make failed.")
+        }
+        blitEncoder.copy(from: texture, sourceSlice: 0, sourceLevel: 0, sourceOrigin: MTLOrigin(x: 0, y: 0, z: 0), sourceSize: MTLSize(width: texture.width, height: texture.height, depth: texture.depth), to: textureCopy, destinationSlice: 0, destinationLevel: 0, destinationOrigin: MTLOrigin(x: 0, y: 0, z: 0))
+//        blitEncoder.generateMipmaps(for: textureCopy)
+        blitEncoder.endEncoding()
+        commandBuffer.commit()
+        return textureCopy
+    }
+    
     public static func makeMultiTexture(from textures: [MTLTexture], with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, in3D: Bool = false) throws -> MTLTexture {
         
         guard !textures.isEmpty else {
