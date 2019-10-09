@@ -27,6 +27,7 @@ public protocol NODE {
     var uniforms: [CGFloat] { get }
     var postUniforms: [CGFloat] { get }
     var uniformArray: [[CGFloat]] { get }
+    var uniformArrayMaxLimit: Int? { get }
     
     var needsRender: Bool { get set }
     var rendering: Bool { get set }

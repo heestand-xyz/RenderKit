@@ -647,7 +647,7 @@ public class Engine: LoggerDelegate {
         
         // Hardcoded at 128
         // Defined as ARRMAX in shaders
-        let uniformArrayMaxLimit = 128
+        let uniformArrayMaxLimit = node.uniformArrayMaxLimit ?? 128
         
         var uniformArray: [[Float]] = node.uniformArray.map { uniformValues -> [Float] in
             return uniformValues.map({ uniform -> Float in return Float(uniform) })
