@@ -28,6 +28,8 @@ public protocol NODE {
     var postUniforms: [CGFloat] { get }
     var uniformArray: [[CGFloat]] { get }
     var uniformArrayMaxLimit: Int? { get }
+    var uniformIndexArray: [[Int]] { get }
+    var uniformIndexArrayMaxLimit: Int? { get }
     
     var needsRender: Bool { get set }
     var rendering: Bool { get set }
@@ -95,9 +97,11 @@ public protocol NODE3D: NODE {
 
 public protocol NODEContent: NODE {}
 
-public protocol NODEResource: NODE {
+public protocol NODEResource: NODEContent {
     var pixelBuffer: CVPixelBuffer? { get set }
 }
+
+public protocol NODEResourceCustom: NODEContent, NODEResolution3D {}
 
 public protocol NODEGenerator: NODEContent {
     var premultiply: Bool { get set }
@@ -117,7 +121,7 @@ public protocol NODEMergerEffect: NODEEffect {
 }
 public protocol NODEMultiEffect: NODEEffect {}
 
-// MARK: - Other
+// MARK: - Resolution
 
 public protocol NODEResolution {
     var resolution: Resolution { get set }
@@ -128,6 +132,8 @@ public protocol NODEResolution3D {
     var resolution: Resolution3D { get set }
     init(at resolution: Resolution3D)
 }
+
+// MARK: - Metal
 
 public protocol NODEMetal {
     var metalFileName: String { get }

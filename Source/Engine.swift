@@ -476,6 +476,7 @@ public class Engine: LoggerDelegate {
         // MARK: Input Texture
         
         let generator: Bool = node is NODEGenerator
+        let resourceCustom: Bool = node is NODEResourceCustom
         var (inputTexture, secondInputTexture, customTexture): (MTLTexture?, MTLTexture?, MTLTexture?)
         if !template {
             (inputTexture, secondInputTexture, customTexture) = try deleagte!.textures(from: node, with: commandBuffer)
@@ -653,7 +654,9 @@ public class Engine: LoggerDelegate {
             return uniformValues.map({ uniform -> Float in return Float(uniform) })
         }
         
+        var uniformArrayInUse = false
         if !uniformArray.isEmpty && !template {
+            uniformArrayInUse = true
             
             var uniformArrayActive: [Bool] = uniformArray.map { _ -> Bool in return true }
             
@@ -716,11 +719,60 @@ public class Engine: LoggerDelegate {
         }
         
         
+        // MARK: Uniform Index Arrays
+        
+        let uniformIndexArrayMaxLimit = node.uniformIndexArrayMaxLimit ?? 128
+        
+        var uniformIndexArray: [[Int]] = node.uniformIndexArray
+        
+        if !uniformIndexArray.isEmpty && !template {
+            
+            if uniformIndexArray.count < uniformIndexArrayMaxLimit {
+                let arrayCount = uniformIndexArray.first!.count
+                for _ in uniformIndexArray.count..<uniformIndexArrayMaxLimit {
+                    let emptyArray = [Int].init(repeating: 0, count: arrayCount)
+                    uniformIndexArray.append(emptyArray)
+                }
+            } else if uniformIndexArray.count > uniformIndexArrayMaxLimit {
+                let origialCount = uniformIndexArray.count
+                let overflow = origialCount - uniformIndexArrayMaxLimit
+                for _ in 0..<overflow {
+                    uniformIndexArray.removeLast()
+                }
+                logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)")
+            }
+            
+            var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [Int] in return uniformValues }
+            
+            let size: Int = MemoryLayout<Int>.size * uniformFlatMap.count
+            guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
+                commandEncoder.endEncoding()
+                throw RenderError.uniformsBuffer
+            }
+            let bufferPointer = uniformsArraysBuffer.contents()
+            memcpy(bufferPointer, &uniformFlatMap, size)
+            if node is NODE3D {
+                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
+            } else {
+                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
+            }
+            
+        }
+        
+        // Render Time
+        if logger.time {
+            renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
+            renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
+            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniform Index Arrays ")
+            localRenderTime = CFAbsoluteTimeGetCurrent()
+        }
+        
+        
         // MARK: Texture
         
         var tex3dIndex = 0
         
-        if !generator && !template {
+        if !generator && !template && !resourceCustom {
             if node is NODE3D {
                 (commandEncoder as! MTLComputeCommandEncoder).setTexture(inputTexture!, index: 0)
                 tex3dIndex = 1
@@ -933,7 +985,9 @@ public class Engine: LoggerDelegate {
 //        //commandBuffer.waitUntilCompleted()
         
         commandBuffer.addCompletedHandler({ _ in
+            
             node.rendering = false
+            
             if let error = commandBuffer.error {
                 failed(error)
                 return

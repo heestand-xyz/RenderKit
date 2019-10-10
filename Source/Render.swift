@@ -502,6 +502,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Pipeline
     
     public func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false) throws -> MTLRenderPipelineState {
+        logger.log(.detail, .fileIO, "Pipeline - Fragment Shader: \(fragmentShader.name)")
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = customVertexShader ?? quadVertexShader
         pipelineStateDescriptor.fragmentFunction = fragmentShader
@@ -523,6 +524,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     public func makeShaderPipeline3d(_ computeShader: MTLFunction) throws -> MTLComputePipelineState {
+        logger.log(.detail, .fileIO, "Pipeline 3D - Compute Shader: \(computeShader.name)")
         do {
             return try metalDevice.makeComputePipelineState(function: computeShader)
         } catch { throw error }
