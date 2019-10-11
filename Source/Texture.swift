@@ -329,21 +329,22 @@ public struct Texture {
     
     public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
-        #if os(iOS) || os(tvOS)
         return cgImage
-        #elseif os(macOS)
-        guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
-        context.scaleBy(x: 1, y: -1)
-        context.translateBy(x: 0, y: -size.height)
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
-        guard let image = context.makeImage() else { return nil }
-        return image
-        #endif
+//        #if os(iOS) || os(tvOS)
+//        return cgImage
+//        #elseif os(macOS)
+//        guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+//        context.scaleBy(x: 1, y: -1)
+//        context.translateBy(x: 0, y: -size.height)
+//        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+//        guard let image = context.makeImage() else { return nil }
+//        return image
+//        #endif
     }
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
         #if os(iOS) || os(tvOS)
-        return UIImage(cgImage: cgImage, scale: 1, orientation: .downMirrored)
+        return UIImage(cgImage: cgImage)//, scale: 1, orientation: .downMirrored)
         #elseif os(macOS)
         return NSImage(cgImage: cgImage, size: size)
         #endif
