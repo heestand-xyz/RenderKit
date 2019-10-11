@@ -367,6 +367,51 @@ public struct Texture {
         return try? makeTexture(from: cgImage, with: commandBuffer, on: metalDevice)
     }
     
+    enum PixelBufferError: Error {
+        case status(String)
+        case cgImage
+    }
+    
+    public static func pixelBuffer(from image: _Image, colorSpace: LiveColor.Space, bits: LiveColor.Bits) throws -> CVPixelBuffer {
+        #if os(iOS) || os(tvOS)
+        guard let cgImage = image.cgImage else { throw PixelBufferError.cgImage }
+        #elseif os(macOS)
+        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { throw PixelBufferError.cgImage }
+        #endif
+        return try pixelBuffer(from: cgImage, colorSpace: colorSpace, bits: bits)
+    }
+    
+    public static func pixelBuffer(from cgImage: CGImage, colorSpace: LiveColor.Space, bits: LiveColor.Bits) throws -> CVPixelBuffer {
+        var maybePixelBuffer: CVPixelBuffer?
+        let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
+                     kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue]
+        let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                         cgImage.width,
+                                         cgImage.height,
+                                         bits.os,
+                                         attrs as CFDictionary,
+                                         &maybePixelBuffer)
+        guard status == kCVReturnSuccess, let pixelBuffer = maybePixelBuffer else {
+            throw PixelBufferError.status("CVPixelBufferCreate failed with status \(status)")
+        }
+        let flags = CVPixelBufferLockFlags(rawValue: 0)
+        guard kCVReturnSuccess == CVPixelBufferLockBaseAddress(pixelBuffer, flags) else {
+            throw PixelBufferError.status("CVPixelBufferLockBaseAddress failed.")
+        }
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, flags) }
+        guard let context = CGContext(data: CVPixelBufferGetBaseAddress(pixelBuffer),
+                                      width: cgImage.width,
+                                      height: cgImage.height,
+                                      bitsPerComponent: bits.rawValue,
+                                      bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+                                      space: colorSpace.cg,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            throw PixelBufferError.status("Context failed to be created.")
+        }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+        return pixelBuffer
+    }
+    
     // MARK: - Raw
     
     public static func raw8(texture: MTLTexture) throws -> [UInt8] {
