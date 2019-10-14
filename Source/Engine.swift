@@ -723,14 +723,14 @@ public class Engine: LoggerDelegate {
         
         let uniformIndexArrayMaxLimit = node.uniformIndexArrayMaxLimit ?? 128
         
-        var uniformIndexArray: [[Int]] = node.uniformIndexArray
+        var uniformIndexArray: [[UInt32]] = node.uniformIndexArray.map({ $0.map({ UInt32($0) }) })
         
         if !uniformIndexArray.isEmpty && !template {
             
             if uniformIndexArray.count < uniformIndexArrayMaxLimit {
                 let arrayCount = uniformIndexArray.first!.count
                 for _ in uniformIndexArray.count..<uniformIndexArrayMaxLimit {
-                    let emptyArray = [Int].init(repeating: 0, count: arrayCount)
+                    let emptyArray = [UInt32].init(repeating: 0, count: arrayCount)
                     uniformIndexArray.append(emptyArray)
                 }
             } else if uniformIndexArray.count > uniformIndexArrayMaxLimit {
@@ -742,9 +742,9 @@ public class Engine: LoggerDelegate {
                 logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)")
             }
             
-            var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [Int] in return uniformValues }
+            var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [UInt32] in return uniformValues }
             
-            let size: Int = MemoryLayout<Int>.size * uniformFlatMap.count
+            let size: Int = MemoryLayout<UInt32>.size * uniformFlatMap.count
             guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
