@@ -101,15 +101,20 @@ public class Logger {
     }
     
     public func logMore() {
-        level = .debug
+        level = .detail
         loopLimitActive = false
-        time = true
     }
     
     public func logAll() {
         logMore()
         padding = true
+    }
+    
+    public func logDebug() {
+        logAll()
+        level = .debug
         source = true
+        time = true
     }
     
     public init(name: String) {
@@ -211,7 +216,7 @@ public class Logger {
             }
         }
         
-        if self.padding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 30; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         
         if let nodeRef = log.nodeRef {
             if let nr = nodeRef.linkIndex {
@@ -220,7 +225,7 @@ public class Logger {
             logList.append(nodeRef.type)
         }
         
-        if self.padding { padding += 30; logList.append(spaces(tc + ext + padding - logLength(logList))) }
+        if self.padding { padding += 20; logList.append(spaces(tc + ext + padding - logLength(logList))) }
         
         if let nodeRef = log.nodeRef {
             if let nodeName = nodeRef.name {
