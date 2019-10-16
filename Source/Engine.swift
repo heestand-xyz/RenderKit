@@ -112,7 +112,7 @@ public class Engine: LoggerDelegate {
     }
     
     func checkManualRender() {
-        
+                
         var someNodesNeedsRender: Bool = false
         for node in internalDelegate.linkedNodes {
             if node.needsRender {
@@ -145,9 +145,10 @@ public class Engine: LoggerDelegate {
             if !someNodesAreInRender {
 
                 logger.log(.info, .render, "Manual Render Done.")
-                manualRenderCallback!()
-                manualRenderCallback = nil
                 manualRenderInProgress = false
+                let cachedManualRenderCallback = manualRenderCallback!
+                manualRenderCallback = nil
+                cachedManualRenderCallback()
                 
             }
             
