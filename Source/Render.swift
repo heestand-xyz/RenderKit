@@ -611,4 +611,18 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         linkIndex(of: node)
     }
     
+    // MARK: - Engine Internal Delegate
+    
+    func engineFrameIndex() -> Int {
+        frame
+    }
+    
+    func engineLinkIndex(of node: NODE) -> Int? {
+        linkIndex(of: node)
+    }
+    
+    func engineDelay(frames: Int, done: @escaping () -> ()) {
+        delay(frames: frames, done: done)
+    }
+    
 }

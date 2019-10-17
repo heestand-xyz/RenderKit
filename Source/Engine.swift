@@ -21,8 +21,9 @@ protocol EngineInternalDelegate {
     var bits: LiveColor.Bits { get set }
     var quadVertecis: Vertices! { get set }
     func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction) throws -> MTLSamplerState
-    func loggerFrameIndex() -> Int
-    func loggerLinkIndex(of node: NODE) -> Int?
+    func engineFrameIndex() -> Int
+    func engineLinkIndex(of node: NODE) -> Int?
+    func engineDelay(frames: Int, done: @escaping () -> ())
 }
 
 public class Engine: LoggerDelegate {
@@ -96,6 +97,16 @@ public class Engine: LoggerDelegate {
         }
     }
     
+    // MARK: - Logger Delegate
+    
+    public func loggerFrameIndex() -> Int {
+        internalDelegate.engineFrameIndex()
+    }
+    
+    public func loggerLinkIndex(of node: NODE) -> Int? {
+        internalDelegate.engineLinkIndex(of: node)
+    }
+    
     // MARK: - Maual Render
     
     enum ManualRenderError: Error {
@@ -112,6 +123,16 @@ public class Engine: LoggerDelegate {
     }
     
     func checkManualRender() {
+        
+//        #if os(macOS)
+//        let frameIndex = internalDelegate.engineFrameIndex()
+//        guard frameIndex >= 2 else {
+////            internalDelegate.engineDelay(frames: 1) {
+////                self.checkManualRender()
+////            }
+//            return
+//        }
+//        #endif
                 
         var someNodesNeedsRender: Bool = false
         for node in internalDelegate.linkedNodes {
@@ -295,19 +316,11 @@ public class Engine: LoggerDelegate {
                 }
                 
                 DispatchQueue.main.async {
-//                    #if targetEnvironment(simulator)
-//                    let isSimulator = true
-//                    #else
-//                    let isSimulator = false
-//                    #endif
-                    if node.view.superview != nil/* && !isSimulator*/ {
+                    if node.view.superview != nil {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
                         let size = node.renderResolution.size
-//                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
-//                            return
-//                        }
                         node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width.cg, height: size.height.cg))
                         #endif
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
@@ -496,7 +509,6 @@ public class Engine: LoggerDelegate {
             drawableTexture = currentDrawable!.texture
             logger.log(node: node, .detail, .render, "Drawable Texture - Current")
         } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth {
-            // ^ CHECK NODE3D depth is not 1
             drawableTexture = node.texture!
             logger.log(node: node, .detail, .render, "Drawable Texture - Reuse")
         } else {
@@ -1022,16 +1034,6 @@ public class Engine: LoggerDelegate {
 //            sharedCaptureManager.defaultCaptureScope?.end()
 //        }
         
-    }
-    
-    // MARK: - Logger Delegate
-    
-    public func loggerFrameIndex() -> Int {
-        internalDelegate.loggerFrameIndex()
-    }
-    
-    public func loggerLinkIndex(of node: NODE) -> Int? {
-        internalDelegate.loggerLinkIndex(of: node)
     }
     
 }
