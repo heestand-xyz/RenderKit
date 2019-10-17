@@ -556,8 +556,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     public func embedMetalCode(uniforms: [MetalUniform], code: String, fileName: String) throws -> String {
-        guard let metalFile = Bundle(for: type(of: self)).url(forResource: fileName, withExtension: "txt") else {
-            throw MetalError.fileNotFound(fileName)
+        guard let metalFile = metalLibBundle.url(forResource: fileName, withExtension: "txt") else {
+            throw MetalError.fileNotFound(fileName + ".txt")
         }
         do {
             var metalCode = try String(contentsOf: metalFile)
