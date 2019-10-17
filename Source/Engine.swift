@@ -995,7 +995,6 @@ public class Engine: LoggerDelegate {
 //        }
         
         // CHECK
-//        //commandBuffer.waitUntilCompleted()
         
         commandBuffer.addCompletedHandler({ _ in
             
@@ -1027,7 +1026,12 @@ public class Engine: LoggerDelegate {
         })
         
         commandBuffer.commit()
-    
+        
+//        let synchronous: Bool = true
+//        if synchronous {
+//            commandBuffer.waitUntilCompleted()
+//        }
+
 //        if #available(iOS 11.0, *) {
 //            let sharedCaptureManager = MTLCaptureManager.shared()
 //            guard !sharedCaptureManager.isCapturing else { fatalError() }

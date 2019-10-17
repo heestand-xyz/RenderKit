@@ -6,6 +6,7 @@
 //  Open Source - MIT License
 //
 
+import CoreGraphics
 import LiveValues
 import MetalKit
 import VideoToolbox
@@ -329,17 +330,16 @@ public struct Texture {
     
     public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
+        #if os(iOS) || os(tvOS)
         return cgImage
-//        #if os(iOS) || os(tvOS)
-//        return cgImage
-//        #elseif os(macOS)
-//        guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
-//        context.scaleBy(x: 1, y: -1)
-//        context.translateBy(x: 0, y: -size.height)
-//        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
-//        guard let image = context.makeImage() else { return nil }
-//        return image
-//        #endif
+        #elseif os(macOS)
+        guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -size.height)
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        guard let image = context.makeImage() else { return nil }
+        return image
+        #endif
     }
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
@@ -428,6 +428,41 @@ public struct Texture {
             let bytesPerRow = MemoryLayout<UInt8>.size * texture.width * 4
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
         }
+        return raw
+    }
+    
+    public static func rawCopy8(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [UInt8] {
+        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+            throw TextureError.raw("Raw 8 - Texture bits out of range.")
+        }
+        guard bits == ._8 else {
+            throw TextureError.raw("Raw 8 - To access this data, the texture needs to be in 8 bit.")
+        }
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            throw TextureError.raw("Raw 8 - Command buffer could not be created.")
+        }
+        let bytesPerTexture = MemoryLayout<UInt8>.size * texture.width * texture.height * 4
+        let bytesPerRow = MemoryLayout<UInt8>.size * texture.width * 4
+        guard let imageBuffer = metalDevice.makeBuffer(length: bytesPerTexture, options: []) else {
+            throw TextureError.raw("Raw 8 - Image buffer could not be created.")
+        }
+        guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+            throw TextureError.raw("Raw 8 - Blit encoder could not be created.")
+        }
+        blitEncoder.copy(from: texture,
+                         sourceSlice: 0,
+                         sourceLevel: 0,
+                         sourceOrigin: MTLOrigin(x: 0, y: 0, z: 0),
+                         sourceSize: MTLSize(width: texture.width, height: texture.height, depth: 1),
+                         to: imageBuffer,
+                         destinationOffset: 0,
+                         destinationBytesPerRow: bytesPerRow,
+                         destinationBytesPerImage: 0)
+        blitEncoder.endEncoding()
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+        var raw = Array<UInt8>(repeating: 0, count: texture.width * texture.height * 4)
+        memcpy(&raw, imageBuffer.contents(), imageBuffer.length)
         return raw
     }
     
@@ -526,7 +561,7 @@ public struct Texture {
         case ._10:
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
-            raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+            raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
         case ._32:
             let rawArr = try raw32(texture: texture)
             var rawFlatArr: [CGFloat] = []
@@ -542,7 +577,20 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+    public static func rawNormalizedCopy(texture: MTLTexture, bits: LiveColor.Bits, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [CGFloat] {
+        let raw: [CGFloat]
+        switch bits {
+        case ._8:
+            raw = try rawCopy8(texture: texture, on: metalDevice, in: commandQueue).map({ chan -> CGFloat in
+                return CGFloat(chan) / (pow(2, 8) - 1)
+            })
+        default:
+            throw TextureError.raw("rawNormalizedCopy with \(bits.rawValue)bits is not supported.")
+        }
+        return raw
+    }
+    
+    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
