@@ -476,7 +476,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             let metalFrag = try makeMetalFrag(code: metalCode, name: shaderName)
             frag = metalFrag
         } catch {
-            logger.log(.error, nil, "Metal code in \"\(shaderName)\".", e: error)
+            logger.log(.error, nil, "Metal error in \"\(shaderName)\".", e: error)
             guard let errorFrag = metalLibrary.makeFunction(name: "error") else {
                 throw ShaderError.metalErrorError
             }
@@ -491,7 +491,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         do {
             let codeLib = try metalDevice!.makeLibrary(source: code, options: nil)
             guard let frag = codeLib.makeFunction(name: name) else {
-                throw ShaderError.metal("Metal func \"\(name)\" not found.")
+                throw ShaderError.metal("makeMetalFrag: Metal func \"\(name)\" not found.")
             }
             return frag
         } catch {
