@@ -590,7 +590,7 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice) throws -> [CGFloat] {
+    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
