@@ -314,17 +314,20 @@ public class Engine: LoggerDelegate {
                 if let nodeIn = node as? NODE & NODEInIO {
                     let nodeOuts = nodeIn.inputList
                     for (i, nodeOut) in nodeOuts.enumerated() {
-                        var inRendered: Bool = false
-                        if let tileNode2d = nodeOut as? NODETileable2D {
-                            inRendered = tileNode2d.tileTextures != nil
-                        } else if let tileNode3d = nodeOut as? NODETileable3D {
-                            inRendered = tileNode3d.tileTextures != nil
+                        var rendered: Bool = false
+                        if renderMode.isTile {
+                            if let tileNode2d = nodeOut as? NODETileable2D {
+                                rendered = tileNode2d.tileTextures != nil
+                            } else if let tileNode3d = nodeOut as? NODETileable3D {
+                                rendered = tileNode3d.tileTextures != nil
+                            }
                         } else {
-                            inRendered = nodeOut.texture == nil
+                            rendered = nodeOut.texture != nil
                         }
-                        if !inRendered {
+                        if !rendered {
                             logger.log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
-                            node.needsRender = false // CHECK
+                            /// The chained node will call setNeedsRender when done
+                            node.needsRender = false
                             continue loop
                         }
                     }
@@ -600,12 +603,24 @@ public class Engine: LoggerDelegate {
         // MARK: Template
         
         let needsInTexture = node is NODEInIO
-        let hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
+        let hasInTexture: Bool
+        if tileIndex != nil {
+            if node is NODE3D {
+                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable3D)?.tileTextures != nil
+            } else {
+                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable2D)?.tileTextures != nil
+            }
+        } else {
+            hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
+        }
         let needsContent = node.contentLoaded != nil
         let hasContent = node.contentLoaded == true
         let needsGenerated = node is NODEGenerator
         let hasGenerated = !node.bypass
         let template = ((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
+        if template {
+            logger.log(node: node, .debug, .render, "Template.")
+        }
         
         
         // MARK: Input Texture
