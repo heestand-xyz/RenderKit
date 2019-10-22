@@ -216,8 +216,8 @@ public enum ExtendMode: String, Codable, CaseIterable {
 
 // MARK: - Tile Index
 
-struct TileIndex {
-    let x: Int
-    let y: Int
-    let z: Int
+public struct TileIndex {
+    public let x: Int
+    public let y: Int
+    public let z: Int
 }

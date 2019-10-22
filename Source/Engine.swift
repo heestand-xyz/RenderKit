@@ -12,6 +12,7 @@ import Metal
 
 public protocol EngineDelegate {
     func textures(from node: NODE, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
+    func tileTextures(from node: NODE & NODETileable, at tileIndex: TileIndex, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
 }
 
 protocol EngineInternalDelegate {
@@ -404,7 +405,7 @@ public class Engine: LoggerDelegate {
         do {
             if self.renderMode.isTile {
                 guard let nodeTileable = node as? NODE & NODETileable else {
-                    throw RenderError.notNotTileable
+                    throw RenderError.nodeNotTileable
                 }
                 DispatchQueue.global(qos: .background).async {
                     do {
@@ -448,7 +449,7 @@ public class Engine: LoggerDelegate {
         case vertices
         case vertexTexture
         case nilCustomTexture
-        case notNotTileable
+        case nodeNotTileable
         case noTitleableTextures
         case nodeNot3D
         case tileError(String, Error)
@@ -535,7 +536,7 @@ public class Engine: LoggerDelegate {
             completed()
             
         } else {
-            throw RenderError.notNotTileable
+            throw RenderError.nodeNotTileable
         }
     }
     
@@ -547,6 +548,12 @@ public class Engine: LoggerDelegate {
         let device = internalDelegate.metalDevice!
         
         var node = node
+        
+        if tileIndex != nil {
+            guard node is NODETileable else {
+                throw RenderError.nodeNotTileable
+            }
+        }
         
         guard deleagte != nil else {
             logger.log(node: node, .error, .render, "Engine deleagte is not set.")
@@ -592,14 +599,32 @@ public class Engine: LoggerDelegate {
         let resourceCustom: Bool = node is NODEResourceCustom
         var (inputTexture, secondInputTexture, customTexture): (MTLTexture?, MTLTexture?, MTLTexture?)
         if !template {
-            (inputTexture, secondInputTexture, customTexture) = try deleagte!.textures(from: node, with: commandBuffer)
+            if tileIndex != nil {
+                (inputTexture, secondInputTexture, customTexture) = try deleagte!.tileTextures(from: node as! NODE & NODETileable, at: tileIndex!, with: commandBuffer)
+            } else {
+                (inputTexture, secondInputTexture, customTexture) = try deleagte!.textures(from: node, with: commandBuffer)
+            }
         }
         
         // MARK: Drawable
         
-        let width: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
-        let height: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
-        let depth: Int = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
+        let width: Int
+        let height: Int
+        let depth: Int
+        if tileIndex != nil {
+            width = node is NODE3D ? (node as! NODETileable3D).tileResolution.x : (node as! NODETileable2D).tileResolution.w
+            height = node is NODE3D ? (node as! NODETileable3D).tileResolution.y : (node as! NODETileable2D).tileResolution.h
+            depth = node is NODE3D ? (node as! NODETileable3D).tileResolution.z : 1
+        } else {
+            width = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
+            height = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
+            depth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
+        }
+        let tileFraction: CGFloat = 0.0
+        if tileIndex != nil {
+            let realWidth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
+            tileFraction = CGFloat(width) / CGFloat(realWidth)
+        }
         
         var viewDrawable: CAMetalDrawable? = nil
         let drawableTexture: MTLTexture
@@ -731,6 +756,20 @@ public class Engine: LoggerDelegate {
         }
         if node.shaderNeedsAspect || template {
             unifroms.append(Float(width) / Float(height))
+        }
+        if node is NODEGenerator {
+            unifroms.append(tileIndex != nil ? 1 : 0)
+            unifroms.append(Float(tileIndex?.x ?? 0))
+            unifroms.append(Float(tileIndex?.y ?? 0))
+            if node is NODE3D {
+                unifroms.append(Float(tileIndex?.z ?? 0))
+            }
+            unifroms.append(Float(width))
+            unifroms.append(Float(height))
+            if node is NODE3D {
+                unifroms.append(Float(depth))
+            }
+            unifroms.append(Float(tileFraction))
         }
         if !unifroms.isEmpty {
             let size = MemoryLayout<Float>.size * unifroms.count
