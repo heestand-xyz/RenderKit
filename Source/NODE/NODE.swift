@@ -151,3 +151,17 @@ public struct NODEOutPath {
         self.inIndex = inIndex
     }
 }
+
+// MARK: - Tile
+
+public protocol NODETileable {
+    func didRenderTiles(force: Bool)
+}
+public protocol NODETileable2D: NODETileable {
+    var tileResolution: Resolution { get }
+    var tileTextures: [[MTLTexture]]? { get set }
+}
+public protocol NODETileable3D: NODETileable {
+    var tileResolution: Resolution3D { get }
+    var tileTextures: [[[MTLTexture]]]? { get set }
+}

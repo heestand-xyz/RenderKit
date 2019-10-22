@@ -539,6 +539,9 @@ public enum Resolution: ResolutionStandard {
     public static func *(lhs: Resolution, rhs: Resolution) -> Resolution {
         return Resolution(Raw(w: Int(lhs.width.cg * rhs.width.cg), h: Int(lhs.height.cg * rhs.height.cg)))
     }
+    public static func /(lhs: Resolution, rhs: Resolution) -> Resolution {
+        return Resolution(Raw(w: Int(lhs.width.cg / rhs.width.cg), h: Int(lhs.height.cg / rhs.height.cg)))
+    }
     
     public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
         return Resolution(Raw(w: lhs.w + Int(rhs), h: lhs.h + Int(rhs)))

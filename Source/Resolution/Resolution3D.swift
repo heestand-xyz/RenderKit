@@ -156,6 +156,11 @@ public enum Resolution3D: ResolutionStandard {
                                 y: Int(lhs.vector.y * rhs.vector.y),
                                 z: Int(lhs.vector.z * rhs.vector.z)))
     }
+    public static func /(lhs: Resolution3D, rhs: Resolution3D) -> Resolution3D {
+        return Resolution3D(Raw(x: Int(lhs.vector.x / rhs.vector.x),
+                                y: Int(lhs.vector.y / rhs.vector.y),
+                                z: Int(lhs.vector.z / rhs.vector.z)))
+    }
     
     public static func +(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
         return Resolution3D(Raw(x: lhs.x + Int(rhs), y: lhs.y + Int(rhs), z: lhs.z + Int(rhs)))

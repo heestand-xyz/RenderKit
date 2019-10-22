@@ -116,7 +116,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     var quadVertecis: Vertices!
     var quadVertexShader: MTLFunction!
     
-    
     // MARK: - Life Cycle
     
     public init(with metalLibName: String, in metalLibBundle: Bundle) {

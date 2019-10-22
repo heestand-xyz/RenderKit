@@ -33,12 +33,23 @@ public class Engine: LoggerDelegate {
     
     public enum RenderMode {
         case manual
+        case manualTiles
         case frameTree
         case frameLoop
+        case frameLoopTiles
         case frameLoopQueue
         case instantQueue
         case instantQueueSemaphore
         case direct
+        var isManual: Bool {
+            [.manual, .manualTiles].contains(self)
+        }
+        var isFrameLoop: Bool {
+            [.frameLoop, .frameLoopTiles, .frameLoopQueue].contains(self)
+        }
+        var isTile: Bool {
+            [.manualTiles, .frameLoopTiles].contains(self)
+        }
     }
     public var renderMode: Engine.RenderMode = .frameLoop
     
@@ -81,7 +92,7 @@ public class Engine: LoggerDelegate {
             if !self.frameTreeRendering {
                 self.renderNODEsTree()
             }
-        } else if [.frameLoop, .frameLoopQueue].contains(self.renderMode) {
+        } else if self.renderMode.isFrameLoop {
             self.renderNODEs()
         } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
             if !self.instantQueueActivated {
@@ -92,7 +103,7 @@ public class Engine: LoggerDelegate {
                 }
                 self.instantQueueActivated = true
             }
-        } else if self.renderMode == .manual {
+        } else if self.renderMode.isManual {
             self.checkManualRender()
         }
     }
@@ -354,7 +365,6 @@ public class Engine: LoggerDelegate {
     }
     
     public func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
-        
         var node = node
         guard !node.bypass || node is NODEGenerator else {
             logger.log(node: node, .info, .render, "Render bypassed.", loop: true)
@@ -368,63 +378,63 @@ public class Engine: LoggerDelegate {
         }
         node.needsRender = false
         node.inRender = true
-//        let queue = DispatchQueue(label: "pixelKit-render", qos: .userInteractive, attributes: .concurrent, autoreleaseFrequency: .never, target: nil)
-//        queue.async {
-//            DispatchQueue.main.async {
-//            }
-            let renderStartTime = CFAbsoluteTimeGetCurrent()
-//        let renderStartFrame = frame
-            logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
-//        for flowTime in flowTimes {
-//            if flowTime.fromNodeRenderState.ref.id == node.id {
-//                if !flowTime.fromNodeRenderState.requested {
-//                    flowTime.fromNodeRenderState.requested = true
-//                } else {
-//
-//                }
-//            } else {
-//
-//            }
-//        }
-            do {
-                try self.render(node, with: currentDrawable, force: force, completed: { texture in
-                    let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
-                    let renderTimeMs = CGFloat(Int(round(renderTime * 10_000))) / 10
-//                let renderFrames = self.frame - renderStartFrame
-                    self.logger.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
-//                for flowTime in self.flowTimes {
-//                    if flowTime.fromNodeRenderState.requested {
-//                        if !flowTime.fromNodeRenderState.rendered {
-//                            flowTime.fromNodeRenderState.rendered = true
-//                        }
-//                    }
-//                }
-//                    DispatchQueue.main.async {
-                        node.inRender = false
-                        node.didRender(texture: texture, force: force)
-                        done(true)
-//                    }
-                }, failed: { error in
-                    var ioafMsg: String? = nil
-                    let err = error.localizedDescription
-                    if err.contains("IOAF code") {
-                        if let iofaCode = Int(err[err.count - 2..<err.count - 1]) {
-                            DispatchQueue.main.async {
-                                self.metalErrorCodeCallback?(.IOAF(iofaCode))
-                            }
-                            ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
-                        }
+        let renderStartTime = CFAbsoluteTimeGetCurrent()
+        logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
+        func renderDone() {
+            let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
+            let renderTimeMs = CGFloat(Int(round(renderTime * 10_000))) / 10
+            self.logger.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
+            node.inRender = false
+        }
+        func renderFailed(with error: Error) {
+            var ioafMsg: String? = nil
+            let err = error.localizedDescription
+            if err.contains("IOAF code") {
+                if let iofaCode = Int(err[err.count - 2..<err.count - 1]) {
+                    DispatchQueue.main.async {
+                        self.metalErrorCodeCallback?(.IOAF(iofaCode))
                     }
-                    self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
-//                    DispatchQueue.main.async {
-                        node.inRender = false
-                        done(false)
-//                    }
-                })
-            } catch {
-                logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+                    ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
+                }
             }
-//        }
+            self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
+            node.inRender = false
+            done(false)
+        }
+        do {
+            if self.renderMode.isTile {
+                guard let nodeTileable = node as? NODE & NODETileable else {
+                    throw RenderError.notNotTileable
+                }
+                DispatchQueue.global(qos: .background).async {
+                    do {
+                        try self.tileRender(nodeTileable, force: force, completed: {
+                            DispatchQueue.main.async {
+                                renderDone()
+                                nodeTileable.didRenderTiles(force: force)
+                                done(true)
+                            }
+                        }, failed: { error in
+                            DispatchQueue.main.async {
+                                renderFailed(with: error)
+                            }
+                        })
+                    } catch {
+                        self.logger.log(node: node, .error, .render, "Tile render failed.\(force ? " Forced." : "")", loop: true, e: error)
+                    }
+                }
+            } else {
+                try self.render(node, with: currentDrawable, force: force, completed: { texture in
+                    renderDone()
+                    node.didRender(texture: texture, force: force)
+                    done(true)
+                }, failed: { error in
+                    renderFailed(with: error)
+                })
+            }
+        } catch {
+            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+        }
     }
     
     public enum RenderError: Error {
@@ -438,11 +448,100 @@ public class Engine: LoggerDelegate {
         case vertices
         case vertexTexture
         case nilCustomTexture
+        case notNotTileable
+        case noTitleableTextures
+        case nodeNot3D
+        case tileError(String, Error)
+        case tileRenderCanceled
+    }
+    
+    // MARK: - Tile Render
+    
+    func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
+        if var nodeTileable2d = node as? NODETileable2D {
+            if (node.renderResolution.width.cg / nodeTileable2d.tileResolution.width.cg).remainder(dividingBy: 1.0) != 0.0 {
+                logger.log(node: node, .warning, .render, "Tile resolution not even in width.")
+            }
+            if (node.renderResolution.height.cg / nodeTileable2d.tileResolution.height.cg).remainder(dividingBy: 1.0) != 0.0 {
+                logger.log(node: node, .warning, .render, "Tile resolution not even in height.")
+            }
+            let tileCountResolution: Resolution = node.renderResolution / nodeTileable2d.tileResolution
+            
+            var tileTextures: [[MTLTexture]] = []
+            for y in 0..<tileCountResolution.h {
+                var tileTextureRow: [MTLTexture] = []
+                for x in 0..<tileCountResolution.w {
+                    let semaphore = DispatchSemaphore(value: 0)
+                    var didError = false
+                    try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: 0), force: force, completed: { texture in
+                        tileTextureRow.append(texture)
+                        semaphore.signal()
+                    }) { error in
+                        failed(RenderError.tileError("Tile error at x\(x) y\(y).", error))
+                        didError = true
+                        semaphore.signal()
+                    }
+                    _ = semaphore.wait(timeout: .distantFuture)
+                    if didError {
+                        throw RenderError.tileRenderCanceled
+                    }
+                }
+                tileTextures.append(tileTextureRow)
+            }
+            nodeTileable2d.tileTextures = tileTextures
+            completed()
+            
+        } else if var nodeTileable3d = node as? NODETileable3D {
+            guard let node3d = node as? NODE3D else {
+                throw RenderError.nodeNot3D
+            }
+            if (node3d.renderedResolution3d.vector.x / nodeTileable3d.tileResolution.vector.x).remainder(dividingBy: 1.0) != 0.0 {
+                logger.log(node: node, .warning, .render, "Tile resolution not even in x.")
+            }
+            if (node3d.renderedResolution3d.vector.y / nodeTileable3d.tileResolution.vector.y).remainder(dividingBy: 1.0) != 0.0 {
+                logger.log(node: node, .warning, .render, "Tile resolution not even in y.")
+            }
+            if (node3d.renderedResolution3d.vector.z / nodeTileable3d.tileResolution.vector.z).remainder(dividingBy: 1.0) != 0.0 {
+                logger.log(node: node, .warning, .render, "Tile resolution not even in z.")
+            }
+            let tileCountResolution: Resolution3D = node3d.renderedResolution3d / nodeTileable3d.tileResolution
+            
+            var tileTextures: [[[MTLTexture]]] = []
+            for z in 0..<tileCountResolution.z {
+                var tileTextureGrid: [[MTLTexture]] = []
+                for y in 0..<tileCountResolution.y {
+                    var tileTextureRow: [MTLTexture] = []
+                    for x in 0..<tileCountResolution.x {
+                        let semaphore = DispatchSemaphore(value: 0)
+                        var didError = false
+                        try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: z), force: force, completed: { texture in
+                            tileTextureRow.append(texture)
+                            semaphore.signal()
+                        }) { error in
+                            failed(RenderError.tileError("Tile error at x\(x) y\(y) z\(z).", error))
+                            didError = true
+                            semaphore.signal()
+                        }
+                        _ = semaphore.wait(timeout: .distantFuture)
+                        if didError {
+                            throw RenderError.tileRenderCanceled
+                        }
+                    }
+                    tileTextureGrid.append(tileTextureRow)
+                }
+                tileTextures.append(tileTextureGrid)
+            }
+            nodeTileable3d.tileTextures = tileTextures
+            completed()
+            
+        } else {
+            throw RenderError.notNotTileable
+        }
     }
     
     // MARK: - Main Render
     
-    func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
+    func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, tileIndex: TileIndex? = nil, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
         
         let bits = internalDelegate.bits
         let device = internalDelegate.metalDevice!
