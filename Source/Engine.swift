@@ -620,7 +620,7 @@ public class Engine: LoggerDelegate {
             height = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
             depth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
         }
-        let tileFraction: CGFloat = 0.0
+        var tileFraction: CGFloat = 0.0
         if tileIndex != nil {
             let realWidth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
             tileFraction = CGFloat(width) / CGFloat(realWidth)
