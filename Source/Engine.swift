@@ -37,7 +37,7 @@ public class Engine: LoggerDelegate {
         case manualTiles
         case frameTree
         case frameLoop
-        case frameLoopTiles
+//        case frameLoopTiles
         case frameLoopQueue
         case instantQueue
         case instantQueueSemaphore
@@ -46,10 +46,10 @@ public class Engine: LoggerDelegate {
             [.manual, .manualTiles].contains(self)
         }
         var isFrameLoop: Bool {
-            [.frameLoop, .frameLoopTiles, .frameLoopQueue].contains(self)
+            [.frameLoop/*, .frameLoopTiles,*/, .frameLoopQueue].contains(self)
         }
         var isTile: Bool {
-            [.manualTiles, .frameLoopTiles].contains(self)
+            [.manualTiles/*, .frameLoopTiles*/].contains(self)
         }
     }
     public var renderMode: Engine.RenderMode = .frameLoop
@@ -472,6 +472,7 @@ public class Engine: LoggerDelegate {
             for y in 0..<tileCountResolution.h {
                 var tileTextureRow: [MTLTexture] = []
                 for x in 0..<tileCountResolution.w {
+                    logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y).", loop: true)
                     let semaphore = DispatchSemaphore(value: 0)
                     var didError = false
                     try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: 0), force: force, completed: { texture in
@@ -513,6 +514,7 @@ public class Engine: LoggerDelegate {
                 for y in 0..<tileCountResolution.y {
                     var tileTextureRow: [MTLTexture] = []
                     for x in 0..<tileCountResolution.x {
+                        logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y) z\(z).", loop: true)
                         let semaphore = DispatchSemaphore(value: 0)
                         var didError = false
                         try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: z), force: force, completed: { texture in
