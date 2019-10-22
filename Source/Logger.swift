@@ -115,6 +115,7 @@ public class Logger {
         level = .debug
         source = true
         time = true
+        loopLimitActive = false
     }
     
     public init(name: String) {
