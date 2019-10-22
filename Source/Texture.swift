@@ -253,6 +253,74 @@ public struct Texture {
         return textureCopy
     }
     
+    public static func mergeTiles2d(textures: [[MTLTexture]], on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
+        guard !textures.isEmpty && !textures.first!.isEmpty else {
+            throw TextureError.copy("Tile textures not found.")
+        }
+        let firstTexture = textures.first!.first!
+        let width = firstTexture.width
+        let height = firstTexture.height
+        let fullWidth = width * textures.first!.count
+        let fullHeight = height * textures.count
+        guard let bits = LiveColor.Bits.bits(for: firstTexture.pixelFormat) else {
+            throw TextureError.copy("Tile bits not found.")
+        }
+        let textureCopy = try emptyTexture(size: CGSize(width: fullWidth, height: fullHeight), bits: bits, on: metalDevice)
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            throw TextureError.copy("Tile command Buffer make failed.")
+        }
+        guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+            throw TextureError.copy("Tile blit Command Encoder make failed.")
+        }
+        for (y, row) in textures.enumerated() {
+            for (x, texture) in row.enumerated() {
+                let sourceOrigin = MTLOrigin(x: 0, y: 0, z: 0)
+                let sourceSize = MTLSize(width: width, height: height, depth: 1)
+                let destinationOrigin = MTLOrigin(x: x * width, y: y * height, z: 0)
+                blitEncoder.copy(from: texture, sourceSlice: 0, sourceLevel: 0, sourceOrigin: sourceOrigin, sourceSize: sourceSize, to: textureCopy, destinationSlice: 0, destinationLevel: 0, destinationOrigin: destinationOrigin)
+            }
+        }
+        blitEncoder.endEncoding()
+        commandBuffer.commit()
+        return textureCopy
+    }
+    
+    public static func mergeTiles3d(textures: [[[MTLTexture]]], on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
+        guard !textures.isEmpty && !textures.first!.isEmpty && !textures.first!.first!.isEmpty else {
+            throw TextureError.copy("Tile textures not found.")
+        }
+        let firstTexture = textures.first!.first!.first!
+        let width = firstTexture.width
+        let height = firstTexture.height
+        let depth = firstTexture.depth
+        let fullWidth = width * textures.first!.first!.count
+        let fullHeight = height * textures.first!.count
+        let fullDetph = depth * textures.count
+        guard let bits = LiveColor.Bits.bits(for: firstTexture.pixelFormat) else {
+            throw TextureError.copy("Tile bits not found.")
+        }
+        let textureCopy = try emptyTexture3D(at: .custom(x: fullWidth, y: fullHeight, z: fullDetph), bits: bits, on: metalDevice)
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            throw TextureError.copy("Tile command Buffer make failed.")
+        }
+        guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+            throw TextureError.copy("Tile blit Command Encoder make failed.")
+        }
+        for (z, grid) in textures.enumerated() {
+            for (y, row) in grid.enumerated() {
+                for (x, texture) in row.enumerated() {
+                    let sourceOrigin = MTLOrigin(x: 0, y: 0, z: 0)
+                    let sourceSize = MTLSize(width: width, height: height, depth: depth)
+                    let destinationOrigin = MTLOrigin(x: x * width, y: y * height, z: z * depth)
+                    blitEncoder.copy(from: texture, sourceSlice: 0, sourceLevel: 0, sourceOrigin: sourceOrigin, sourceSize: sourceSize, to: textureCopy, destinationSlice: 0, destinationLevel: 0, destinationOrigin: destinationOrigin)
+                }
+            }
+        }
+        blitEncoder.endEncoding()
+        commandBuffer.commit()
+        return textureCopy
+    }
+    
     public static func copy3D(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.copy("Bits not found.")

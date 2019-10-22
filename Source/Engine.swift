@@ -37,19 +37,19 @@ public class Engine: LoggerDelegate {
         case manualTiles
         case frameTree
         case frameLoop
-//        case frameLoopTiles
+        case frameLoopTiles
         case frameLoopQueue
         case instantQueue
         case instantQueueSemaphore
         case direct
-        var isManual: Bool {
+        public var isManual: Bool {
             [.manual, .manualTiles].contains(self)
         }
-        var isFrameLoop: Bool {
-            [.frameLoop/*, .frameLoopTiles,*/, .frameLoopQueue].contains(self)
+        public var isFrameLoop: Bool {
+            [.frameLoop, .frameLoopTiles, .frameLoopQueue].contains(self)
         }
-        var isTile: Bool {
-            [.manualTiles/*, .frameLoopTiles*/].contains(self)
+        public var isTile: Bool {
+            [.manualTiles, .frameLoopTiles].contains(self)
         }
     }
     public var renderMode: Engine.RenderMode = .frameLoop
@@ -314,7 +314,15 @@ public class Engine: LoggerDelegate {
                 if let nodeIn = node as? NODE & NODEInIO {
                     let nodeOuts = nodeIn.inputList
                     for (i, nodeOut) in nodeOuts.enumerated() {
-                        if nodeOut.texture == nil {
+                        var inRendered: Bool = false
+                        if let tileNode2d = nodeOut as? NODETileable2D {
+                            inRendered = tileNode2d.tileTextures != nil
+                        } else if let tileNode3d = nodeOut as? NODETileable3D {
+                            inRendered = tileNode3d.tileTextures != nil
+                        } else {
+                            inRendered = nodeOut.texture == nil
+                        }
+                        if !inRendered {
                             logger.log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
                             node.needsRender = false // CHECK
                             continue loop
@@ -374,6 +382,11 @@ public class Engine: LoggerDelegate {
         }
         guard !node.rendering else {
             logger.log(node: node, .debug, .render, "Render in progress...", loop: true)
+            done(nil)
+            return
+        }
+        guard !node.inRender else {
+            logger.log(node: node, .debug, .render, "Render setup in progress...", loop: true)
             done(nil)
             return
         }
@@ -622,10 +635,16 @@ public class Engine: LoggerDelegate {
             height = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
             depth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
         }
+        var tileCountX: Int = 0
+        var tileCountY: Int = 0
+        var tileCountZ: Int = 0
         var tileFraction: CGFloat = 0.0
         if tileIndex != nil {
-            let realWidth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
-            tileFraction = CGFloat(width) / CGFloat(realWidth)
+            let realSize = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
+            tileFraction = CGFloat(width) / CGFloat(realSize)
+            tileCountX = realSize / width
+            tileCountY = realSize / height
+            tileCountZ = realSize / depth
         }
         
         var viewDrawable: CAMetalDrawable? = nil
@@ -766,10 +785,10 @@ public class Engine: LoggerDelegate {
             if node is NODE3D {
                 unifroms.append(Float(tileIndex?.z ?? 0))
             }
-            unifroms.append(Float(width))
-            unifroms.append(Float(height))
+            unifroms.append(Float(tileCountX))
+            unifroms.append(Float(tileCountY))
             if node is NODE3D {
-                unifroms.append(Float(depth))
+                unifroms.append(Float(tileCountZ))
             }
             unifroms.append(Float(tileFraction))
         }
