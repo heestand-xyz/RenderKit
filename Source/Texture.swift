@@ -624,6 +624,44 @@ public struct Texture {
         return raw
     }
     
+//    public static func rawCopy3d16(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [Float] {
+//        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+//            throw TextureError.raw("Raw 16 - Texture bits out of range.")
+//        }
+//        guard bits == ._16 else {
+//            throw TextureError.raw("Raw 16 - To access this data, the texture needs to be in 16 bit.")
+//        }
+//        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+//            throw TextureError.raw("Raw 16 - Command buffer could not be created.")
+//        }
+//        let bytesPerTexture = MemoryLayout<Float>.size * texture.width * texture.height * texture.depth * 4
+//        let bytesPerGrid = MemoryLayout<Float>.size * texture.width * texture.height * 4
+//        let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
+//        guard let imageBuffer = metalDevice.makeBuffer(length: bytesPerTexture, options: []) else {
+//            throw TextureError.raw("Raw 16 - Image buffer could not be created.")
+//        }
+//        guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+//            throw TextureError.raw("Raw 16 - Blit encoder could not be created.")
+//        }
+//        blitEncoder.copy(from: texture,
+//                         sourceSlice: 0,
+//                         sourceLevel: 0,
+//                         sourceOrigin: MTLOrigin(x: 0, y: 0, z: 0),
+//                         sourceSize: MTLSize(width: texture.width,
+//                                             height: texture.height,
+//                                             depth: texture.depth),
+//                         to: imageBuffer,
+//                         destinationOffset: 0,
+//                         destinationBytesPerRow: bytesPerRow,
+//                         destinationBytesPerImage: bytesPerGrid)
+//        blitEncoder.endEncoding()
+//        commandBuffer.commit()
+//        commandBuffer.waitUntilCompleted()
+//        var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * texture.depth * 4)
+//        memcpy(&raw, imageBuffer.contents(), imageBuffer.length)
+//        return raw
+//    }
+    
     // CHECK needs testing
     public static func raw32(texture: MTLTexture) throws -> [float4] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
@@ -725,6 +763,8 @@ public struct Texture {
         switch bits {
         case ._8:
             raw = try rawCopy3d8(texture: texture, on: metalDevice, in: commandQueue).map({ chan -> CGFloat in return CGFloat(chan) / (pow(2, 8) - 1) })
+//        case ._16:
+//            raw = try rawCopy3d16(texture: texture, on: metalDevice, in: commandQueue).map({ chan -> CGFloat in return CGFloat(chan) })
         default:
             throw TextureError.raw("rawNormalizedCopy3d with \(bits.rawValue)bits is not supported.")
         }
