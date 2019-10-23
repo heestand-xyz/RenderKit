@@ -100,16 +100,18 @@ public class Logger {
         case metal = "Metal"
     }
     
-    public func logAll() {
+    public func logAll(padding: Bool = false) {
         level = .detail
         loopLimitActive = false
+        self.padding = padding
     }
     
-    public func logDebug() {
+    public func logDebug(padding: Bool = false) {
         logAll()
         level = .debug
         source = true
         time = true
+        self.padding = padding
     }
     
     public init(name: String) {
