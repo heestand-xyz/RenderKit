@@ -56,6 +56,8 @@ public class Engine: LoggerDelegate {
     
     var frameTreeRendering: Bool = false
     
+    public var template: Bool = true
+    
     public let logger: Logger
 
     public enum MetalErrorCode {
@@ -787,6 +789,7 @@ public class Engine: LoggerDelegate {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
         if template {
+            unifroms.append(self.template ? 1 : 0)
             unifroms.append(Float(width))
             unifroms.append(Float(height))
         }
