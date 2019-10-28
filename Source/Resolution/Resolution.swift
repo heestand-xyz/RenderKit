@@ -251,13 +251,10 @@ public enum Resolution: ResolutionStandard {
             #if os(iOS) || os(tvOS)
             let size = UIScreen.main.nativeBounds.size
             let raw = Raw(w: Int(size.width), h: Int(size.height))
-            // FIXME: what if called on bg thread
-            #if targetEnvironment(macCatalyst)
-            if [.portrait, .portraitUpsideDown].contains(UIApplication.shared.windows.first!.windowScene!.interfaceOrientation) { return raw }
-            else { return raw.flopped }
-            #elseif os(iOS)
-            if [.portrait, .portraitUpsideDown].contains(UIApplication.shared.statusBarOrientation) { return raw }
-            else { return raw.flopped }
+            #if os(iOS) && !targetEnvironment(macCatalyst)
+            let orientation = UIApplication.shared.windows.first!.windowScene!.interfaceOrientation
+            let portrait = [.portrait, .portraitUpsideDown].contains(orientation)
+            if portrait { return raw } else { return raw.flopped }
             #else
             return raw
             #endif

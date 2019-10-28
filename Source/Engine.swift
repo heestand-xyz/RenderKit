@@ -420,6 +420,11 @@ public class Engine: LoggerDelegate {
             node.inRender = false
             done(false)
         }
+        func setupFailed(with error: Error) {
+            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+            node.inRender = false
+            done(false)
+        }
         do {
             if self.renderMode.isTile {
                 guard let nodeTileable = node as? NODE & NODETileable else {
@@ -439,7 +444,7 @@ public class Engine: LoggerDelegate {
                             }
                         })
                     } catch {
-                        self.logger.log(node: node, .error, .render, "Tile render failed.\(force ? " Forced." : "")", loop: true, e: error)
+                        setupFailed(with: error)
                     }
                 }
             } else {
@@ -452,7 +457,7 @@ public class Engine: LoggerDelegate {
                 })
             }
         } catch {
-            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+            setupFailed(with: error)
         }
     }
     
@@ -585,7 +590,7 @@ public class Engine: LoggerDelegate {
         var localRenderTime = CFAbsoluteTimeGetCurrent()
         var renderTime: Double = -1
         var renderTimeMs: Double = -1
-        logger.log(node: node, .debug, .metal, "Render Timer: Started")
+        logger.log(node: node, .debug, .metal, "Render Time: Started")
 
         
         // MARK: Command Buffer
@@ -598,7 +603,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Buffer ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Buffer ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -708,25 +713,27 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Drawable ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Drawable ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
-        // Custom
+        // MARK: Custom
         if let nodeCustom = node as? NODECustom {
             guard let customRenderedTexture = nodeCustom.customRender(drawableTexture, with: commandBuffer) else {
                 throw RenderError.nilCustomTexture
             }
             customTexture = customRenderedTexture
-        } else if node.customRenderActive {
-            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
-                throw RenderError.custom("CustomRenderDelegate not set")
-            }
-            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
-                throw RenderError.nilCustomTexture
-            }
-            customTexture = customRenderedTexture
         }
+        // FIXME: Cleanup. Called in delegate already.
+//        else if node.customRenderActive {
+//            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
+//                throw RenderError.custom("CustomRenderDelegate not set")
+//            }
+//            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
+//                throw RenderError.nilCustomTexture
+//            }
+//            customTexture = customRenderedTexture
+//        }
         
         let customRenderActive = node.customRenderActive || node.customMergerRenderActive
         if customRenderActive, let customTexture = customTexture {
@@ -737,7 +744,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
 
@@ -771,7 +778,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Command Encoder ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Encoder ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -829,7 +836,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniforms ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -904,7 +911,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniform Arrays ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Arrays ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -953,7 +960,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Uniform Index Arrays ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Index Arrays ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -996,7 +1003,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Fragment Texture ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Fragment Texture ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1043,7 +1050,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertices ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertices ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1068,7 +1075,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Vertex Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertex Uniforms ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1097,7 +1104,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Custom Vertex Texture ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom Vertex Texture ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1112,7 +1119,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Draw ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Draw ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1147,7 +1154,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] Encode ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Encode ")
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1155,7 +1162,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU ")
         }
         
         
@@ -1187,13 +1194,13 @@ public class Engine: LoggerDelegate {
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] GPU ")
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.logger.log(node: node, .debug, .metal, "Render Timer: [\(renderTimeMs)ms] CPU + GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU + GPU ")
                 
-                self.logger.log(node: node, .debug, .metal, "Render Timer: Ended")
+                self.logger.log(node: node, .debug, .metal, "Render Time: Ended")
                 
             }
 

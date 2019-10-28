@@ -196,9 +196,9 @@ public struct Texture {
         commandEncoder.endEncoding()
     }
     
-    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice, write: Bool = false) throws -> MTLTexture {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
-        descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue)
+        descriptor.usage = MTLTextureUsage(rawValue: write ? (MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue) : (MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue))
         guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
             throw TextureError.emptyFail
         }
