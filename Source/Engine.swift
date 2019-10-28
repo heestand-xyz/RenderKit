@@ -717,21 +717,23 @@ public class Engine: LoggerDelegate {
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
-        // Custom
+        // MARK: Custom
         if let nodeCustom = node as? NODECustom {
             guard let customRenderedTexture = nodeCustom.customRender(drawableTexture, with: commandBuffer) else {
                 throw RenderError.nilCustomTexture
             }
             customTexture = customRenderedTexture
-        } else if node.customRenderActive {
-            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
-                throw RenderError.custom("CustomRenderDelegate not set")
-            }
-            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
-                throw RenderError.nilCustomTexture
-            }
-            customTexture = customRenderedTexture
         }
+        // FIXME: Cleanup. Called in delegate already.
+//        else if node.customRenderActive {
+//            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
+//                throw RenderError.custom("CustomRenderDelegate not set")
+//            }
+//            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
+//                throw RenderError.nilCustomTexture
+//            }
+//            customTexture = customRenderedTexture
+//        }
         
         let customRenderActive = node.customRenderActive || node.customMergerRenderActive
         if customRenderActive, let customTexture = customTexture {
