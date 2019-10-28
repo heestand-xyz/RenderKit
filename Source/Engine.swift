@@ -420,6 +420,11 @@ public class Engine: LoggerDelegate {
             node.inRender = false
             done(false)
         }
+        func setupFailed(with error: Error) {
+            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+            node.inRender = false
+            done(false)
+        }
         do {
             if self.renderMode.isTile {
                 guard let nodeTileable = node as? NODE & NODETileable else {
@@ -439,7 +444,7 @@ public class Engine: LoggerDelegate {
                             }
                         })
                     } catch {
-                        self.logger.log(node: node, .error, .render, "Tile render failed.\(force ? " Forced." : "")", loop: true, e: error)
+                        setupFailed(with: error)
                     }
                 }
             } else {
@@ -452,7 +457,7 @@ public class Engine: LoggerDelegate {
                 })
             }
         } catch {
-            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+            setupFailed(with: error)
         }
     }
     
