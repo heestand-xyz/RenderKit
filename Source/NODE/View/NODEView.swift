@@ -229,6 +229,10 @@ open class NODEView: _View {
         }
     }
     
+    public func clear() {
+        metalView.clear()
+    }
+    
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
