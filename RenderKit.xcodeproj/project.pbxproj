@@ -51,6 +51,8 @@
 		3AFD7F1F2347882E00E38CD3 /* Resolution3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F16234780BF00E38CD3 /* Resolution3D.swift */; };
 		3AFD7F202347882E00E38CD3 /* Resolution3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F16234780BF00E38CD3 /* Resolution3D.swift */; };
 		4E6652F6A62007E479D467E5 /* Pods_RenderKit_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBDDD2EFDCF7FDEFE7B6F27D /* Pods_RenderKit_tvOS.framework */; };
+		7482B223236D8C410086C661 /* ResolutionStandard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F1C2347825A00E38CD3 /* ResolutionStandard.swift */; };
+		7482B224236D8C410086C661 /* ResolutionStandard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F1C2347825A00E38CD3 /* ResolutionStandard.swift */; };
 		DD44ECFCAAC7453911B38987 /* Pods_RenderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8048D9D5B1E6A6D52F99A759 /* Pods_RenderKit.framework */; };
 		F768C6DF1D2DEC394EEA90F7 /* Pods_RenderKit_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91E73DE9D89D12621E9FDCB6 /* Pods_RenderKit_macOS.framework */; };
 /* End PBXBuildFile section */
@@ -475,6 +477,7 @@
 				3ACE921B2344EF8C00F36E71 /* Texture.swift in Sources */,
 				3A80C3F22345F23100DE9266 /* CheckerView.swift in Sources */,
 				3ACE92232344F07100F36E71 /* Types.swift in Sources */,
+				7482B223236D8C410086C661 /* ResolutionStandard.swift in Sources */,
 				3A80C3DD2345E39A00DE9266 /* NODEMetalView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -495,6 +498,7 @@
 				3ACE921C2344EF8C00F36E71 /* Texture.swift in Sources */,
 				3A80C3F32345F23100DE9266 /* CheckerView.swift in Sources */,
 				3ACE92242344F07100F36E71 /* Types.swift in Sources */,
+				7482B224236D8C410086C661 /* ResolutionStandard.swift in Sources */,
 				3A80C3DE2345E39A00DE9266 /* NODEMetalView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -628,7 +632,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 2QHTY6FMW2;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -641,7 +645,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.hexagons.RenderKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -657,7 +661,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 2QHTY6FMW2;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -670,7 +674,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = se.hexagons.RenderKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

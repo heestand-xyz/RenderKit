@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "RenderKit"
-  spec.version      = "0.1.2"
+  spec.version      = "0.3.0"
 
   spec.summary      = "Live Graphics Realtime Render Engine"
   spec.description  = <<-DESC
@@ -25,6 +25,6 @@ Pod::Spec.new do |spec|
 
   spec.source_files  = "Source", "Source/**/*.swift"
 
-  spec.dependency 'LiveValues'
+  spec.dependency 'LiveValues', '~> 1.1'
   
 end

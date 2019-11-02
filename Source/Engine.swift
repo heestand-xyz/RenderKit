@@ -1138,7 +1138,9 @@ public class Engine: LoggerDelegate {
 //                                         depth: Int(ceil(CGFloat(depth) / CGFloat(l))))
             let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
             let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
+            #if !os(tvOS)
             (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+            #endif
         }
         
         
