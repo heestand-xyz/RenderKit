@@ -2,7 +2,8 @@
 
 xcuserdata/
 
-build/
+build/*
+docs/*
 
 *.framework
 
