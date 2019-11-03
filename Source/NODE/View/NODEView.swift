@@ -184,6 +184,7 @@ open class NODEView: _View {
             metalView.resolution = resolution
             layoutPlacement()
         } else {
+            self.resolution = nil
             widthLayoutConstraint.constant = 0
             heightLayoutConstraint.constant = 0
             #if os(iOS) || os(tvOS)
@@ -229,8 +230,8 @@ open class NODEView: _View {
         }
     }
     
-    public func clear() {
-        metalView.clear()
+    public func destroy() {
+        metalView.destroy()
     }
     
     required public init?(coder aDecoder: NSCoder) {

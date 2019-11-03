@@ -62,8 +62,8 @@ public class NODEMetalView: MTKView {
         }
     }
     
-    func clear() {
-//        releaseDrawables()
+    func destroy() {
+        releaseDrawables()
     }
     
     required init(coder: NSCoder) {
