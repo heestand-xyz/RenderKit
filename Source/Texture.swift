@@ -197,6 +197,7 @@ public struct Texture {
     }
     
     public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice, write: Bool = false) throws -> MTLTexture {
+        guard size.width > 0 && size.height > 0 else { throw TextureError.emptyFail }
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
         descriptor.usage = MTLTextureUsage(rawValue: write ? (MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue) : (MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue))
         guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
