@@ -357,14 +357,20 @@ public struct Texture {
     public static func makeMultiTexture(from textures: [MTLTexture], with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, in3D: Bool = false) throws -> MTLTexture {
         
         guard !textures.isEmpty else {
-            throw TextureError.multi("Passed Textures array is empty.")
+            throw TextureError.multi("Passed textures array is empty.")
         }
-        
+        let width = textures.first!.width
+        let height = textures.first!.height
+        guard textures.filter({ texture -> Bool in
+            texture.width == width && texture.height == height
+        }).count == textures.count else {
+            throw TextureError.multi("Passed textures are not all the same resolution.")
+        }
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = textures.first!.pixelFormat
         descriptor.textureType = in3D ? .type3D : .type2DArray
-        descriptor.width = textures.first!.width
-        descriptor.height = textures.first!.height
+        descriptor.width = width
+        descriptor.height = height
         descriptor.mipmapLevelCount = textures.first?.mipmapLevelCount ?? 1
         if in3D {
             descriptor.depth = textures.count
