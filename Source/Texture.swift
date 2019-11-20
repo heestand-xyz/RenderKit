@@ -107,8 +107,7 @@ public struct Texture {
         case fit
     }
     
-    #if os(iOS) || os(tvOS)
-    public static func resize(_ image: UIImage, to size: CGSize, placement: ImagePlacement = .fill) -> UIImage {
+    public static func resize(_ image: _Image, to size: CGSize, placement: ImagePlacement = .fill) -> _Image {
         
         let frame: CGRect
         switch placement {
@@ -135,15 +134,30 @@ public struct Texture {
                     size.height : image.size.height * (size.width / image.size.width)
             )
         }
+
+        #if os(iOS) || os(tvOS)
         
         UIGraphicsBeginImageContext(size)
         image.draw(in: frame)
-        let resized_image = UIGraphicsGetImageFromCurrentImageContext()
+        let resized_image = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         
-        return resized_image!
+        #elseif os(macOS)
+       
+        let sourceRect = NSMakeRect(0, 0, image.size.width, image.size.height)
+        let destSize = NSMakeSize(frame.width, frame.height)
+        let destRect = NSMakeRect(0, 0, destSize.width, destSize.height)
+        let newImage = NSImage(size: destSize)
+        newImage.lockFocus()
+        image.draw(in: destRect, from: sourceRect, operation: .sourceOver, fraction: 1.0)
+        newImage.unlockFocus()
+        newImage.size = destSize
+        let resized_image = NSImage(data: newImage.tiffRepresentation!)!
+        
+        #endif
+        
+        return resized_image
     }
-    #endif
     
     public static func makeTexture(from pixelBuffer: CVPixelBuffer, with commandBuffer: MTLCommandBuffer, force8bit: Bool = false, on metalDevice: MTLDevice) throws -> MTLTexture {
 //        let width = CVPixelBufferGetWidth(pixelBuffer)
