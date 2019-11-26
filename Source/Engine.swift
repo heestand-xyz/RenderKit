@@ -381,7 +381,7 @@ public class Engine: LoggerDelegate {
     public func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
         var node = node
         guard !node.bypass || node is NODEGenerator else {
-            logger.log(node: node, .info, .render, "Render bypassed.", loop: true)
+            logger.log(node: node, .debug, .render, "Render bypassed.", loop: true)
             done(nil)
             return
         }
