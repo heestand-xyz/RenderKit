@@ -20,6 +20,7 @@ public struct Texture {
         case multi(String)
         case mipmap
         case raw(String)
+        case makeTexture(String)
     }
     
     public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil) -> CVPixelBuffer? {
@@ -189,7 +190,7 @@ public struct Texture {
         var cgImage: CGImage?
         VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
         guard let image = cgImage else {
-            throw TextureError.pixelBuffer(-4)
+            throw TextureError.makeTexture("Pixel Buffer to Metal Texture Converion Faied with VTCreate method.")
         }
         return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
     }
@@ -198,6 +199,32 @@ public struct Texture {
         let textureLoader = MTKTextureLoader(device: metalDevice)
         let texture: MTLTexture = try textureLoader.newTexture(cgImage: image, options: nil)
         try mipmap(texture: texture, with: commandBuffer)
+        return texture
+    }
+    
+    public static func makeTextureFromCache(from pixelBuffer: CVPixelBuffer, bits: LiveColor.Bits, in textureCache: CVMetalTextureCache) throws -> MTLTexture {
+        
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+        
+        let channelCount = bytesPerRow / width
+        let pixelFormat: MTLPixelFormat
+        switch channelCount {
+        case 4: pixelFormat = bits.pixelFormat
+        case 2: pixelFormat = LiveColor.Bits(rawValue: bits.rawValue * 2)!.monochromePixelFormat
+        default: pixelFormat = bits.pixelFormat
+        }
+        
+        var imageTexture: CVMetalTexture?
+        let result = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, pixelFormat, width, height, 0, &imageTexture)
+        
+        guard let unwrappedImageTexture = imageTexture,
+              let texture = CVMetalTextureGetTexture(unwrappedImageTexture),
+              result == kCVReturnSuccess else {
+            throw TextureError.makeTexture("Pixel Buffer to Metal Texture Converion Faied with result: \(result)")
+        }
+
         return texture
     }
     
