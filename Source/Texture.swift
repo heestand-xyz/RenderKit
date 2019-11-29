@@ -211,8 +211,8 @@ public struct Texture {
         let channelCount = bytesPerRow / width
         let pixelFormat: MTLPixelFormat
         switch channelCount {
-        case 4: pixelFormat = bits.pixelFormat
-        case 2: pixelFormat = LiveColor.Bits(rawValue: bits.rawValue * 2)!.monochromePixelFormat
+//        case 4: pixelFormat = bits.pixelFormat
+//        case 2: pixelFormat = LiveColor.Bits(rawValue: bits.rawValue * 2)!.monochromePixelFormat
         default: pixelFormat = bits.pixelFormat
         }
         
