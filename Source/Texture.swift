@@ -461,7 +461,7 @@ public struct Texture {
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
         #if os(iOS) || os(tvOS)
-        return UIImage(cgImage: cgImage)//, scale: 1, orientation: .downMirrored)
+        return UIImage(cgImage: cgImage, scale: 1, orientation: .downMirrored)
         #elseif os(macOS)
         return NSImage(cgImage: cgImage, size: size)
         #endif
