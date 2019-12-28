@@ -25,6 +25,6 @@ Pod::Spec.new do |spec|
 
   spec.source_files  = "Source", "Source/**/*.swift"
 
-  spec.dependency 'LiveValues', '= 1.1.5'
+  spec.dependency 'LiveValues', '~> 1.1.6'
   
 end
