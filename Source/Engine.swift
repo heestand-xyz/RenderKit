@@ -25,6 +25,8 @@ protocol EngineInternalDelegate {
     func engineFrameIndex() -> Int
     func engineLinkIndex(of node: NODE) -> Int?
     func engineDelay(frames: Int, done: @escaping () -> ())
+    func didSetup(node: NODE, success: Bool)
+    func didRender(node: NODE, renderTime: Double, success: Bool)
 }
 
 public class Engine: LoggerDelegate {
@@ -378,6 +380,8 @@ public class Engine: LoggerDelegate {
         }
     }
     
+    // MARK: - Setup
+    
     public func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
         var node = node
         guard !node.bypass || node is NODEGenerator else {
@@ -399,13 +403,26 @@ public class Engine: LoggerDelegate {
         node.inRender = true
         let renderStartTime = CFAbsoluteTimeGetCurrent()
         logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
+        func setupDone() {
+            internalDelegate?.didSetup(node: node, success: true)
+        }
+        func setupFailed(with error: Error) {
+            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
+            node.inRender = false
+            done(false)
+            internalDelegate?.didSetup(node: node, success: false)
+//            render lastRenderTimes.
+        }
         func renderDone() {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
-            let renderTimeMs = CGFloat(Int(round(renderTime * 10_000))) / 10
+            let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
             self.logger.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
             node.inRender = false
+            internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: true)
         }
         func renderFailed(with error: Error) {
+            let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
+            let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
             var ioafMsg: String? = nil
             let err = error.localizedDescription
             if err.contains("IOAF code") {
@@ -419,35 +436,33 @@ public class Engine: LoggerDelegate {
             self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
             node.inRender = false
             done(false)
+            internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: false)
         }
-        func setupFailed(with error: Error) {
-            logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
-            node.inRender = false
-            done(false)
-        }
-        do {
-            if self.renderMode.isTile {
-                guard let nodeTileable = node as? NODE & NODETileable else {
-                    throw RenderError.nodeNotTileable
+        if self.renderMode.isTile {
+            guard let nodeTileable = node as? NODE & NODETileable else {
+                setupFailed(with: RenderError.nodeNotTileable)
+                return
+            }
+            DispatchQueue.global(qos: .background).async {
+                do {
+                    try self.tileRender(nodeTileable, force: force, completed: {
+                        DispatchQueue.main.async {
+                            renderDone()
+                            nodeTileable.didRenderTiles(force: force)
+                            done(true)
+                        }
+                    }, failed: { error in
+                        DispatchQueue.main.async {
+                            renderFailed(with: error)
+                        }
+                    })
+                    setupDone()
+                } catch {
+                    setupFailed(with: error)
                 }
-                DispatchQueue.global(qos: .background).async {
-                    do {
-                        try self.tileRender(nodeTileable, force: force, completed: {
-                            DispatchQueue.main.async {
-                                renderDone()
-                                nodeTileable.didRenderTiles(force: force)
-                                done(true)
-                            }
-                        }, failed: { error in
-                            DispatchQueue.main.async {
-                                renderFailed(with: error)
-                            }
-                        })
-                    } catch {
-                        setupFailed(with: error)
-                    }
-                }
-            } else {
+            }
+        } else {
+            do {
                 try self.render(node, with: currentDrawable, force: force, completed: { texture in
                     renderDone()
                     node.didRender(texture: texture, force: force)
@@ -455,9 +470,10 @@ public class Engine: LoggerDelegate {
                 }, failed: { error in
                     renderFailed(with: error)
                 })
+                setupDone()
+            } catch {
+                setupFailed(with: error)
             }
-        } catch {
-            setupFailed(with: error)
         }
     }
     

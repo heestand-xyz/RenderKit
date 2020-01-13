@@ -44,6 +44,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public var linkedNodes: [NODE] = []
     
+    /// Render Time is in Milliseconds
+    public var lastRenderTimes: [UUID: Double] = [:]
+    
 //    struct RenderedNODE {
 //        let node: NODE
 //        let rendered: Bool
@@ -345,6 +348,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     public func remove(node: NODE) {
         for (i, linkedNode) in linkedNodes.enumerated() {
             if linkedNode.isEqual(to: node) {
+                lastRenderTimes.removeValue(forKey: node.id)
                 linkedNodes.remove(at: i)
                 break
             }
@@ -622,6 +626,20 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     func engineDelay(frames: Int, done: @escaping () -> ()) {
         delay(frames: frames, done: done)
+    }
+    
+    func didSetup(node: NODE, success: Bool) {
+        if !success {
+            lastRenderTimes.removeValue(forKey: node.id)
+        }
+    }
+    
+    func didRender(node: NODE, renderTime: Double, success: Bool) {
+        if success {
+            lastRenderTimes[node.id] = renderTime
+        } else {
+            lastRenderTimes.removeValue(forKey: node.id)
+        }
     }
     
 }
