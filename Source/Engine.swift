@@ -409,9 +409,8 @@ public class Engine: LoggerDelegate {
         func setupFailed(with error: Error) {
             logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
             node.inRender = false
-            done(false)
             internalDelegate?.didSetup(node: node, success: false)
-//            render lastRenderTimes.
+            done(false)
         }
         func renderDone() {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
@@ -435,8 +434,8 @@ public class Engine: LoggerDelegate {
             }
             self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
             node.inRender = false
-            done(false)
             internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: false)
+            done(false)
         }
         if self.renderMode.isTile {
             guard let nodeTileable = node as? NODE & NODETileable else {
