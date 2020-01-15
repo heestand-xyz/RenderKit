@@ -492,6 +492,7 @@ public class Engine: LoggerDelegate {
         case nodeNot3D
         case tileError(String, Error)
         case tileRenderCanceled
+        case noSampler
     }
     
     // MARK: - Tile Render
@@ -1008,6 +1009,10 @@ public class Engine: LoggerDelegate {
         
         // MARK: Sampler
         
+        guard node.sampler != nil else {
+            commandEncoder.endEncoding()
+            throw RenderError.noSampler
+        }
         if node is NODE3D {
             (commandEncoder as! MTLComputeCommandEncoder).setSamplerState(node.sampler, index: 0)
         } else {

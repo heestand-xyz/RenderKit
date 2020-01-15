@@ -161,14 +161,14 @@ public enum BlendMode: String, Codable, CaseIterable {
 public enum InterpolateMode: String, Codable, CaseIterable {
     case nearest
     case linear
-    #if !os(tvOS) && !targetEnvironment(simulator)
+//    #if !os(tvOS) && !targetEnvironment(simulator)
     public var mtl: MTLSamplerMinMagFilter {
         switch self {
         case .nearest: return .nearest
         case .linear: return .linear
         }
     }
-    #endif
+//    #endif
 }
 
 // MARK: - Extend
@@ -178,7 +178,6 @@ public enum ExtendMode: String, Codable, CaseIterable {
     case zero
     case loop
     case mirror
-    #if !os(tvOS) && !targetEnvironment(simulator)
     public var mtl: MTLSamplerAddressMode {
         switch self {
         case .hold: return .clampToEdge
@@ -187,6 +186,7 @@ public enum ExtendMode: String, Codable, CaseIterable {
         case .mirror: return .mirrorRepeat
         }
     }
+    #if !os(tvOS) && !targetEnvironment(simulator)
     public var mps: MPSImageEdgeMode? {
         switch self {
         case .zero:
