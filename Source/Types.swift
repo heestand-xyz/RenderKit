@@ -7,7 +7,7 @@
 //
 
 import LiveValues
-#if !os(tvOS) || !targetEnvironment(simulator)
+#if !os(tvOS) && !targetEnvironment(simulator)
 import MetalPerformanceShaders
 #endif
 
@@ -161,7 +161,7 @@ public enum BlendMode: String, Codable, CaseIterable {
 public enum InterpolateMode: String, Codable, CaseIterable {
     case nearest
     case linear
-    #if !os(tvOS) || !targetEnvironment(simulator)
+    #if !os(tvOS) && !targetEnvironment(simulator)
     public var mtl: MTLSamplerMinMagFilter {
         switch self {
         case .nearest: return .nearest
@@ -178,7 +178,7 @@ public enum ExtendMode: String, Codable, CaseIterable {
     case zero
     case loop
     case mirror
-    #if !os(tvOS) || !targetEnvironment(simulator)
+    #if !os(tvOS) && !targetEnvironment(simulator)
     public var mtl: MTLSamplerAddressMode {
         switch self {
         case .hold: return .clampToEdge
