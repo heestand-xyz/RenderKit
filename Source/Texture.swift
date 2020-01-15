@@ -712,7 +712,7 @@ public struct Texture {
 //    }
     
     // CHECK needs testing
-    public static func raw32(texture: MTLTexture) throws -> [float4] {
+    public static func raw32(texture: MTLTexture) throws -> [SIMD4<Float>] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 32 - Texture bits out of range.")
         }
@@ -720,16 +720,16 @@ public struct Texture {
             throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
         }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
-        var raw = Array<float4>(repeating: float4(0), count: texture.width * texture.height)
+        var raw = Array<SIMD4<Float>>(repeating: SIMD4<Float>(), count: texture.width * texture.height)
         raw.withUnsafeMutableBytes {
-            let bytesPerRow = MemoryLayout<float4>.size * texture.width
+            let bytesPerRow = MemoryLayout<SIMD4<Float>>.size * texture.width
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
         }
         return raw
     }
     
     // CHECK needs testing
-    public static func raw3d32(texture: MTLTexture) throws -> [float4] {
+    public static func raw3d32(texture: MTLTexture) throws -> [SIMD4<Float>] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 32 - Texture bits out of range.")
         }
@@ -737,10 +737,10 @@ public struct Texture {
             throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
         }
         let region = MTLRegionMake3D(0, 0, 0, texture.width, texture.height, texture.depth)
-        var raw = Array<float4>(repeating: float4(0), count: texture.width * texture.height * texture.depth * 4)
+        var raw = Array<SIMD4<Float>>(repeating: SIMD4<Float>(), count: texture.width * texture.height * texture.depth * 4)
         raw.withUnsafeMutableBytes {
-            let bytesPerRow = MemoryLayout<float4>.size * texture.width * 4
-            let bytesPerImage = MemoryLayout<float4>.size * texture.width * texture.height * 4
+            let bytesPerRow = MemoryLayout<SIMD4<Float>>.size * texture.width * 4
+            let bytesPerImage = MemoryLayout<SIMD4<Float>>.size * texture.width * texture.height * 4
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, bytesPerImage: bytesPerImage, from: region, mipmapLevel: 0, slice: 0)
         }
         return raw

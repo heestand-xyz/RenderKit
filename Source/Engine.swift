@@ -1141,7 +1141,7 @@ public class Engine: LoggerDelegate {
         
         // MARK: Threads
         
-        if let node3d = node as? NODE3D {
+//        if let node3d = node as? NODE3D {
 //            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
 //            let width = node3d.pipeline3d.threadExecutionWidth
 //            let w = width
@@ -1151,13 +1151,12 @@ public class Engine: LoggerDelegate {
 //            let threadsPerGrid = MTLSize(width: Int(ceil(CGFloat(width) / CGFloat(w))),
 //                                         height: Int(ceil(CGFloat(height) / CGFloat(h))),
 //                                         depth: Int(ceil(CGFloat(depth) / CGFloat(l))))
-            let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
-            let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
-            #if !os(tvOS)
-            (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
-            #endif
-        }
-        
+//            let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
+//            let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
+//            #if !os(tvOS)
+//            (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+//            #endif
+//        }
         
         // MARK: Encode
         
