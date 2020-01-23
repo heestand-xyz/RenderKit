@@ -161,33 +161,8 @@ public struct Texture {
         return resized_image
     }
     
+    /// Check out makeTextureFromCache first...
     public static func makeTexture(from pixelBuffer: CVPixelBuffer, with commandBuffer: MTLCommandBuffer, force8bit: Bool = false, on metalDevice: MTLDevice) throws -> MTLTexture {
-//        let width = CVPixelBufferGetWidth(pixelBuffer)
-//        let height = CVPixelBufferGetHeight(pixelBuffer)
-//        var cvTextureOut: CVMetalTexture?
-//        let colorBits: MTLPixelFormat = force8bit ? LiveColor.Bits._8.mtl : bits.mtl
-//        let attributes = [
-////            "IOSurfaceOpenGLESFBOCompatibility": true,
-////            "IOSurfaceOpenGLESTextureCompatibility": true,
-//            "IOSurfaceCoreAnimationCompatibility": true
-//            ] as CFDictionary
-//        let kCVReturn = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, attributes, colorBits, width, height, 0, &cvTextureOut)
-//        guard kCVReturn == kCVReturnSuccess else {
-//            throw TextureError.pixelBuffer(-1)
-//        }
-//        guard let cvTexture = cvTextureOut else {
-//            throw TextureError.pixelBuffer(-2)
-//        }
-//        guard let inputTexture = CVMetalTextureGetTexture(cvTexture) else {
-//            throw TextureError.pixelBuffer(-3)
-//        }
-//        return inputTexture
-        
-//        guard let texture = CVMetalTextureGetTexture(pixelBuffer) else {
-//            throw TextureError.pixelBuffer(-1)
-//        }
-//        return texture
-        
         var cgImage: CGImage?
         VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
         guard let image = cgImage else {
@@ -211,10 +186,15 @@ public struct Texture {
         
         let channelCount = bytesPerRow / width
         let pixelFormat: MTLPixelFormat
-        switch channelCount {
-        case 4: pixelFormat = bits.pixelFormat
-        case 2: pixelFormat = LiveColor.Bits._16.monochromePixelFormat
-        default: pixelFormat = bits.pixelFormat
+        switch CVPixelBufferGetPixelFormatType(pixelBuffer) {
+        case 1278226534: // OneComponent32Float
+            pixelFormat = LiveColor.Bits._32.monochromePixelFormat
+        default:
+            switch channelCount {
+            case 4: pixelFormat = bits.pixelFormat
+            case 2: pixelFormat = LiveColor.Bits._16.monochromePixelFormat
+            default: pixelFormat = bits.pixelFormat
+            }
         }
         
         var imageTexture: CVMetalTexture?
@@ -441,22 +421,29 @@ public struct Texture {
     
     // MARK: - Conversions
     
+    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
+        guard let ciImage: CIImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
+        let size = CGSize(width: texture.width, height: texture.height)
+        guard let cgImage: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits) else { return nil }
+        return cgImage
+    }
+    
     public static func ciImage(from texture: MTLTexture, colorSpace: LiveColor.Space) -> CIImage? {
         CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace.cg])
     }
     
     public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
-        #if os(iOS) || os(tvOS)
-        return cgImage
-        #elseif os(macOS)
+//        #if os(iOS) || os(tvOS)
+//        return cgImage
+//        #elseif os(macOS)
         guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         context.scaleBy(x: 1, y: -1)
         context.translateBy(x: 0, y: -size.height)
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
         guard let image = context.makeImage() else { return nil }
         return image
-        #endif
+//        #endif
     }
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
