@@ -504,8 +504,12 @@ public struct Texture {
     
     public static func pixelBuffer(from cgImage: CGImage, colorSpace: LiveColor.Space, bits: LiveColor.Bits) throws -> CVPixelBuffer {
         var maybePixelBuffer: CVPixelBuffer?
-        let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
-                     kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue]
+        let attrs: [CFString: Any] = [
+            kCVPixelBufferPixelFormatTypeKey: Int(bits.os) as CFNumber,
+            kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferMetalCompatibilityKey: kCFBooleanTrue!,
+        ]
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          cgImage.width,
                                          cgImage.height,
@@ -530,6 +534,17 @@ public struct Texture {
             throw PixelBufferError.status("Context failed to be created.")
         }
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+        return pixelBuffer
+    }
+    
+    public static func pixelBuffer(from texture: MTLTexture, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) throws -> CVPixelBuffer {
+        guard let ciImage: CIImage = Texture.ciImage(from: texture, colorSpace: colorSpace) else {
+            throw PixelBufferError.status("CIImage failed.")
+        }
+        guard let cgImage: CGImage = Texture.cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else {
+            throw PixelBufferError.status("CGImage failed.")
+        }
+        let pixelBuffer: CVPixelBuffer = try Texture.pixelBuffer(from: cgImage, colorSpace: colorSpace, bits: bits)
         return pixelBuffer
     }
     
