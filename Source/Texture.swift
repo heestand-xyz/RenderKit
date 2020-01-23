@@ -161,12 +161,23 @@ public struct Texture {
         return resized_image
     }
     
+    public static func ciImage(from pixelBuffer: CVPixelBuffer) -> CIImage {
+        CIImage(cvImageBuffer: pixelBuffer)
+    }
+    
     /// Check out makeTextureFromCache first...
     public static func makeTexture(from pixelBuffer: CVPixelBuffer, with commandBuffer: MTLCommandBuffer, force8bit: Bool = false, on metalDevice: MTLDevice) throws -> MTLTexture {
         var cgImage: CGImage?
         VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
         guard let image = cgImage else {
             throw TextureError.makeTexture("Pixel Buffer to Metal Texture Converion Faied with VTCreate method.")
+        }
+        return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
+    }
+    
+    public static func makeTexture(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, vFlip: Bool = true) throws -> MTLTexture {
+        guard let image: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else {
+            throw TextureError.makeTexture("CIImage to CGImage conversion failed.")
         }
         return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
     }
@@ -421,10 +432,10 @@ public struct Texture {
     
     // MARK: - Conversions
     
-    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
+    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) -> CGImage? {
         guard let ciImage: CIImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         let size = CGSize(width: texture.width, height: texture.height)
-        guard let cgImage: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits) else { return nil }
+        guard let cgImage: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else { return nil }
         return cgImage
     }
     
@@ -432,18 +443,23 @@ public struct Texture {
         CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace.cg])
     }
     
-    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits) -> CGImage? {
+    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
-//        #if os(iOS) || os(tvOS)
-//        return cgImage
-//        #elseif os(macOS)
-        guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
-        context.scaleBy(x: 1, y: -1)
-        context.translateBy(x: 0, y: -size.height)
-        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
-        guard let image = context.makeImage() else { return nil }
-        return image
-//        #endif
+        #if os(iOS) || os(tvOS)
+        let flip: Bool = vFlip
+        #elseif os(macOS)
+        let flip: Bool = true
+        #endif
+        if flip {
+            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            context.scaleBy(x: 1, y: -1)
+            context.translateBy(x: 0, y: -size.height)
+            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+            guard let image = context.makeImage() else { return nil }
+            return image
+        } else {
+            return cgImage
+        }
     }
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
@@ -454,11 +470,11 @@ public struct Texture {
         #endif
     }
 
-    public static func image(from texture: MTLTexture, colorSpace: LiveColor.Space) -> _Image? {
+    public static func image(from texture: MTLTexture, colorSpace: LiveColor.Space, vFlip: Bool = true) -> _Image? {
         let size = CGSize(width: texture.width, height: texture.height)
         guard let ciImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else { return nil }
-        guard let cgImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits) else { return nil }
+        guard let cgImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else { return nil }
         return image(from: cgImage, at: size)
     }
     
@@ -872,6 +888,37 @@ public struct Texture {
         return nil
       }
       return dstPixelBuffer
+    }
+    
+    static func ioSurfaceCompatibility(pixelBuffer: CVPixelBuffer) -> CVPixelBuffer? {
+        
+        let attributes = [
+            "IOSurfaceCoreAnimationCompatibility": NSNumber(value: true)
+        ]
+        var copy: CVPixelBuffer? = nil
+
+        CVPixelBufferCreate(kCFAllocatorDefault, CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer), CVPixelBufferGetPixelFormatType(pixelBuffer), attributes as CFDictionary, &copy)
+
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        if let copy = copy {
+            CVPixelBufferLockBaseAddress(copy, [])
+        }
+
+        let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)
+        var copyBaseAddress: UnsafeMutableRawPointer? = nil
+        if let copy = copy {
+            copyBaseAddress = CVPixelBufferGetBaseAddress(copy)
+        }
+
+        memcpy(copyBaseAddress, baseAddress, CVPixelBufferGetDataSize(pixelBuffer))
+
+        if let copy = copy {
+            CVPixelBufferUnlockBaseAddress(copy, [])
+        }
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+        
+        return copy
+
     }
     
 }
