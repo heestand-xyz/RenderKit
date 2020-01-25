@@ -58,6 +58,8 @@ public class Engine: LoggerDelegate {
     
     var frameTreeRendering: Bool = false
     
+    public var renderInSync: Bool = false
+    
     public var template: Bool = true
     
     public let logger: Logger
@@ -1231,6 +1233,9 @@ public class Engine: LoggerDelegate {
         })
         
         commandBuffer.commit()
+        if renderInSync {
+            commandBuffer.waitUntilCompleted()
+        }
         
 //        let synchronous: Bool = true
 //        if synchronous {
