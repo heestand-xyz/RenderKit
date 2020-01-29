@@ -18,11 +18,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: - Version
     
-    public var version: (app: String, build: String)? {
+    public var version: String? {
         guard let infos = Bundle(for: Render.self).infoDictionary else { return nil }
         guard let appVersion: String = infos["CFBundleShortVersionString"] as? String else { return nil }
-        guard let buildVersion: String = infos["CFBundleVersion"] as? String else { return nil }
-        return (app: appVersion, build: buildVersion)
+        return appVersion
     }
     
     // MARK: Metal Lib
