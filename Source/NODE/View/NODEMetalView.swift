@@ -9,6 +9,19 @@
 import LiveValues
 import MetalKit
 
+public enum ViewInterpolation: String, CaseIterable {
+    case linear
+    case trilinear
+    case nearest
+    var filter: CALayerContentsFilter {
+        switch self {
+        case .linear: return .linear
+        case .trilinear: return .trilinear
+        case .nearest: return .nearest
+        }
+    }
+}
+
 public class NODEMetalView: MTKView {
     
     let render: Render
@@ -21,6 +34,13 @@ public class NODEMetalView: MTKView {
     }
     
     var readyToRender: (() -> ())?
+    
+    public var viewInterpolation: ViewInterpolation = .linear {
+        didSet {
+            layer.minificationFilter = viewInterpolation.filter
+            layer.magnificationFilter = viewInterpolation.filter
+        }
+    }
    
     // MARK: - Life Cycle
     
@@ -42,6 +62,9 @@ public class NODEMetalView: MTKView {
         autoResizeDrawable = false
         enableSetNeedsDisplay = true
         isPaused = true
+        
+        layer.minificationFilter = viewInterpolation.filter
+        layer.magnificationFilter = viewInterpolation.filter
         
     }
     

@@ -33,6 +33,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public let engine: Engine
     
+    // MARK: - Frame Loop Active
+    
+    public var frameLoopActive: Bool = true
+    
     // MARK: Checker
     
     public var backgroundAlphaCheckerActive: Bool = true
@@ -196,6 +200,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     #endif
     
     @objc func frameLoop() {
+        guard frameLoopActive else { return }
         DispatchQueue.main.async {
             self.delegate?.pixelFrameLoop()
             for frameCallback in self.frameCallbacks {
