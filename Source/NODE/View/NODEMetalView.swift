@@ -37,8 +37,10 @@ public class NODEMetalView: MTKView {
     
     public var viewInterpolation: ViewInterpolation = .linear {
         didSet {
+            #if os(iOS)
             layer.minificationFilter = viewInterpolation.filter
             layer.magnificationFilter = viewInterpolation.filter
+            #endif
         }
     }
    
@@ -63,8 +65,10 @@ public class NODEMetalView: MTKView {
         enableSetNeedsDisplay = true
         isPaused = true
         
+        #if os(iOS)
         layer.minificationFilter = viewInterpolation.filter
         layer.magnificationFilter = viewInterpolation.filter
+        #endif
         
     }
     
