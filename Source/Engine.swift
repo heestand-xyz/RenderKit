@@ -587,7 +587,7 @@ public class Engine: LoggerDelegate {
     
     func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, tileIndex: TileIndex? = nil, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
         
-        let bits = internalDelegate.bits
+        let bits = node.overrideBits ?? internalDelegate.bits
         let device = internalDelegate.metalDevice!
         
         var node = node
@@ -689,11 +689,11 @@ public class Engine: LoggerDelegate {
         
         var viewDrawable: CAMetalDrawable? = nil
         let drawableTexture: MTLTexture
-        if currentDrawable != nil && !(node is NODE3D) {
+        if currentDrawable != nil && !(node is NODE3D) && node.overrideBits == nil {
             viewDrawable = currentDrawable!
             drawableTexture = currentDrawable!.texture
             logger.log(node: node, .detail, .render, "Drawable Texture - Current")
-        } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth {
+        } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth && node.overrideBits == nil {
             drawableTexture = node.texture!
             logger.log(node: node, .detail, .render, "Drawable Texture - Reuse")
         } else {
@@ -1235,6 +1235,7 @@ public class Engine: LoggerDelegate {
         commandBuffer.commit()
         if renderInSync {
             commandBuffer.waitUntilCompleted()
+//            commandBuffer.waitUntilScheduled()
         }
         
 //        let synchronous: Bool = true

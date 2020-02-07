@@ -20,6 +20,8 @@ public protocol NODE {
     var shaderName: String { get }
     
     var view: NODEView { get }
+    
+    var overrideBits: LiveColor.Bits? { get }
 
     var liveValues: [LiveValue] { get }
     var liveArray: [[LiveFloat]] { get }

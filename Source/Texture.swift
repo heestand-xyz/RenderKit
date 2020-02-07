@@ -229,13 +229,30 @@ public struct Texture {
         commandEncoder.endEncoding()
     }
     
-    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice, write: Bool = false) throws -> MTLTexture {
+    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice, write: Bool = false/*, makeIOSurface: Bool = false*/) throws -> MTLTexture {
         guard size.width > 0 && size.height > 0 else { throw TextureError.emptyFail }
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
         descriptor.usage = MTLTextureUsage(rawValue: write ? (MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue) : (MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue))
+//        descriptor.swizzle...
+//        let emptyTexture: MTLTexture
+//        if makeIOSurface {
+//            guard var ioSurface: IOSurface = IOSurface(properties: [
+//                IOSurfacePropertyKey.pixelFormat : bits.pixelFormat,
+//                IOSurfacePropertyKey.width : Int(size.width),
+//                IOSurfacePropertyKey.height : Int(size.height)
+//            ]) else {
+//                throw TextureError.emptyFail
+//            }
+//            guard let texture = metalDevice.makeTexture(descriptor: descriptor, iosurface: ioSurface.ref, plane: 0) else {
+//                throw TextureError.emptyFail
+//            }
+//            emptyTexture = texture
+//        } else {
         guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
             throw TextureError.emptyFail
         }
+//            emptyTexture = texture
+//        }
         return texture
     }
     
