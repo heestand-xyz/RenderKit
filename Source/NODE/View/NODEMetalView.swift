@@ -46,7 +46,7 @@ public class NODEMetalView: MTKView {
    
     // MARK: - Life Cycle
     
-    public init(with render: Render) {
+    public init(with render: Render, pixelFormat: MTLPixelFormat) {
         
         self.render = render
         
@@ -54,7 +54,7 @@ public class NODEMetalView: MTKView {
         
         super.init(frame: onePixelFrame, device: render.metalDevice)
         
-        colorPixelFormat = render.bits.pixelFormat
+        colorPixelFormat = pixelFormat
         #if os(iOS) || os(tvOS)
         isOpaque = false
         #elseif os(macOS)

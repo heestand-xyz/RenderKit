@@ -93,13 +93,13 @@ open class NODEView: _View {
     public override var frame: NSRect { didSet { _ = layoutPlacement(); checkAutoRes() } }
     #endif
     
-    public init(with render: Render) {
+    public init(with render: Render, pixelFormat: MTLPixelFormat) {
         
         self.render = render
         
         checkerView = CheckerView()
 
-        metalView = NODEMetalView(with: render)
+        metalView = NODEMetalView(with: render, pixelFormat: pixelFormat)
         
         super.init(frame: .zero)
         

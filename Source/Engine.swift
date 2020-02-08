@@ -689,11 +689,11 @@ public class Engine: LoggerDelegate {
         
         var viewDrawable: CAMetalDrawable? = nil
         let drawableTexture: MTLTexture
-        if currentDrawable != nil && !(node is NODE3D) && node.overrideBits == nil {
+        if currentDrawable != nil && !(node is NODE3D)/* && node.overrideBits == nil*/ {
             viewDrawable = currentDrawable!
             drawableTexture = currentDrawable!.texture
             logger.log(node: node, .detail, .render, "Drawable Texture - Current")
-        } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth && node.overrideBits == nil {
+        } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth/* && node.overrideBits == nil*/ {
             drawableTexture = node.texture!
             logger.log(node: node, .detail, .render, "Drawable Texture - Reuse")
         } else {
