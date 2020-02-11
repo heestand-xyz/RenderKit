@@ -9,6 +9,7 @@
 import LiveValues
 import Metal
 import simd
+import CoreVideo
 
 public protocol NODE {
     

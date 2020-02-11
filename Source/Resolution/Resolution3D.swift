@@ -8,6 +8,7 @@
 
 import LiveValues
 import CoreGraphics
+import MetalKit
 
 public enum Resolution3D: ResolutionStandard {
     

@@ -9,6 +9,7 @@
 import LiveValues
 import CoreGraphics
 import Metal
+import QuartzCore.CoreAnimation
 
 public protocol EngineDelegate {
     func textures(from node: NODE, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
