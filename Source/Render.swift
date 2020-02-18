@@ -29,6 +29,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     let metalLibURL: URL
     let bundle: Bundle?
     
+    // MARK: Frame Loop Tread
+    
+    public var frameLoopRenderThread: RenderThread = .main
+    
     // MARK: Engine
     
     public let engine: Engine
@@ -202,22 +206,20 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: - Frame Loop
     
-    #if os(macOS)
-    
-    #endif
-    
     @objc func frameLoop() {
         guard frameLoopActive else { return }
-        DispatchQueue.main.async {
-            self.delegate?.pixelFrameLoop()
-            for frameCallback in self.frameCallbacks {
-                frameCallback.callback()
-            }
-//            self.checkAutoRes()
-            self.checkAllLive()
-            self.engine.frameLoop()
-            self.calcFPS()
+        frameLoopRenderThread.call(doFrameLoop)
+    }
+    
+    func doFrameLoop() {
+        self.delegate?.pixelFrameLoop()
+        for frameCallback in self.frameCallbacks {
+            frameCallback.callback()
         }
+//        self.checkAutoRes()
+        self.checkAllLive()
+        self.engine.frameLoop()
+        self.calcFPS()
     }
     
     // MARK: - Check Auto Res

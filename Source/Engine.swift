@@ -17,6 +17,7 @@ public protocol EngineDelegate {
 }
 
 protocol EngineInternalDelegate {
+    var frameLoopRenderThread: RenderThread
     var linkedNodes: [NODE] { get set }
     var commandQueue: MTLCommandQueue! { get set }
     var metalDevice: MTLDevice! { get set }
@@ -28,6 +29,27 @@ protocol EngineInternalDelegate {
     func engineDelay(frames: Int, done: @escaping () -> ())
     func didSetup(node: NODE, success: Bool)
     func didRender(node: NODE, renderTime: Double, success: Bool)
+}
+
+public enum RenderThread {
+    case main
+    case background
+    func call(_ callback: @escaping () -> ()) {
+        switch self {
+        case .main:
+            guard !Thread.isMainThread else {
+                callback()
+                return
+            }
+            DispatchQueue.main.async {
+                callback()
+            }
+        case .background:
+            DispatchQueue.global(qos: .background).async {
+                callback()
+            }
+        }
+    }
 }
 
 public class Engine: LoggerDelegate {
@@ -104,7 +126,7 @@ public class Engine: LoggerDelegate {
             self.renderNODEs()
         } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
             if !self.instantQueueActivated {
-                DispatchQueue.global(qos: .background).async {
+                internalDelegate.frameLoopRenderThread.call {
                     while true {
                         self.renderNODEs()
                     }
@@ -204,13 +226,13 @@ public class Engine: LoggerDelegate {
         }
         guard !nodesNeedsRender.isEmpty else { return }
         frameTreeRendering = true
-        DispatchQueue.global(qos: .background).async {
+        internalDelegate.frameLoopRenderThread.call {
             self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-")
             var renderedNodes: [NODE] = []
             func render(_ node: NODE) {
                 self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"")
                 let semaphore = DispatchSemaphore(value: 0)
-                DispatchQueue.main.async {                
+                internalDelegate.frameLoopRenderThread.call {
                     if node.view.superview != nil {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
@@ -345,7 +367,7 @@ public class Engine: LoggerDelegate {
                     semaphore = DispatchSemaphore(value: 0)
                 }
                 
-                DispatchQueue.main.async {
+                internalDelegate.frameLoopRenderThread.call {
                     if node.view.superview != nil {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
@@ -429,7 +451,7 @@ public class Engine: LoggerDelegate {
             let err = error.localizedDescription
             if err.contains("IOAF code") {
                 if let iofaCode = Int(err[err.count - 2..<err.count - 1]) {
-                    DispatchQueue.main.async {
+                    internalDelegate.frameLoopRenderThread.call {
                         self.metalErrorCodeCallback?(.IOAF(iofaCode))
                     }
                     ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
@@ -445,16 +467,16 @@ public class Engine: LoggerDelegate {
                 setupFailed(with: RenderError.nodeNotTileable)
                 return
             }
-            DispatchQueue.global(qos: .background).async {
+            internalDelegate.frameLoopRenderThread.call {
                 do {
                     try self.tileRender(nodeTileable, force: force, completed: {
-                        DispatchQueue.main.async {
+                        internalDelegate.frameLoopRenderThread.call {
                             renderDone()
                             nodeTileable.didRenderTiles(force: force)
                             done(true)
                         }
                     }, failed: { error in
-                        DispatchQueue.main.async {
+                        internalDelegate.frameLoopRenderThread.call {
                             renderFailed(with: error)
                         }
                     })
@@ -1228,7 +1250,7 @@ public class Engine: LoggerDelegate {
                 
             }
 
-            DispatchQueue.main.async {
+            internalDelegate.frameLoopRenderThread.call {
                 completed(drawableTexture)
             }
         })
