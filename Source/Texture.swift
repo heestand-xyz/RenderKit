@@ -475,7 +475,9 @@ public struct Texture {
             guard let image = context.makeImage() else { return nil }
             return image
         } else {
+            #if os(iOS) || os(tvOS)
             return cgImage
+            #endif
         }
     }
 

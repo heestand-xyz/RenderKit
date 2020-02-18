@@ -29,10 +29,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     let metalLibURL: URL
     let bundle: Bundle?
     
-    // MARK: Frame Loop Tread
-    
-    public var frameLoopRenderThread: RenderThread = .main
-    
     // MARK: Engine
     
     public let engine: Engine
@@ -195,9 +191,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 //        }
 //        CVDisplayLinkSetOutputCallback(displayLink!, displayLinkOutputCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
 //        CVDisplayLinkStart(displayLink!)
-        RunLoop.current.add(Timer(timeInterval: 1.0 / Double(self.fpsMax), repeats: true, block: { _ in
-            self.frameLoop()
-        }), forMode: .common)
+        let frameTime: Double = 1.0 / Double(self.fpsMax)
+        frameLoopRenderThread.timer(frameTime, frameLoop)
+//        RunLoop.current.add(Timer(timeInterval: 1.0 / Double(self.fpsMax), repeats: true, block: { _ in
+//            print("FRAME LOOP")
+//            self.frameLoop()
+//        }), forMode: .common)
         #endif
         
         logger.log(.info, .pixelKit, "ready to render.", clean: true)

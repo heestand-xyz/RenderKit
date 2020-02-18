@@ -11,13 +11,41 @@ import CoreGraphics
 import Metal
 import QuartzCore.CoreAnimation
 
+public enum RenderThread {
+    case main
+    case background
+    var queue: DispatchQueue {
+        switch self {
+        case .main:
+            return .main
+        case .background:
+            return .global(qos: .background)
+        }
+    }
+    func call(_ callback: @escaping () -> ()) {
+        if self == .main && Thread.isMainThread {
+            callback()
+            return
+        }
+        queue.async {
+            callback()
+        }
+    }
+    func timer(_ duration: Double, _ callback: @escaping () -> ()) {
+        queue.asyncAfter(deadline: .now() + .milliseconds(Int(duration * 1_000.0))) {
+            callback()
+            self.timer(duration, callback)
+        }
+    }
+}
+public var frameLoopRenderThread: RenderThread = .main
+
 public protocol EngineDelegate {
     func textures(from node: NODE, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
     func tileTextures(from node: NODE & NODETileable, at tileIndex: TileIndex, with commandBuffer: MTLCommandBuffer) throws -> (a: MTLTexture?, b: MTLTexture?, custom: MTLTexture?)
 }
 
 protocol EngineInternalDelegate {
-    var frameLoopRenderThread: RenderThread
     var linkedNodes: [NODE] { get set }
     var commandQueue: MTLCommandQueue! { get set }
     var metalDevice: MTLDevice! { get set }
@@ -29,27 +57,6 @@ protocol EngineInternalDelegate {
     func engineDelay(frames: Int, done: @escaping () -> ())
     func didSetup(node: NODE, success: Bool)
     func didRender(node: NODE, renderTime: Double, success: Bool)
-}
-
-public enum RenderThread {
-    case main
-    case background
-    func call(_ callback: @escaping () -> ()) {
-        switch self {
-        case .main:
-            guard !Thread.isMainThread else {
-                callback()
-                return
-            }
-            DispatchQueue.main.async {
-                callback()
-            }
-        case .background:
-            DispatchQueue.global(qos: .background).async {
-                callback()
-            }
-        }
-    }
 }
 
 public class Engine: LoggerDelegate {
@@ -126,7 +133,7 @@ public class Engine: LoggerDelegate {
             self.renderNODEs()
         } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
             if !self.instantQueueActivated {
-                internalDelegate.frameLoopRenderThread.call {
+                frameLoopRenderThread.call {
                     while true {
                         self.renderNODEs()
                     }
@@ -160,7 +167,7 @@ public class Engine: LoggerDelegate {
         }
         logger.log(.info, .render, "Manual Render Started.")
         manualRenderInProgress = true
-        manualRenderCallback = done
+        manualRenderCallback = { frameLoopRenderThread.call(done) }
     }
     
     func checkManualRender() {
@@ -226,13 +233,13 @@ public class Engine: LoggerDelegate {
         }
         guard !nodesNeedsRender.isEmpty else { return }
         frameTreeRendering = true
-        internalDelegate.frameLoopRenderThread.call {
+        frameLoopRenderThread.call {
             self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-")
             var renderedNodes: [NODE] = []
             func render(_ node: NODE) {
                 self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"")
                 let semaphore = DispatchSemaphore(value: 0)
-                internalDelegate.frameLoopRenderThread.call {
+                frameLoopRenderThread.call {
                     if node.view.superview != nil {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
@@ -367,8 +374,8 @@ public class Engine: LoggerDelegate {
                     semaphore = DispatchSemaphore(value: 0)
                 }
                 
-                internalDelegate.frameLoopRenderThread.call {
-                    if node.view.superview != nil {
+                frameLoopRenderThread.call {
+                    if frameLoopRenderThread == .main && node.view.superview != nil {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
@@ -451,7 +458,7 @@ public class Engine: LoggerDelegate {
             let err = error.localizedDescription
             if err.contains("IOAF code") {
                 if let iofaCode = Int(err[err.count - 2..<err.count - 1]) {
-                    internalDelegate.frameLoopRenderThread.call {
+                    frameLoopRenderThread.call {
                         self.metalErrorCodeCallback?(.IOAF(iofaCode))
                     }
                     ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
@@ -467,16 +474,16 @@ public class Engine: LoggerDelegate {
                 setupFailed(with: RenderError.nodeNotTileable)
                 return
             }
-            internalDelegate.frameLoopRenderThread.call {
+            frameLoopRenderThread.call {
                 do {
                     try self.tileRender(nodeTileable, force: force, completed: {
-                        internalDelegate.frameLoopRenderThread.call {
+                        frameLoopRenderThread.call {
                             renderDone()
                             nodeTileable.didRenderTiles(force: force)
                             done(true)
                         }
                     }, failed: { error in
-                        internalDelegate.frameLoopRenderThread.call {
+                        frameLoopRenderThread.call {
                             renderFailed(with: error)
                         }
                     })
@@ -1250,7 +1257,7 @@ public class Engine: LoggerDelegate {
                 
             }
 
-            internalDelegate.frameLoopRenderThread.call {
+            frameLoopRenderThread.call {
                 completed(drawableTexture)
             }
         })
