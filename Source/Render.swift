@@ -26,8 +26,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: Metal Lib
     
-    let metalLibName: String
-    let metalLibBundle: Bundle
+    let metalLibURL: URL
+    let bundle: Bundle?
     
     // MARK: Engine
     
@@ -133,10 +133,17 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: - Life Cycle
     
-    public init(with metalLibName: String, in metalLibBundle: Bundle) {
+    public convenience init(with metalLibName: String, in metalLibBundle: Bundle) {
+        let metalLibPath: String? = metalLibBundle.path(forResource: metalLibName, ofType: "metallib")
+        if metalLibPath == nil { assertionFailure("Metal Library \"\(metalLibName)\" not found.") }
+        let metalLibURL: URL = URL(fileURLWithPath: metalLibPath!)
+        self.init(metalLibURL: metalLibURL, bundle: metalLibBundle)
+    }
+    
+    public init(metalLibURL: URL, bundle: Bundle?) {
         
-        self.metalLibName = metalLibName
-        self.metalLibBundle = metalLibBundle
+        self.metalLibURL = metalLibURL
+        self.bundle = bundle
         
         engine = Engine()
         
@@ -378,11 +385,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     func loadMetalShaderLibrary() throws -> MTLLibrary {
-        guard let libraryFile = metalLibBundle.path(forResource: metalLibName, ofType: "metallib") else {
-            throw MetalLibraryError.runtimeERROR("Metal Library \"\(metalLibName)\" not found.")
-        }
         do {
-            return try metalDevice.makeLibrary(filepath: libraryFile)
+            return try metalDevice.makeLibrary(filepath: metalLibURL.path)
         } catch { throw error }
     }
     
@@ -572,7 +576,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     public func embedMetalCode(uniforms: [MetalUniform], code: String, fileName: String) throws -> String {
-        guard let metalFile = metalLibBundle.url(forResource: fileName, withExtension: "txt") else {
+        guard let bundle: Bundle = bundle else {
+            throw MetalError.fileNotFound("No bundle provided. Can't look for file \"\(fileName).txt\"")
+        }
+        guard let metalFile = bundle.url(forResource: fileName, withExtension: "txt") else {
             throw MetalError.fileNotFound(fileName + ".txt")
         }
         do {
