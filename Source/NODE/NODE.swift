@@ -6,12 +6,13 @@
 //  Copyright © 2019 Hexagons. All rights reserved.
 //
 
+import NodeIO
 import LiveValues
 import Metal
 import simd
 import CoreVideo
 
-public protocol NODE {
+public protocol NODE: Nd {
     
     var id: UUID { get }
     var name: String? { get }
