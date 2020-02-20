@@ -46,7 +46,10 @@ public struct Texture {
         #if os(iOS) || os(tvOS)
         let scale: CGFloat = image.scale
         #elseif os(macOS)
-        let scale: CGFloat = 1.0
+        var scale: CGFloat = 1.0
+        if let pixelsWide: Int = image.representations.first?.pixelsWide {
+            scale = CGFloat(pixelsWide) / image.size.width
+        }
         #endif
         
         let width = image.size.width * scale
