@@ -12,7 +12,7 @@ import Metal
 import simd
 import CoreVideo
 
-public protocol NODE: Nd {
+public protocol NODE/*: Nd*/ {
     
     var id: UUID { get }
     var name: String? { get }
