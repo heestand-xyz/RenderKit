@@ -7,6 +7,8 @@
 //
 
 import LiveValues
+import CoreGraphics
+import Metal
 #if !os(tvOS) && !targetEnvironment(simulator)
 import MetalPerformanceShaders
 #endif
