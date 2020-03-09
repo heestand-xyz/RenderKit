@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0580000809005B4998981C34 /* Pods_RenderKit_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A5226C59D1D2533877FEAB2 /* Pods_RenderKit_macOS.framework */; };
 		3A80C3DC2345E39A00DE9266 /* NODEMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A80C3DB2345E39A00DE9266 /* NODEMetalView.swift */; };
 		3A80C3DD2345E39A00DE9266 /* NODEMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A80C3DB2345E39A00DE9266 /* NODEMetalView.swift */; };
 		3A80C3DE2345E39A00DE9266 /* NODEMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A80C3DB2345E39A00DE9266 /* NODEMetalView.swift */; };
@@ -52,9 +53,12 @@
 		3AFD7F202347882E00E38CD3 /* Resolution3D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F16234780BF00E38CD3 /* Resolution3D.swift */; };
 		7482B223236D8C410086C661 /* ResolutionStandard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F1C2347825A00E38CD3 /* ResolutionStandard.swift */; };
 		7482B224236D8C410086C661 /* ResolutionStandard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD7F1C2347825A00E38CD3 /* ResolutionStandard.swift */; };
+		B9EC9F474FFF6DBC0DAA0455 /* Pods_RenderKit_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B52FB3EF9F339A7926900594 /* Pods_RenderKit_tvOS.framework */; };
+		C552342015612410D77487C0 /* Pods_RenderKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF8E68A2BE9A401F6179CBF8 /* Pods_RenderKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		22D6235E51195D275238E0D9 /* Pods-RenderKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit/Pods-RenderKit.debug.xcconfig"; sourceTree = "<group>"; };
 		3A80C3DB2345E39A00DE9266 /* NODEMetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NODEMetalView.swift; sourceTree = "<group>"; };
 		3A80C3E32345E5EA00DE9266 /* NODEView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NODEView.swift; sourceTree = "<group>"; };
 		3A80C3E82345E6DF00DE9266 /* NODEProtocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NODEProtocols.swift; sourceTree = "<group>"; };
@@ -76,6 +80,14 @@
 		3ACE92292344F31B00F36E71 /* Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Engine.swift; sourceTree = "<group>"; };
 		3AFD7F16234780BF00E38CD3 /* Resolution3D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resolution3D.swift; sourceTree = "<group>"; };
 		3AFD7F1C2347825A00E38CD3 /* ResolutionStandard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolutionStandard.swift; sourceTree = "<group>"; };
+		3CD1D0D902F2453BC0C4CD83 /* Pods-RenderKit-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit-tvOS/Pods-RenderKit-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
+		41523D396CDA8EF68996832C /* Pods-RenderKit-macOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-macOS.release.xcconfig"; path = "Target Support Files/Pods-RenderKit-macOS/Pods-RenderKit-macOS.release.xcconfig"; sourceTree = "<group>"; };
+		6F7FE48754B4CD9444F6E04D /* Pods-RenderKit-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-tvOS.release.xcconfig"; path = "Target Support Files/Pods-RenderKit-tvOS/Pods-RenderKit-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		8A5226C59D1D2533877FEAB2 /* Pods_RenderKit_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A870B3418D7439B6544FC3BB /* Pods-RenderKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit.release.xcconfig"; path = "Target Support Files/Pods-RenderKit/Pods-RenderKit.release.xcconfig"; sourceTree = "<group>"; };
+		AF8E68A2BE9A401F6179CBF8 /* Pods_RenderKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B52FB3EF9F339A7926900594 /* Pods_RenderKit_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RenderKit_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC63215F1369E58523CE4D3F /* Pods-RenderKit-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RenderKit-macOS.debug.xcconfig"; path = "Target Support Files/Pods-RenderKit-macOS/Pods-RenderKit-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C552342015612410D77487C0 /* Pods_RenderKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0580000809005B4998981C34 /* Pods_RenderKit_macOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +111,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9EC9F474FFF6DBC0DAA0455 /* Pods_RenderKit_tvOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +121,12 @@
 		3946A1A0FBC3519E220784FD /* Pods */ = {
 			isa = PBXGroup;
 			children = (
+				22D6235E51195D275238E0D9 /* Pods-RenderKit.debug.xcconfig */,
+				A870B3418D7439B6544FC3BB /* Pods-RenderKit.release.xcconfig */,
+				DC63215F1369E58523CE4D3F /* Pods-RenderKit-macOS.debug.xcconfig */,
+				41523D396CDA8EF68996832C /* Pods-RenderKit-macOS.release.xcconfig */,
+				3CD1D0D902F2453BC0C4CD83 /* Pods-RenderKit-tvOS.debug.xcconfig */,
+				6F7FE48754B4CD9444F6E04D /* Pods-RenderKit-tvOS.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -127,6 +148,7 @@
 				3ACE91FB2344EAA300F36E71 /* Resources */,
 				3ACE91EB2344EA9100F36E71 /* Products */,
 				3946A1A0FBC3519E220784FD /* Pods */,
+				E16FCC75F026EE726B00C3D7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -186,6 +208,16 @@
 			path = Resolution;
 			sourceTree = "<group>";
 		};
+		E16FCC75F026EE726B00C3D7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AF8E68A2BE9A401F6179CBF8 /* Pods_RenderKit.framework */,
+				8A5226C59D1D2533877FEAB2 /* Pods_RenderKit_macOS.framework */,
+				B52FB3EF9F339A7926900594 /* Pods_RenderKit_tvOS.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -220,6 +252,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE91F22344EA9100F36E71 /* Build configuration list for PBXNativeTarget "RenderKit" */;
 			buildPhases = (
+				2D2C554112BB8CBC731FB28C /* [CP] Check Pods Manifest.lock */,
 				3ACE91E52344EA9100F36E71 /* Headers */,
 				3ACE91E62344EA9100F36E71 /* Sources */,
 				3ACE91E72344EA9100F36E71 /* Frameworks */,
@@ -238,6 +271,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE91FF2344EAA300F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-macOS" */;
 			buildPhases = (
+				C7AA7F1CD63275DFFC95CAB4 /* [CP] Check Pods Manifest.lock */,
 				3ACE91F52344EAA300F36E71 /* Headers */,
 				3ACE91F62344EAA300F36E71 /* Sources */,
 				3ACE91F72344EAA300F36E71 /* Frameworks */,
@@ -256,6 +290,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3ACE920C2344EAAD00F36E71 /* Build configuration list for PBXNativeTarget "RenderKit-tvOS" */;
 			buildPhases = (
+				98E54EEB3BECAB2730C8C9DB /* [CP] Check Pods Manifest.lock */,
 				3ACE92022344EAAD00F36E71 /* Headers */,
 				3ACE92032344EAAD00F36E71 /* Sources */,
 				3ACE92042344EAAD00F36E71 /* Frameworks */,
@@ -334,6 +369,75 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2D2C554112BB8CBC731FB28C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		98E54EEB3BECAB2730C8C9DB /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-tvOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C7AA7F1CD63275DFFC95CAB4 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RenderKit-macOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3ACE91E62344EA9100F36E71 /* Sources */ = {
@@ -524,6 +628,7 @@
 		};
 		3ACE91F32344EA9100F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22D6235E51195D275238E0D9 /* Pods-RenderKit.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -552,6 +657,7 @@
 		};
 		3ACE91F42344EA9100F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A870B3418D7439B6544FC3BB /* Pods-RenderKit.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -579,6 +685,7 @@
 		};
 		3ACE92002344EAA300F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DC63215F1369E58523CE4D3F /* Pods-RenderKit-macOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -607,6 +714,7 @@
 		};
 		3ACE92012344EAA300F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 41523D396CDA8EF68996832C /* Pods-RenderKit-macOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -635,6 +743,7 @@
 		};
 		3ACE920D2344EAAD00F36E71 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3CD1D0D902F2453BC0C4CD83 /* Pods-RenderKit-tvOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
@@ -663,6 +772,7 @@
 		};
 		3ACE920E2344EAAD00F36E71 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6F7FE48754B4CD9444F6E04D /* Pods-RenderKit-tvOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
