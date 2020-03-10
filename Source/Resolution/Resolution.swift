@@ -252,7 +252,6 @@ public enum Resolution: ResolutionStandard {
             let size: CGSize = UIScreen.main.bounds.size
             let scale: CGFloat = UIScreen.main.scale
             return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
-            #endif
             #elseif os(macOS)
             let size = NSScreen.main?.frame.size ?? Resolution._128.size.cg
             let scale = NSScreen.main?.backingScaleFactor ?? 1.0
