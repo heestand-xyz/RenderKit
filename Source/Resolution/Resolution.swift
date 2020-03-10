@@ -249,17 +249,9 @@ public enum Resolution: ResolutionStandard {
             else { return raw.flopped }
         case .fullscreen:
             #if os(iOS) || os(tvOS)
-            let size = UIScreen.main.nativeBounds.size
-            let raw = Raw(w: Int(size.width), h: Int(size.height))
-            #if os(iOS) && !targetEnvironment(macCatalyst)
-            let orientation: UIInterfaceOrientation = UIApplication.shared.statusBarOrientation
-//            if #available(iOS 13.0, *)
-//            { orientation = UIApplication.shared.windows.first!.windowScene!.interfaceOrientation }
-//            else { orientation = UIApplication.shared.statusBarOrientation }
-            let portrait = [.portrait, .portraitUpsideDown].contains(orientation)
-            if portrait { return raw } else { return raw.flopped }
-            #else
-            return raw
+            let size: CGSize = UIScreen.main.bounds.size
+            let scale: CGFloat = UIScreen.main.scale
+            return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
             #endif
             #elseif os(macOS)
             let size = NSScreen.main?.frame.size ?? Resolution._128.size.cg
