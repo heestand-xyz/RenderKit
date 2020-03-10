@@ -20,7 +20,7 @@ public class Logger {
     let prefix: String
     
     public var active: Bool = true
-    public var level: LogLevel = .error
+    public var level: LogLevel = .info
     public var source: Bool = false
     public var loopLimitActive = true
     public var loopLimitFrameCount = 30
@@ -68,18 +68,18 @@ public class Logger {
     }
     
     public enum LogLevel: String {
-        case info = "INFO"
-        case warning = "WARNING"
-        case error = "ERROR"
         case fatal = "FATAL"
+        case error = "ERROR"
+        case warning = "WARNING"
+        case info = "INFO"
         case detail = "DETAIL"
         case debug = "DEBUG"
         public var index: Int {
             switch self {
-            case .info: return 0
-            case .warning: return 1
-            case .error: return 2
-            case .fatal: return 3
+            case .fatal: return 0
+            case .error: return 1
+            case .warning: return 2
+            case .info: return 3
             case .detail: return 4
             case .debug: return 5
             }
@@ -111,6 +111,10 @@ public class Logger {
         level = .debug
         source = true
         time = true
+    }
+    
+    public func logLess() {
+        level = .error
     }
     
     public init(name: String) {
