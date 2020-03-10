@@ -175,8 +175,13 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
         
         #if os(iOS) || os(tvOS)
-        displayLink = CADisplayLink(target: self, selector: #selector(self.frameLoop))
-        displayLink!.add(to: RunLoop.main, forMode: .common)
+        if frameLoopRenderThread == .main {
+            displayLink = CADisplayLink(target: self, selector: #selector(self.frameLoop))
+            displayLink!.add(to: RunLoop.main, forMode: .common)
+        } else {
+            let frameTime: Double = 1.0 / Double(self.fpsMax)
+            frameLoopRenderThread.timer(frameTime, frameLoop)
+        }
         #elseif os(macOS)
 //        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
 //        let displayLinkOutputCallback: CVDisplayLinkOutputCallback = {

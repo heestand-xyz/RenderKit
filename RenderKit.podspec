@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "RenderKit"
-  spec.version      = "0.3.8"
+  spec.version      = "0.3.9"
 
   spec.summary      = "Live Graphics Realtime Render Engine"
   spec.description  = <<-DESC
