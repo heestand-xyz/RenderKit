@@ -581,15 +581,15 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         case placeholder(String)
     }
     
-    public func embedMetalCode(uniforms: [MetalUniform], code: String, fileName: String) throws -> String {
-        guard let bundle: Bundle = bundle else {
-            throw MetalError.fileNotFound("No bundle provided. Can't look for file \"\(fileName).txt\"")
-        }
-        guard let metalFile = bundle.url(forResource: fileName, withExtension: "txt") else {
-            throw MetalError.fileNotFound(fileName + ".txt")
-        }
+    public func embedMetalCode(uniforms: [MetalUniform], code: String, metalBaseCode: String) throws -> String {
+//        guard let bundle: Bundle = bundle else {
+//            throw MetalError.fileNotFound("No bundle provided. Can't look for file \"\(fileName).txt\"")
+//        }
+//        guard let metalFile = bundle.url(forResource: fileName, withExtension: "txt") else {
+//            throw MetalError.fileNotFound(fileName + ".txt")
+//        }
         do {
-            var metalCode = try String(contentsOf: metalFile)
+            var metalCode = metalBaseCode //try String(contentsOf: metalFile)
             let uniformsCode = try dynamicUniforms(uniforms: uniforms)
             metalCode = try insert(uniformsCode, in: metalCode, at: "uniforms")
             let comment = "/// PixelKit Dynamic Shader Code"

@@ -140,7 +140,8 @@ public protocol NODEResolution3D {
 // MARK: - Metal
 
 public protocol NODEMetal {
-    var metalFileName: String { get }
+//    var metalFileName: String { get }
+    var metalBaseCode: String { get }
     var metalCode: String? { get }
     var metalUniforms: [MetalUniform] { get }
 }
