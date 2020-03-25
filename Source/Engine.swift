@@ -672,7 +672,7 @@ public class Engine: LoggerDelegate {
         let hasContent = node.contentLoaded == true
         let needsGenerated = node is NODEGenerator
         let hasGenerated = !node.bypass
-        let template = ((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
+        let template: Bool = false //((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
         if template {
             logger.log(node: node, .debug, .render, "Template.")
         }
