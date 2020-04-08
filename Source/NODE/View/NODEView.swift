@@ -136,7 +136,6 @@ open class NODEView: _View {
     
     func layoutPlacement() {
         
-        print("VIEW LAYOUT")
         guard boundsReady else { return }
         guard let res = resolution else { return }
         
@@ -180,7 +179,6 @@ open class NODEView: _View {
     
     public func setResolution(_ newResolution: Resolution?) {
         
-        print("VIEW RES", newResolution)
         if let resolution = newResolution {
             self.resolution = resolution
             metalView.resolution = resolution
