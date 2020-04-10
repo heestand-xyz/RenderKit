@@ -19,6 +19,7 @@ let package = Package(
 //        .package(path: "~/Code/Frameworks/Development/NodeIO"),
     ],
     targets: [
-        .target(name: "RenderKit", dependencies: ["LiveValues"/*, "NodeIO"*/], path: "Source")
+        .target(name: "RenderKit", dependencies: ["LiveValues"/*, "NodeIO"*/], path: "Source"),
+        .testTarget(name: "RenderKitTests", dependencies: ["RenderKit"]),
     ]
 )
