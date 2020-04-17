@@ -215,6 +215,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         frameLoopRenderThread.call(doFrameLoop)
     }
     
+    /// Force a Frame Loop Render when `frameLoopActive` is `false`.
+    public func forceOneFrameLoop() {
+        guard !frameLoopActive else { return }
+        frameLoopRenderThread.call(doFrameLoop)
+    }
+    
     func doFrameLoop() {
         self.delegate?.pixelFrameLoop()
         for frameCallback in self.frameCallbacks {
