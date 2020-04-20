@@ -13,7 +13,7 @@ import UIKit
 import AppKit
 #endif
 
-public enum Resolution: ResolutionStandard {
+public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     
     case auto(render: Render)
     
@@ -103,8 +103,12 @@ public enum Resolution: ResolutionStandard {
         }
     }
     
-    // MARK: Name
+    // MARK: Description
     
+    public var debugDescription: String { "\(w)x\(h)" }
+    
+    public var description: String { "\(w)x\(h)" }
+
     public var name: String {
         switch self {
         case .auto: return "Auto"
