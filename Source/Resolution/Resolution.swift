@@ -17,12 +17,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     
     case auto(render: Render)
     
+    case _540p
     case _720p
     case _1080p
     case _4K
     case _8K
     public static var standardCases: [Resolution] {
-        return [._720p, ._1080p, ._4K, ._8K]
+        return [._540p, ._720p, ._1080p, ._4K, ._8K]
     }
 
     case fullHD(Orientation)
@@ -112,6 +113,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     public var name: String {
         switch self {
         case .auto: return "Auto"
+        case ._540p: return "540p"
         case ._720p: return "720p"
         case ._1080p: return "1080p"
         case ._4K: return "4K"
@@ -179,6 +181,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
                 return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
             }
             return Resolution._128.raw
+        case ._540p: return Raw(w: 960, h: 540)
         case ._720p: return Raw(w: 1280, h: 720)
         case ._1080p: return Raw(w: 1920, h: 1080)
         case ._4K: return Raw(w: 3840, h: 2160)
@@ -398,6 +401,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     
     public init(size: CGSize) {
         switch size {
+        case Resolution._540p.size.cg: self = ._540p
         case Resolution._720p.size.cg: self = ._720p
         case Resolution._1080p.size.cg: self = ._1080p
         case Resolution._4K.size.cg: self = ._4K
