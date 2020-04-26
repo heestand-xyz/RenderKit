@@ -33,8 +33,7 @@ public class Logger {
 
     public var dynamicShaderCode = false
     
-    public var callback: ((Log) -> ())?
-    
+    private var callbacks: [(String, Log) -> ()] = []
     
     public struct Log {
         public let prefix: String
@@ -137,7 +136,7 @@ public class Logger {
         let log = Log(prefix: prefix, level: level, category: category, time: time, codeRef: codeRef, nodeRef: nodeRef, message: message, error: error, loop: loop)
         
         guard level != .fatal else {
-            callback?(log)
+            callbacks.forEach({ $0(format(log: log), log) })
             fatalError(formatClean(log: log))
         }
         
@@ -154,8 +153,8 @@ public class Logger {
         }
         
         if clean {
+            callbacks.forEach({ $0(format(log: log), log) })
             print(formatClean(log: log))
-            callback?(log)
             return
         }
         
@@ -165,10 +164,9 @@ public class Logger {
         }
         #endif
         
+        callbacks.forEach({ $0(format(log: log), log) })
         print(format(log: log))
-        
-        callback?(log)
-        
+
     }
     
     public func formatClean(log: Log) -> String {
@@ -280,6 +278,10 @@ public class Logger {
             spaces += " "
         }
         return spaces
+    }
+    
+    public func listen(_ callback: @escaping (String, Log) -> ()) {
+        callbacks.append(callback)
     }
     
 }
