@@ -102,13 +102,13 @@ public enum Placement: String, Codable, CaseIterable {
     case fill
     case aspectFit
     case aspectFill
-    case custom
+    case center
     public var index: Int {
         switch self {
         case .fill: return 0
         case .aspectFit: return 1
         case .aspectFill: return 2
-        case .custom: return 3
+        case .center: return 3
         }
     }
 }
