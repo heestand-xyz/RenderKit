@@ -24,12 +24,12 @@ public struct Texture {
         case makeTexture(String)
     }
     
-    public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil) -> CVPixelBuffer? {
-        guard let bits = bits ?? LiveColor.Bits(rawValue: image.bitsPerPixel) else {
+    public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil, swizzel: Bool = false) -> CVPixelBuffer? {
+        guard let bits: LiveColor.Bits = bits ?? LiveColor.Bits(rawValue: image.bitsPerPixel) else {
             return nil
         }
         #if os(iOS) || os(tvOS)
-        return buffer(from: UIImage(cgImage: image), bits: bits)
+        return buffer(from: UIImage(cgImage: image), bits: bits, swizzel: swizzel)
         #elseif os(macOS)
         guard size != nil else { return nil }
         return buffer(from: NSImage(cgImage: image, size: size!), bits: bits)
@@ -41,7 +41,7 @@ public struct Texture {
     #elseif os(macOS)
     public typealias _Image = NSImage
     #endif
-    public static func buffer(from image: _Image, bits: LiveColor.Bits) -> CVPixelBuffer? {
+    public static func buffer(from image: _Image, bits: LiveColor.Bits, swizzel: Bool = false) -> CVPixelBuffer? {
         
         #if os(iOS) || os(tvOS)
         let scale: CGFloat = image.scale
@@ -68,7 +68,7 @@ public struct Texture {
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          Int(width),
                                          Int(height),
-                                         bits.os,
+                                         swizzel ? kCVPixelFormatType_32ARGB : bits.os,
                                          attrs,
                                          &pixelBuffer)
         guard (status == kCVReturnSuccess) else {
@@ -85,7 +85,7 @@ public struct Texture {
                                       bitsPerComponent: 8, // FIXME: bits.rawValue,
                                       bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!),
                                       space: rgbColorSpace,
-                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+                                      bitmapInfo: swizzel ? CGImageAlphaInfo.premultipliedFirst.rawValue : CGImageAlphaInfo.premultipliedLast.rawValue)
         else {
             return nil
         }
