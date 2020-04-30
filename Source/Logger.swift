@@ -20,6 +20,7 @@ public class Logger {
     let prefix: String
     
     public var active: Bool = true
+    public var silent: Bool = false
     public var level: LogLevel = .info
     public var source: Bool = false
     public var loopLimitActive = true
@@ -32,7 +33,7 @@ public class Logger {
     public var extra = false
 
     public var dynamicShaderCode = false
-    
+
     private var callbacks: [(String, Log) -> ()] = []
     
     public struct Log {
@@ -154,7 +155,7 @@ public class Logger {
         
         if clean {
             callbacks.forEach({ $0(format(log: log), log) })
-            print(formatClean(log: log))
+            if !silent { print(formatClean(log: log)) }
             return
         }
         
@@ -165,7 +166,7 @@ public class Logger {
         #endif
         
         callbacks.forEach({ $0(format(log: log), log) })
-        print(format(log: log))
+        if !silent { print(format(log: log)) }
 
     }
     
