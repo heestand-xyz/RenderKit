@@ -156,6 +156,20 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
         }
     }
     
+    // MARK: Pro
+    
+    public var isPro: Bool {
+        let resolution: Resolution = .init(size: size.cg)
+        switch resolution {
+        case .iPhone11Pro, .iPhone11ProMax:
+            return true
+        case .iPadPro_10_5, .iPadPro_12_9, .iPadPro_11:
+            return true
+        default:
+            return false
+        }
+    }
+    
     // MARK: Raw
     
     public var rawWidth: Int { w }
@@ -438,6 +452,8 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
         case Resolution.iPad_10_2(.landscape).size.cg: self = .iPad_10_2(.landscape)
         case Resolution.iPadPro_10_5(.portrait).size.cg: self = .iPadPro_10_5(.portrait)
         case Resolution.iPadPro_10_5(.landscape).size.cg: self = .iPadPro_10_5(.landscape)
+        case Resolution.iPadPro_11(.portrait).size.cg: self = .iPadPro_11(.portrait)
+        case Resolution.iPadPro_11(.landscape).size.cg: self = .iPadPro_11(.landscape)
         case Resolution.iPadPro_12_9(.portrait).size.cg: self = .iPadPro_12_9(.portrait)
         case Resolution.iPadPro_12_9(.landscape).size.cg: self = .iPadPro_12_9(.landscape)
         case Resolution.fullscreen.size.cg: self = .fullscreen
