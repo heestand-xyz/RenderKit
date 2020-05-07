@@ -12,10 +12,13 @@ import Metal
 import QuartzCore.CoreAnimation
 
 public enum RenderThread {
+    case none
     case main
     case background
-    var queue: DispatchQueue {
+    var queue: DispatchQueue? {
         switch self {
+        case .none:
+            return nil
         case .main:
             return .main
         case .background:
@@ -23,18 +26,25 @@ public enum RenderThread {
         }
     }
     func call(_ callback: @escaping () -> ()) {
-        if self == .main && Thread.isMainThread {
+        if self == .none || (self == .main && Thread.isMainThread) {
             callback()
             return
         }
-        queue.async {
+        queue!.async {
             callback()
         }
     }
-    func timer(_ duration: Double, _ callback: @escaping () -> ()) {
-        queue.asyncAfter(deadline: .now() + .milliseconds(Int(duration * 1_000.0))) {
+    func timerLoop(duration: Double, _ callback: @escaping () -> ()) {
+        if self == .none {
+            RunLoop.current.add(Timer(timeInterval: duration, repeats: false, block: { _ in
+                callback()
+                self.timerLoop(duration: duration, callback)
+            }), forMode: .common)
+            return
+        }
+        queue!.asyncAfter(deadline: .now() + .milliseconds(Int(duration * 1_000.0))) {
             callback()
-            self.timer(duration, callback)
+            self.timerLoop(duration: duration, callback)
         }
     }
 }
@@ -56,6 +66,7 @@ protocol EngineInternalDelegate {
     func engineLinkIndex(of node: NODE) -> Int?
     func engineDelay(frames: Int, done: @escaping () -> ())
     func didSetup(node: NODE, success: Bool)
+    func willRender(node: NODE)
     func didRender(node: NODE, renderTime: Double, success: Bool)
 }
 
@@ -412,7 +423,7 @@ public class Engine: LoggerDelegate {
         }
     }
     
-    // MARK: - Setup
+    // MARK: - Render NODE
     
     public func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
         var node = node
@@ -433,6 +444,7 @@ public class Engine: LoggerDelegate {
         }
         node.needsRender = false
         node.inRender = true
+        internalDelegate.willRender(node: node)
         let renderStartTime = CFAbsoluteTimeGetCurrent()
         logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
         func setupDone() {

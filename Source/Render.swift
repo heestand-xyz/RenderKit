@@ -122,6 +122,18 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         #endif
     } else { return -1 } }
     
+    var fpxFirstPreDate: Date?
+    var fpxLastPostDate: Date?
+    var fpxEmptyFrameCount: Int = 0
+    let fpxEmptyFrameCountLimit: Int = 3
+    public var fFpx: Double?
+    public var fpx: Int? { fFpx != nil ? Int(round(fFpx!)) : nil }
+    
+    public var rendersInProgress: Int { linkedNodes.filter(\.inRender).count }
+    public var someRenderInProgress: Bool { rendersInProgress > 0 }
+    
+    public var waitForAllRenders: Bool = false
+
     // MARK: Metal
     
     public var metalDevice: MTLDevice!
@@ -175,12 +187,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
         
         #if os(iOS) || os(tvOS)
-        if frameLoopRenderThread == .main {
+        if [.main, .none].contains(frameLoopRenderThread) {
             displayLink = CADisplayLink(target: self, selector: #selector(self.frameLoop))
             displayLink!.add(to: RunLoop.main, forMode: .common)
         } else {
             let frameTime: Double = 1.0 / Double(self.fpsMax)
-            frameLoopRenderThread.timer(frameTime, frameLoop)
+            frameLoopRenderThread.timerLoop(duration: frameTime, frameLoop)
         }
         #elseif os(macOS)
 //        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
@@ -211,17 +223,18 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: - Frame Loop
     
     @objc func frameLoop() {
-        guard frameLoopActive else { return }
         frameLoopRenderThread.call(doFrameLoop)
     }
     
     /// Force a Frame Loop Render when `frameLoopActive` is `false`.
     public func forceOneFrameLoop() {
-        guard !frameLoopActive else { return }
         frameLoopRenderThread.call(doFrameLoop)
     }
     
     func doFrameLoop() {
+        guard !waitForAllRenders || !someRenderInProgress else { return }
+        preFrameFPX()
+        guard frameLoopActive else { return }
         self.delegate?.pixelFrameLoop()
         for frameCallback in self.frameCallbacks {
             frameCallback.callback()
@@ -230,6 +243,40 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         self.checkAllLive()
         self.engine.frameLoop()
         self.calcFPS()
+    }
+    
+    // MARK: - FPX
+    
+    func preFrameFPX() {
+        guard frameLoopActive else {
+            if fFpx != nil { fFpx = nil }
+            return
+        }
+        if let fpxFromDate: Date = fpxFirstPreDate,
+            let fpxToDate: Date = fpxLastPostDate {
+            let fpxFrom: Double = fpxFromDate.timeIntervalSinceNow
+            let fpxTo: Double = fpxToDate.timeIntervalSinceNow
+            let fpxSec: Double = fpxTo - fpxFrom
+            fFpx = 1.0 / fpxSec
+            fpxEmptyFrameCount = 0
+        } else {
+            fpxEmptyFrameCount += 1
+            if fpxEmptyFrameCount > fpxEmptyFrameCountLimit {
+                if fFpx != nil { fFpx = nil }
+            }
+        }
+        fpxFirstPreDate = nil
+        fpxLastPostDate = nil
+    }
+    
+    func willRenderFPX() {
+        if fpxFirstPreDate == nil {
+            fpxFirstPreDate = Date()
+        }
+    }
+    
+    func didRenderFPX() {
+        fpxLastPostDate = Date()
     }
     
     // MARK: - Check Auto Res
@@ -666,9 +713,14 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
     }
     
+    func willRender(node: NODE) {
+        willRenderFPX()
+    }
+    
     func didRender(node: NODE, renderTime: Double, success: Bool) {
         if success {
             lastRenderTimes[node.id] = renderTime
+            didRenderFPX()
         } else {
             lastRenderTimes.removeValue(forKey: node.id)
         }
