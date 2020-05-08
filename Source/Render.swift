@@ -129,9 +129,11 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     public var fFpx: Double?
     public var fpx: Int? { fFpx != nil ? Int(round(fFpx!)) : nil }
     
-    public var rendersInProgress: Int { linkedNodes.filter(\.inRender).count }
-    public var someRenderInProgress: Bool { rendersInProgress > 0 }
+    public var linkedNodesRendering: Int { linkedNodes.filter({ $0.inRender }).count }
+    public var rendering: Bool { linkedNodesRendering > 0 }
+    public var frameCountSinceLastRender: Int?
     
+    /// guards the frame loop; waits for all linked nodes to finish rendering
     public var waitForAllRenders: Bool = false
 
     // MARK: Metal
@@ -232,7 +234,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     func doFrameLoop() {
-        guard !waitForAllRenders || !someRenderInProgress else { return }
+        frameCountSinceLastRender? += 1
+        guard !waitForAllRenders || !rendering else { return }
         preFrameFPX()
         guard frameLoopActive else { return }
         self.delegate?.pixelFrameLoop()
@@ -715,13 +718,17 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     func willRender(node: NODE) {
         willRenderFPX()
+        logger.log(node: node, .info, .render, "NODE Will Render", loop: true)
     }
     
     func didRender(node: NODE, renderTime: Double, success: Bool) {
         if success {
+            logger.log(node: node, .info, .render, "NODE Did Render - Success", loop: true)
             lastRenderTimes[node.id] = renderTime
             didRenderFPX()
+            frameCountSinceLastRender = 0
         } else {
+            logger.log(node: node, .info, .render, "NODE Did Render - Failed", loop: true)
             lastRenderTimes.removeValue(forKey: node.id)
         }
     }

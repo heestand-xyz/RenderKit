@@ -36,7 +36,9 @@ public protocol NODE/*: Nd*/ {
     var uniformIndexArrayMaxLimit: Int? { get }
     
     var needsRender: Bool { get set }
+    /// Rendering [GPU]
     var rendering: Bool { get set }
+    /// In Render [CPU + GPU]
     var inRender: Bool { get set }
     var renderIndex: Int { get set }
     var bypass: Bool { get set }
