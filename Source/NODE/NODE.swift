@@ -132,12 +132,12 @@ public protocol NODEMultiEffect: NODEEffect {}
 
 public protocol NODEResolution {
     var resolution: Resolution { get set }
-    init(at resolution: Resolution, name: String, typeName: String)
+    init(at resolution: Resolution)
 }
 
 public protocol NODEResolution3D {
     var resolution: Resolution3D { get set }
-    init(at resolution: Resolution3D, name: String, typeName: String)
+    init(at resolution: Resolution3D)
 }
 
 // MARK: - Metal
