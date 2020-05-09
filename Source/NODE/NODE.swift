@@ -15,8 +15,9 @@ import CoreVideo
 public protocol NODE/*: Nd*/ {
     
     var id: UUID { get }
-    var name: String? { get }
-    
+    var typeName: String { get }
+    var name: String { get }
+
     var delegate: NODEDelegate? { get set }
     
     var shaderName: String { get }
@@ -131,12 +132,12 @@ public protocol NODEMultiEffect: NODEEffect {}
 
 public protocol NODEResolution {
     var resolution: Resolution { get set }
-    init(at resolution: Resolution)
+    init(at resolution: Resolution, name: String, typeName: String)
 }
 
 public protocol NODEResolution3D {
     var resolution: Resolution3D { get set }
-    init(at resolution: Resolution3D)
+    init(at resolution: Resolution3D, name: String, typeName: String)
 }
 
 // MARK: - Metal

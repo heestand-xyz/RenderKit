@@ -248,7 +248,7 @@ public class Engine: LoggerDelegate {
             self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-", loop: true)
             var renderedNodes: [NODE] = []
             func render(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"", loop: true)
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name)\"", loop: true)
                 let semaphore = DispatchSemaphore(value: 0)
                 frameLoopRenderThread.call {
                     if node.view.superview != nil {
@@ -269,13 +269,13 @@ public class Engine: LoggerDelegate {
                         node.view.metalView.readyToRender = {
                             node.view.metalView.readyToRender = nil
                             self.renderNODE(node, with: currentDrawable, done: { success in
-                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name ?? "#")\"", loop: true)
+                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name)\"", loop: true)
                                 semaphore.signal()
                             })
                         }
                     } else {
                         self.renderNODE(node, done: { success in
-                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name ?? "#")\"", loop: true)
+                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name)\"", loop: true)
                             semaphore.signal()
                         })
                     }
@@ -284,7 +284,7 @@ public class Engine: LoggerDelegate {
                 renderedNodes.append(node)
             }
             func reverse(_ inNode: NODE & NODEInIO) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"", loop: true)
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name)\"", loop: true)
                 for subNode in inNode.inputList {
                     if !subNode.contained(in: renderedNodes) {
                         if let subInNode = subNode as? NODE & NODEInIO {
@@ -295,11 +295,11 @@ public class Engine: LoggerDelegate {
                 }
             }
             func traverse(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"", loop: true)
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name)\"", loop: true)
                 if let outNode = node as? NODEOutIO {
                     for inNodePath in outNode.outputPathList {
                         let inNode = inNodePath.nodeIn as! NODE & NODEInIO
-                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"", loop: true)
+                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name)\"", loop: true)
                         var allInsRendered = true
                         for subNode in inNode.inputList {
                             if !subNode.contained(in: renderedNodes) {
@@ -669,25 +669,25 @@ public class Engine: LoggerDelegate {
         
         // MARK: Template
         
-        let needsInTexture = node is NODEInIO
-        let hasInTexture: Bool
-        if tileIndex != nil {
-            if node is NODE3D {
-                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable3D)?.tileTextures != nil
-            } else {
-                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable2D)?.tileTextures != nil
-            }
-        } else {
-            hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
-        }
-        let needsContent = node.contentLoaded != nil
-        let hasContent = node.contentLoaded == true
-        let needsGenerated = node is NODEGenerator
-        let hasGenerated = !node.bypass
+//        let needsInTexture = node is NODEInIO
+//        let hasInTexture: Bool
+//        if tileIndex != nil {
+//            if node is NODE3D {
+//                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable3D)?.tileTextures != nil
+//            } else {
+//                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable2D)?.tileTextures != nil
+//            }
+//        } else {
+//            hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
+//        }
+//        let needsContent = node.contentLoaded != nil
+//        let hasContent = node.contentLoaded == true
+//        let needsGenerated = node is NODEGenerator
+//        let hasGenerated = !node.bypass
         let template: Bool = false //((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
-        if template {
-            logger.log(node: node, .debug, .render, "Template.", loop: true)
-        }
+//        if template {
+//            logger.log(node: node, .debug, .render, "Template.", loop: true)
+//        }
         
         
         // MARK: Input Texture
@@ -855,11 +855,11 @@ public class Engine: LoggerDelegate {
         if let mergerEffectNode = node as? NODEMergerEffect {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
-        if template {
-            unifroms.append(self.template ? 1 : 0)
-            unifroms.append(Float(width))
-            unifroms.append(Float(height))
-        }
+//        if template {
+//            unifroms.append(self.template ? 1 : 0)
+//            unifroms.append(Float(width))
+//            unifroms.append(Float(height))
+//        }
         if node.shaderNeedsAspect || template {
             unifroms.append(Float(width) / Float(height))
         }
