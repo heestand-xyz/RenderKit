@@ -245,10 +245,10 @@ public class Engine: LoggerDelegate {
         guard !nodesNeedsRender.isEmpty else { return }
         frameTreeRendering = true
         frameLoopRenderThread.call {
-            self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-")
+            self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-", loop: true)
             var renderedNodes: [NODE] = []
             func render(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name ?? "#")\"", loop: true)
                 let semaphore = DispatchSemaphore(value: 0)
                 frameLoopRenderThread.call {
                     if node.view.superview != nil {
@@ -263,19 +263,19 @@ public class Engine: LoggerDelegate {
                         #endif
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
-                            self.logger.log(node: node, .error, .render, "Current Drawable not found.")
+                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
                             return
                         }
                         node.view.metalView.readyToRender = {
                             node.view.metalView.readyToRender = nil
                             self.renderNODE(node, with: currentDrawable, done: { success in
-                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name ?? "#")\"")
+                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name ?? "#")\"", loop: true)
                                 semaphore.signal()
                             })
                         }
                     } else {
                         self.renderNODE(node, done: { success in
-                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name ?? "#")\"")
+                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name ?? "#")\"", loop: true)
                             semaphore.signal()
                         })
                     }
@@ -284,7 +284,7 @@ public class Engine: LoggerDelegate {
                 renderedNodes.append(node)
             }
             func reverse(_ inNode: NODE & NODEInIO) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name ?? "#")\"", loop: true)
                 for subNode in inNode.inputList {
                     if !subNode.contained(in: renderedNodes) {
                         if let subInNode = subNode as? NODE & NODEInIO {
@@ -295,11 +295,11 @@ public class Engine: LoggerDelegate {
                 }
             }
             func traverse(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"")
+                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name ?? "#")\"", loop: true)
                 if let outNode = node as? NODEOutIO {
                     for inNodePath in outNode.outputPathList {
                         let inNode = inNodePath.nodeIn as! NODE & NODEInIO
-                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"")
+                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name ?? "#")\"", loop: true)
                         var allInsRendered = true
                         for subNode in inNode.inputList {
                             if !subNode.contained(in: renderedNodes) {
@@ -323,7 +323,7 @@ public class Engine: LoggerDelegate {
                     traverse(node)
                 }
             }
-            self.logger.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-")
+            self.logger.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-", loop: true)
             self.frameTreeRendering = false
         }
     }
@@ -341,7 +341,7 @@ public class Engine: LoggerDelegate {
                     if let nodeIn = node as? NODEInIO {
                         for nodeOut in nodeIn.inputList {
                             guard node.renderIndex + 1 == nodeOut.renderIndex else {
-                                logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)")
+                                logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)", loop: true)
                                 continue
                             }
 //                            log(node: node, .warning, .render, ">>> Queue In: \(node.renderIndex) + 1 == \(nodeOut.renderIndex)")
@@ -350,7 +350,7 @@ public class Engine: LoggerDelegate {
                     if let nodeOut = node as? NODEOutIO {
                         for nodeOutPath in nodeOut.outputPathList {
                             guard node.renderIndex == nodeOutPath.nodeIn.renderIndex else {
-                                logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)")
+                                logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)", loop: true)
                                 continue
                             }
 //                            log(node: node, .warning, .render, ">>> Queue Out: \(node.renderIndex) == \(nodeOutPath.nodeIn.renderIndex)")
@@ -396,7 +396,7 @@ public class Engine: LoggerDelegate {
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         let currentDrawable: CAMetalDrawable? = node.view.metalView.currentDrawable
                         if currentDrawable == nil {
-                            self.logger.log(node: node, .error, .render, "Current Drawable not found.")
+                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
                         }
                         node.view.metalView.readyToRender = {
                             node.view.metalView.readyToRender = nil
@@ -544,10 +544,10 @@ public class Engine: LoggerDelegate {
     func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
         if var nodeTileable2d = node as? NODETileable2D {
             if (node.renderResolution.width.cg / nodeTileable2d.tileResolution.width.cg).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in width.")
+                logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
             }
             if (node.renderResolution.height.cg / nodeTileable2d.tileResolution.height.cg).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in height.")
+                logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
             }
             let tileCountResolution: Resolution = node.renderResolution / nodeTileable2d.tileResolution
             
@@ -581,13 +581,13 @@ public class Engine: LoggerDelegate {
                 throw RenderError.nodeNot3D
             }
             if (node3d.renderedResolution3d.vector.x / nodeTileable3d.tileResolution.vector.x).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in x.")
+                logger.log(node: node, .warning, .render, "Tile resolution not even in x.", loop: true)
             }
             if (node3d.renderedResolution3d.vector.y / nodeTileable3d.tileResolution.vector.y).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in y.")
+                logger.log(node: node, .warning, .render, "Tile resolution not even in y.", loop: true)
             }
             if (node3d.renderedResolution3d.vector.z / nodeTileable3d.tileResolution.vector.z).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in z.")
+                logger.log(node: node, .warning, .render, "Tile resolution not even in z.", loop: true)
             }
             let tileCountResolution: Resolution3D = node3d.renderedResolution3d / nodeTileable3d.tileResolution
             
@@ -641,7 +641,7 @@ public class Engine: LoggerDelegate {
         }
         
         guard deleagte != nil else {
-            logger.log(node: node, .error, .render, "Engine deleagte is not set.")
+            logger.log(node: node, .error, .render, "Engine deleagte is not set.", loop: true)
             throw RenderError.delegateMissing
         }
 
@@ -650,7 +650,7 @@ public class Engine: LoggerDelegate {
         var localRenderTime = CFAbsoluteTimeGetCurrent()
         var renderTime: Double = -1
         var renderTimeMs: Double = -1
-        logger.log(node: node, .debug, .metal, "Render Time: Started")
+        logger.log(node: node, .debug, .metal, "Render Time: Started", loop: true)
 
         
         // MARK: Command Buffer
@@ -663,7 +663,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Buffer ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Buffer ", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -686,7 +686,7 @@ public class Engine: LoggerDelegate {
         let hasGenerated = !node.bypass
         let template: Bool = false //((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
         if template {
-            logger.log(node: node, .debug, .render, "Template.")
+            logger.log(node: node, .debug, .render, "Template.", loop: true)
         }
         
         
@@ -734,37 +734,37 @@ public class Engine: LoggerDelegate {
         if currentDrawable != nil && !(node is NODE3D)/* && node.overrideBits == nil*/ {
             viewDrawable = currentDrawable!
             drawableTexture = currentDrawable!.texture
-            logger.log(node: node, .detail, .render, "Drawable Texture - Current")
+            logger.log(node: node, .detail, .render, "Drawable Texture - Current", loop: true)
         } else if node.texture != nil && width == node.texture!.width && height == node.texture!.height && depth == node.texture!.depth/* && node.overrideBits == nil*/ {
             drawableTexture = node.texture!
-            logger.log(node: node, .detail, .render, "Drawable Texture - Reuse")
+            logger.log(node: node, .detail, .render, "Drawable Texture - Reuse", loop: true)
         } else {
             if node is NODE3D {
                 drawableTexture = try Texture.emptyTexture3D(at: .custom(x: width, y: height, z: depth), bits: bits, on: device)
             } else {
                 drawableTexture = try Texture.emptyTexture(size: CGSize(width: width, height: height), bits: bits, on: device)
             }
-            logger.log(node: node, .detail, .render, "Drawable Texture - New")
+            logger.log(node: node, .detail, .render, "Drawable Texture - New", loop: true)
         }
         
         if logger.highResWarnings {
             if node is NODE3D {
                 let drawRes = Resolution3D(texture: drawableTexture)
                 if (drawRes >= ._1024) != false {
-                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)", loop: true)
                 } else if (drawRes >= ._512) != false {
-                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)", loop: true)
                 } else if (drawRes >= ._256) != false {
-                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)", loop: true)
                 }
             } else {
                 let drawRes = Resolution(texture: drawableTexture)
                 if (drawRes >= ._16384) != false {
-                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "Epic resolution: \(drawRes)", loop: true)
                 } else if (drawRes >= ._8192) != false {
-                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "Extreme resolution: \(drawRes)", loop: true)
                 } else if (drawRes >= ._4096) != false {
-                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)")
+                    logger.log(node: node, .detail, .render, "High resolution: \(drawRes)", loop: true)
                 }
             }
         }
@@ -773,7 +773,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Drawable ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Drawable", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -804,7 +804,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
 
@@ -838,7 +838,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Encoder ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Command Encoder", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -896,7 +896,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniforms", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -934,7 +934,7 @@ public class Engine: LoggerDelegate {
                     uniformArray.removeLast()
                     uniformArrayActive.removeLast()
                 }
-                logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)")
+                logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)", loop: true)
             }
             
             var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
@@ -971,7 +971,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Arrays ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Arrays", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -996,7 +996,7 @@ public class Engine: LoggerDelegate {
                 for _ in 0..<overflow {
                     uniformIndexArray.removeLast()
                 }
-                logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)")
+                logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)", loop: true)
             }
             
             var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [UInt32] in return uniformValues }
@@ -1020,7 +1020,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Index Arrays ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Index Arrays", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1067,7 +1067,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Fragment Texture ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Fragment Texture", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1114,7 +1114,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertices ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertices", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1139,7 +1139,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertex Uniforms ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Vertex Uniforms", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1168,7 +1168,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom Vertex Texture ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Custom Vertex Texture", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1183,7 +1183,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Draw ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Draw", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1219,7 +1219,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Encode ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Encode", loop: true)
             localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
@@ -1227,7 +1227,7 @@ public class Engine: LoggerDelegate {
         if logger.time {
             renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
             renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU ")
+            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU", loop: true)
         }
         
         
@@ -1259,13 +1259,13 @@ public class Engine: LoggerDelegate {
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] GPU", loop: true)
                 
                 renderTime = CFAbsoluteTimeGetCurrent() - globalRenderTime
                 renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU + GPU ")
+                self.logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] CPU + GPU", loop: true)
                 
-                self.logger.log(node: node, .debug, .metal, "Render Time: Ended")
+                self.logger.log(node: node, .debug, .metal, "Render Time: Ended", loop: true)
                 
             }
 
