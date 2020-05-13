@@ -162,6 +162,7 @@ open class NODEView: _View {
             height = bounds.height
         }
         print("VIEW LAYOUT SIZE", width, height)
+        guard !width.isNaN && !height.isNaN else { return }
         widthLayoutConstraint.constant = width
         heightLayoutConstraint.constant = height
         
