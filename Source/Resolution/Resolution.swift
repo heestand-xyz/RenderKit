@@ -650,3 +650,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     }
     
 }
+
+#if os(iOS) || os(tvOS)
+public typealias _Image = UIImage
+#elseif os(macOS)
+public typealias _Image = NSImage
+#endif
+
+public extension _Image {
+    var resolution: Resolution { .cgSize(size) * LiveFloat(scale) }
+}
