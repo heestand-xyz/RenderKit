@@ -13,7 +13,7 @@ import UIKit
 import AppKit
 #endif
 
-public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
+public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable {
     
     case auto(render: Render)
     
@@ -490,6 +490,27 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible {
     public init(texture: MTLTexture) {
         let textureSize = CGSize(width: CGFloat(texture.width), height: CGFloat(texture.height))
         self.init(size: textureSize)
+    }
+    
+    // MARK: - Codable
+    
+    enum ResolutionCodingKey: CodingKey {
+        case width
+        case height
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: ResolutionCodingKey.self)
+        let w: Int = try container.decode(Int.self, forKey: .width)
+        let h: Int = try container.decode(Int.self, forKey: .height)
+        let size: CGSize = CGSize(width: w, height: h)
+        self = Resolution(size: size)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: ResolutionCodingKey.self)
+        try container.encode(w, forKey: .width)
+        try container.encode(h, forKey: .height)
     }
     
     // MARK: - Re Res
