@@ -13,7 +13,7 @@ import UIKit
 import AppKit
 #endif
 
-public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable {
+public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable, Hashable {
     
     case auto(render: Render)
     
@@ -511,6 +511,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         var container = encoder.container(keyedBy: ResolutionCodingKey.self)
         try container.encode(w, forKey: .width)
         try container.encode(h, forKey: .height)
+    }
+    
+    // MARK: - Hashable
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(w)
+        hasher.combine(h)
     }
     
     // MARK: - Re Res
