@@ -211,7 +211,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 //        CVDisplayLinkSetOutputCallback(displayLink!, displayLinkOutputCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
 //        CVDisplayLinkStart(displayLink!)
         let frameTime: Double = 1.0 / Double(self.fpsMax)
-        frameLoopRenderThread.timer(frameTime, frameLoop)
+        frameLoopRenderThread.timerLoop(duration: frameTime, frameLoop)
 //        RunLoop.current.add(Timer(timeInterval: 1.0 / Double(self.fpsMax), repeats: true, block: { _ in
 //            print("FRAME LOOP")
 //            self.frameLoop()

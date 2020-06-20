@@ -686,5 +686,11 @@ public typealias _Image = NSImage
 #endif
 
 public extension _Image {
-    var resolution: Resolution { .cgSize(size) * LiveFloat(scale) }
+    var resolution: Resolution {
+        #if os(macOS)
+        return .cgSize(size)
+        #else
+        return .cgSize(size) * LiveFloat(scale)
+        #endif
+    }
 }
