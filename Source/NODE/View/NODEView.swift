@@ -90,7 +90,7 @@ open class NODEView: _View {
     let checkerView: CheckerView
     
     #if os(macOS)
-    public override var frame: NSRect { didSet { _ = layoutPlacement(); checkAutoRes() } }
+    public override var frame: NSRect { didSet { layoutPlacement(); checkAutoRes() } }
     #endif
     
     public init(with render: Render, pixelFormat: MTLPixelFormat) {
@@ -214,7 +214,7 @@ open class NODEView: _View {
     #elseif os(macOS)
     public override func layout() {
         super.layout()
-        _ = layoutPlacement()
+        layoutPlacement()
         checkAutoRes()
     }
     #endif

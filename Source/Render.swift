@@ -27,7 +27,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Metal Lib
     
     let metalLibURL: URL
-    let bundle: Bundle?
     
     // MARK: Engine
     
@@ -147,17 +146,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: - Life Cycle
     
-    public convenience init(with metalLibName: String, in metalLibBundle: Bundle) {
-        let metalLibPath: String? = metalLibBundle.path(forResource: metalLibName, ofType: "metallib")
-        if metalLibPath == nil { assertionFailure("Metal Library \"\(metalLibName)\" not found.") }
-        let metalLibURL: URL = URL(fileURLWithPath: metalLibPath!)
-        self.init(metalLibURL: metalLibURL, bundle: metalLibBundle)
-    }
-    
-    public init(metalLibURL: URL, bundle: Bundle?) {
+    public init(metalLibURL: URL) {
         
         self.metalLibURL = metalLibURL
-        self.bundle = bundle
         
         engine = Engine()
         
