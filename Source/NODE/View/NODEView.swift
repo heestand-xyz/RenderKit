@@ -73,13 +73,13 @@ open class NODEView: _View {
     public var boundsReady: Bool { return bounds.width > 0 }
 
     public enum Placement {
-        case aspectFit
-        case aspectFill
-        case center
+        case fit
         case fill
+        case center
+        case stretch
     }
     /// Defaults to `.aspectFit`.
-    public var placement: Placement = .aspectFit { didSet { layoutPlacement() } }
+    public var placement: Placement = .fit { didSet { layoutPlacement() } }
     
     var widthLayoutConstraint: NSLayoutConstraint!
     var heightLayoutConstraint: NSLayoutConstraint!
@@ -147,17 +147,17 @@ open class NODEView: _View {
         let width: CGFloat
         let height: CGFloat
         switch placement {
-        case .aspectFit:
+        case .fit:
             width = resolutionAspect >= viewAspect ? bounds.width : bounds.width / dynamicAspect
             height = resolutionAspect <= viewAspect ? bounds.height : bounds.height / dynamicAspect
-        case .aspectFill:
+        case .fill:
             width = resolutionAspect <= viewAspect ? bounds.width : bounds.width * dynamicAspect
             height = resolutionAspect >= viewAspect ? bounds.height : bounds.height * dynamicAspect
         case .center:
             let scale: CGFloat = Resolution.scale.cg
             width = res.width.cg / scale
             height = res.height.cg / scale
-        case .fill:
+        case .stretch:
             width = bounds.width
             height = bounds.height
         }
