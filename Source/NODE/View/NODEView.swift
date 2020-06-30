@@ -75,7 +75,7 @@ open class NODEView: _View {
     public enum Placement {
         case aspectFit
         case aspectFill
-        case nodeelPerfect
+        case center
         case fill
     }
     /// Defaults to `.aspectFit`.
@@ -153,7 +153,7 @@ open class NODEView: _View {
         case .aspectFill:
             width = resolutionAspect <= viewAspect ? bounds.width : bounds.width * dynamicAspect
             height = resolutionAspect >= viewAspect ? bounds.height : bounds.height * dynamicAspect
-        case .nodeelPerfect:
+        case .center:
             let scale: CGFloat = Resolution.scale.cg
             width = res.width.cg / scale
             height = res.height.cg / scale
