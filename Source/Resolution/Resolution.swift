@@ -12,6 +12,7 @@ import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
+import MetalKit
 
 public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable, Hashable {
     
@@ -693,4 +694,8 @@ public extension _Image {
         return .cgSize(size) * LiveFloat(scale)
         #endif
     }
+}
+
+public extension MTLTexture {
+    var resolution: Resolution { .custom(w: width, h: height) }
 }
