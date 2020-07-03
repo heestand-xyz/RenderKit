@@ -99,15 +99,15 @@ public class MetalUniform {
 // MARK: - Placement
 
 public enum Placement: String, Codable, CaseIterable {
+    case fit
     case fill
-    case aspectFit
-    case aspectFill
     case center
+    case stretch
     public var index: Int {
         switch self {
-        case .fill: return 0
-        case .aspectFit: return 1
-        case .aspectFill: return 2
+        case .stretch: return 0
+        case .fit: return 1
+        case .fill: return 2
         case .center: return 3
         }
     }
