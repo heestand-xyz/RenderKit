@@ -208,7 +208,7 @@ open class NODEView: _View {
     #if os(iOS) || os(tvOS)
     public override func layoutSubviews() {
         super.layoutSubviews()
-        _ = layoutPlacement()
+        layoutPlacement()
         checkAutoRes()
     }
     #elseif os(macOS)
