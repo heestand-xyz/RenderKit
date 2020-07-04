@@ -678,8 +678,9 @@ public struct Texture {
         return raw
     }
     
-    // CHECK needs testing
-    public static func raw16(texture: MTLTexture) throws -> [Float] {
+    #if !targetEnvironment(macCatalyst)
+    
+    public static func raw16(texture: MTLTexture) throws -> [Float16] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
         }
@@ -687,16 +688,15 @@ public struct Texture {
             throw TextureError.raw("Raw 16 - To access this data, the texture needs to be in 16 bit.")
         }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
-        var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * 4)
+        var raw = Array<Float16>(repeating: 0, count: texture.width * texture.height * 4)
         raw.withUnsafeMutableBytes {
-            let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
+            let bytesPerRow = MemoryLayout<Float16>.size * texture.width * 4
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
         }
         return raw
     }
-    
-    // CHECK needs testing
-    public static func raw3d16(texture: MTLTexture) throws -> [Float] {
+
+    public static func raw3d16(texture: MTLTexture) throws -> [Float16] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
         }
@@ -704,14 +704,16 @@ public struct Texture {
             throw TextureError.raw("Raw 16 - To access this data, the texture needs to be in 16 bit.")
         }
         let region = MTLRegionMake3D(0, 0, 0, texture.width, texture.height, texture.depth)
-        var raw = Array<Float>(repeating: 0, count: texture.width * texture.height * texture.depth * 4)
+        var raw = Array<Float16>(repeating: 0, count: texture.width * texture.height * texture.depth * 4)
         raw.withUnsafeMutableBytes {
-            let bytesPerRow = MemoryLayout<Float>.size * texture.width * 4
-            let bytesPerImage = MemoryLayout<Float>.size * texture.width * texture.height * 4
+            let bytesPerRow = MemoryLayout<Float16>.size * texture.width * 4
+            let bytesPerImage = MemoryLayout<Float16>.size * texture.width * texture.height * 4
             texture.getBytes($0.baseAddress!, bytesPerRow: bytesPerRow, bytesPerImage: bytesPerImage, from: region, mipmapLevel: 0, slice: 0)
         }
         return raw
     }
+    
+    #endif
     
 //    public static func rawCopy3d16(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [Float] {
 //        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
@@ -794,7 +796,11 @@ public struct Texture {
         case ._10:
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
+            #if !targetEnvironment(macCatalyst)
             raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+            #else
+            raw = []
+            #endif
         case ._32:
             let rawArr = try raw32(texture: texture)
             var rawFlatArr: [CGFloat] = []
@@ -831,7 +837,11 @@ public struct Texture {
         case ._10:
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
+            #if !targetEnvironment(macCatalyst)
             raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+            #else
+            raw = []
+            #endif
         case ._32:
             let rawArr = try raw3d32(texture: texture)
             var rawFlatArr: [CGFloat] = []
