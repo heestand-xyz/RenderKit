@@ -678,8 +678,11 @@ public struct Texture {
         return raw
     }
     
-    #if !targetEnvironment(macCatalyst)
+    #if !os(macOS) && !targetEnvironment(macCatalyst)
     
+    @available(iOS 14.0, *)
+    @available(tvOS 14.0, *)
+    @available(macOS 11.0, *)
     public static func raw16(texture: MTLTexture) throws -> [Float16] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
@@ -695,7 +698,10 @@ public struct Texture {
         }
         return raw
     }
-
+    
+    @available(iOS 14.0, *)
+    @available(tvOS 14.0, *)
+    @available(macOS 11.0, *)
     public static func raw3d16(texture: MTLTexture) throws -> [Float16] {
         guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
@@ -755,12 +761,12 @@ public struct Texture {
     
     // CHECK needs testing
     public static func raw32(texture: MTLTexture) throws -> [SIMD4<Float>] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
-            throw TextureError.raw("Raw 32 - Texture bits out of range.")
-        }
-        guard bits == ._32 else {
-            throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
-        }
+//        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+//            throw TextureError.raw("Raw 32 - Texture bits out of range.")
+//        }
+//        guard bits == ._32 else {
+//            throw TextureError.raw("Raw 32 - To access this data, the texture needs to be in 32 bit.")
+//        }
         let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
         var raw = Array<SIMD4<Float>>(repeating: SIMD4<Float>(), count: texture.width * texture.height)
         raw.withUnsafeMutableBytes {
@@ -796,8 +802,12 @@ public struct Texture {
         case ._10:
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
-            #if !targetEnvironment(macCatalyst)
-            raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+            #if !os(macOS) && !targetEnvironment(macCatalyst)
+            if #available(iOS 14.0, *) {
+                raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+            } else {
+                raw = []
+            }
             #else
             raw = []
             #endif
@@ -837,8 +847,12 @@ public struct Texture {
         case ._10:
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
-            #if !targetEnvironment(macCatalyst)
-            raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+            #if !os(macOS) && !targetEnvironment(macCatalyst)
+            if #available(iOS 14.0, *) {
+                raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) }) // CHECK normalize
+            } else {
+                raw = []
+            }
             #else
             raw = []
             #endif

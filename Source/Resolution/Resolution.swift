@@ -688,11 +688,16 @@ public typealias _Image = NSImage
 
 public extension _Image {
     var resolution: Resolution {
+        var _scale: CGFloat = 1.0
         #if os(macOS)
-        return .cgSize(size)
+        // TODO: - Check if image size is in points or pixels
+        if let pixelsWide: Int = representations.first?.pixelsWide {
+            _scale = CGFloat(pixelsWide) / size.width
+        }
         #else
-        return .cgSize(size) * LiveFloat(scale)
+        _scale = scale
         #endif
+        return .cgSize(size) * LiveFloat(_scale)
     }
 }
 
