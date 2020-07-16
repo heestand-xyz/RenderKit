@@ -560,11 +560,28 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: Metal
     
+    @available(*, deprecated, renamed: "shader(code:funcName:)")
     public func makeMetalFrag(code: String, name: String) throws -> MTLFunction {
+        try shader(code: code, funcName: name)
+    }
+    public func shader(code: String, funcName: String) throws -> MTLFunction {
         do {
             let codeLib = try metalDevice!.makeLibrary(source: code, options: nil)
-            guard let frag = codeLib.makeFunction(name: name) else {
-                throw ShaderError.metal("makeMetalFrag: Metal func \"\(name)\" not found.")
+            guard let frag = codeLib.makeFunction(name: funcName) else {
+                throw ShaderError.metal("makeMetalFrag: Metal func \"\(funcName)\" not found.")
+            }
+            return frag
+        } catch {
+            throw error
+        }
+    }
+    
+    public func shader(url: URL, funcName: String) throws -> MTLFunction {
+        do {
+            #warning("might need to read url and pass in source...")
+            let codeLib = try metalDevice!.makeLibrary(URL: url)
+            guard let frag = codeLib.makeFunction(name: funcName) else {
+                throw ShaderError.metal("makeMetalFrag: Metal func \"\(funcName)\" not found.")
             }
             return frag
         } catch {
