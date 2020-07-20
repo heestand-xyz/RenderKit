@@ -546,7 +546,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             guard let metalCode = metalNode.metalCode else {
                 throw ShaderError.metalCode
             }
-            let metalFrag = try makeMetalFrag(code: metalCode, name: shaderName)
+            let metalFrag = try shader(code: metalCode, funcName: shaderName)
             frag = metalFrag
         } catch {
             logger.log(.error, nil, "Metal error in \"\(shaderName)\".", e: error)
@@ -576,18 +576,18 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
     }
     
-    public func shader(url: URL, funcName: String) throws -> MTLFunction {
-        do {
-            #warning("might need to read url and pass in source...")
-            let codeLib = try metalDevice!.makeLibrary(URL: url)
-            guard let frag = codeLib.makeFunction(name: funcName) else {
-                throw ShaderError.metal("makeMetalFrag: Metal func \"\(funcName)\" not found.")
-            }
-            return frag
-        } catch {
-            throw error
-        }
-    }
+//    public func shader(url: URL, funcName: String) throws -> MTLFunction {
+//        do {
+//            #warning("might need to read url and pass in source...")
+//            let codeLib = try metalDevice!.makeLibrary(URL: url)
+//            guard let frag = codeLib.makeFunction(name: funcName) else {
+//                throw ShaderError.metal("makeMetalFrag: Metal func \"\(funcName)\" not found.")
+//            }
+//            return frag
+//        } catch {
+//            throw error
+//        }
+//    }
     
     // MARK: Pipeline
     
