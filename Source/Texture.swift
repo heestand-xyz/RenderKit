@@ -801,8 +801,16 @@ public struct Texture {
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
             #if !os(macOS) && !targetEnvironment(macCatalyst)
-            if #available(iOS 14.0, *) {
-                raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+            if #available(macOS 11.0, *) {
+                if #available(tvOS 14.0, *) {
+                    if #available(iOS 14.0, *) {
+                        raw = try raw16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+                    } else {
+                        raw = []
+                    }
+                } else {
+                    raw = []
+                }
             } else {
                 raw = []
             }
@@ -837,10 +845,18 @@ public struct Texture {
             throw TextureError.raw("Raw 10 - Not supported.")
         case ._16:
             #if !os(macOS) && !targetEnvironment(macCatalyst)
-            if #available(iOS 14.0, *) {
-                raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+            if #available(macOS 11.0, *) {
+                if #available(tvOS 14.0, *) {
+                    if #available(iOS 14.0, *) {
+                        raw = try raw3d16(texture: texture).map({ chan -> CGFloat in return CGFloat(chan) })
+                    } else {
+                        raw = []
+                    }
+                } else {
+                    raw = []
+                }
             } else {
-                raw = [-1.0]
+                raw = []
             }
             #else
             raw = [-1.0]
