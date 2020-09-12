@@ -21,7 +21,7 @@ public class Logger {
     
     public var active: Bool = true
     public var silent: Bool = false
-    public var level: LogLevel = .info
+    public var level: LogLevel = .default
     public var source: Bool = false
     public var loopLimitActive = true
     public var loopLimitFrameCount = 30
@@ -74,6 +74,7 @@ public class Logger {
         case info = "INFO"
         case detail = "DETAIL"
         case debug = "DEBUG"
+        static let `default`: LogLevel = .warning
         public var index: Int {
             switch self {
             case .fatal: return 0
