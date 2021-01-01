@@ -6,13 +6,12 @@
 //  Copyright © 2019 Hexagons. All rights reserved.
 //
 
-//import NodeIO
 import LiveValues
 import Metal
 import simd
 import CoreVideo
 
-public protocol NODE/*: Nd*/ {
+public protocol NODE {
     
     var id: UUID { get }
     var typeName: String { get }
@@ -25,9 +24,9 @@ public protocol NODE/*: Nd*/ {
     var view: NODEView { get }
     
     var overrideBits: LiveColor.Bits? { get }
-
-    var liveValues: [LiveValue] { get }
-    var liveArray: [[LiveFloat]] { get }
+    
+    var values: [CoreValue] { get }
+    var floatArray: [[CGFloat]] { get }
     var preUniforms: [CGFloat] { get }
     var uniforms: [CGFloat] { get }
     var postUniforms: [CGFloat] { get }
