@@ -72,15 +72,15 @@ public struct Vertices {
 }
 
 public struct Vertex {
-    public var x,y,z: LiveFloat
-    public var s,t: LiveFloat
+    public var x,y,z: CGFloat
+    public var s,t: CGFloat
     public var buffer: [Float] {
         return [x,y,s,t].map({ Float($0.cg) })
     }
     public var buffer3d: [Float] {
         return [x,y,z,s,t].map({ Float($0.cg) })
     }
-    public init(x: LiveFloat, y: LiveFloat, z: LiveFloat = 0.0, s: LiveFloat, t: LiveFloat) {
+    public init(x: CGFloat, y: CGFloat, z: CGFloat = 0.0, s: CGFloat, t: CGFloat) {
         self.x = x; self.y = y; self.z = z; self.s = s; self.t = t
     }
 }
@@ -89,8 +89,8 @@ public struct Vertex {
 
 public class MetalUniform {
     public var name: String
-    public var value: LiveFloat
-    public init(name: String, value: LiveFloat = 0.0) {
+    public var value: CGFloat
+    public init(name: String, value: CGFloat = 0.0) {
         self.name = name
         self.value = value
     }

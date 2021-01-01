@@ -302,16 +302,16 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
 
     public var size: LiveSize {
         let raw = self.raw
-        return LiveSize(w: LiveFloat(raw.w), h: LiveFloat(raw.h))
+        return LiveSize(w: CGFloat(raw.w), h: CGFloat(raw.h))
     }
     
-    public static var scale: LiveFloat {
+    public static var scale: CGFloat {
         #if os(iOS)
-        return LiveFloat(UIScreen.main.nativeScale)
+        return CGFloat(UIScreen.main.nativeScale)
         #elseif os(tvOS)
         return 1.0
         #elseif os(macOS)
-        return LiveFloat(NSScreen.main?.backingScaleFactor ?? 1.0)
+        return CGFloat(NSScreen.main?.backingScaleFactor ?? 1.0)
         #endif
     }
     
@@ -325,10 +325,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         }
     }
     
-    public var width: LiveFloat {
+    public var width: CGFloat {
         return size.width
     }
-    public var height: LiveFloat {
+    public var height: CGFloat {
         return size.height
     }
     
@@ -381,7 +381,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     
     // MARK: - Aspect
     
-    public var aspect: LiveFloat {
+    public var aspect: CGFloat {
         return size.width / size.height
     }
     
@@ -656,25 +656,25 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return rhs * lhs
     }
     
-    public static func +(lhs: Resolution, rhs: LiveFloat) -> Resolution {
+    public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
         return Resolution(Raw(w: lhs.w + Int(rhs.cg), h: lhs.h + Int(rhs.cg)))
     }
-    public static func -(lhs: Resolution, rhs: LiveFloat) -> Resolution {
+    public static func -(lhs: Resolution, rhs: CGFloat) -> Resolution {
         return Resolution(Raw(w: lhs.w - Int(rhs.cg), h: lhs.h - Int(rhs.cg)))
     }
-    public static func *(lhs: Resolution, rhs: LiveFloat) -> Resolution {
+    public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
         return Resolution(Raw(w: Int(round(lhs.width.cg * rhs.cg)), h: Int(round(lhs.height.cg * rhs.cg))))
     }
-    public static func /(lhs: Resolution, rhs: LiveFloat) -> Resolution {
+    public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
         return Resolution(Raw(w: Int(round(lhs.width.cg / rhs.cg)), h: Int(round(lhs.height.cg / rhs.cg))))
     }
-    public static func +(lhs: LiveFloat, rhs: Resolution) -> Resolution {
+    public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs + lhs
     }
-    public static func -(lhs: LiveFloat, rhs: Resolution) -> Resolution {
-        return (rhs - lhs) * LiveFloat(-1.0)
+    public static func -(lhs: CGFloat, rhs: Resolution) -> Resolution {
+        return (rhs - lhs) * CGFloat(-1.0)
     }
-    public static func *(lhs: LiveFloat, rhs: Resolution) -> Resolution {
+    public static func *(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs * lhs
     }
     
@@ -697,7 +697,7 @@ public extension _Image {
         #else
         _scale = scale
         #endif
-        return .cgSize(size) * LiveFloat(_scale)
+        return .cgSize(size) * CGFloat(_scale)
     }
 }
 

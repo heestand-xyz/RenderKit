@@ -241,29 +241,29 @@ public enum Resolution3D: ResolutionStandard {
         return rhs * lhs
     }
     
-    public static func +(lhs: Resolution3D, rhs: LiveFloat) -> Resolution3D {
+    public static func +(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
         return Resolution3D(Raw(x: lhs.x + Int(rhs.cg), y: lhs.y + Int(rhs.cg), z: lhs.z + Int(rhs.cg)))
     }
-    public static func -(lhs: Resolution3D, rhs: LiveFloat) -> Resolution3D {
+    public static func -(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
         return Resolution3D(Raw(x: lhs.x - Int(rhs.cg), y: lhs.y - Int(rhs.cg), z: lhs.z - Int(rhs.cg)))
     }
-    public static func *(lhs: Resolution3D, rhs: LiveFloat) -> Resolution3D {
+    public static func *(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
         return Resolution3D(Raw(x: Int(round(lhs.vector.x * rhs.cg)),
                                 y: Int(round(lhs.vector.y * rhs.cg)),
                                 z: Int(round(lhs.vector.z * rhs.cg))))
     }
-    public static func /(lhs: Resolution3D, rhs: LiveFloat) -> Resolution3D {
+    public static func /(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
         return Resolution3D(Raw(x: Int(round(lhs.vector.x / rhs.cg)),
                                 y: Int(round(lhs.vector.y / rhs.cg)),
                                 z: Int(round(lhs.vector.z / rhs.cg))))
     }
-    public static func +(lhs: LiveFloat, rhs: Resolution3D) -> Resolution3D {
+    public static func +(lhs: CGFloat, rhs: Resolution3D) -> Resolution3D {
         return rhs + lhs
     }
-    public static func -(lhs: LiveFloat, rhs: Resolution3D) -> Resolution3D {
-        return (rhs - lhs) * LiveFloat(-1.0)
+    public static func -(lhs: CGFloat, rhs: Resolution3D) -> Resolution3D {
+        return (rhs - lhs) * CGFloat(-1.0)
     }
-    public static func *(lhs: LiveFloat, rhs: Resolution3D) -> Resolution3D {
+    public static func *(lhs: CGFloat, rhs: Resolution3D) -> Resolution3D {
         return rhs * lhs
     }
     

@@ -58,12 +58,12 @@ public protocol ResolutionStandard: Equatable {
     static func -(lhs: Double, rhs: Self) -> Self
     static func *(lhs: Double, rhs: Self) -> Self
     
-    static func +(lhs: Self, rhs: LiveFloat) -> Self
-    static func -(lhs: Self, rhs: LiveFloat) -> Self
-    static func *(lhs: Self, rhs: LiveFloat) -> Self
-    static func /(lhs: Self, rhs: LiveFloat) -> Self
-    static func +(lhs: LiveFloat, rhs: Self) -> Self
-    static func -(lhs: LiveFloat, rhs: Self) -> Self
-    static func *(lhs: LiveFloat, rhs: Self) -> Self
+    static func +(lhs: Self, rhs: CGFloat) -> Self
+    static func -(lhs: Self, rhs: CGFloat) -> Self
+    static func *(lhs: Self, rhs: CGFloat) -> Self
+    static func /(lhs: Self, rhs: CGFloat) -> Self
+    static func +(lhs: CGFloat, rhs: Self) -> Self
+    static func -(lhs: CGFloat, rhs: Self) -> Self
+    static func *(lhs: CGFloat, rhs: Self) -> Self
     
 }

@@ -461,10 +461,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 //        let vUp: CGFloat = 1.0
 //        let vDown: CGFloat = 0.0
 //        #endif
-        let a = Vertex(x: -1.0, y: -1.0, z: 0.0, s: 0.0, t: LiveFloat(vDown))
-        let b = Vertex(x: 1.0, y: -1.0, z: 0.0, s: 1.0, t: LiveFloat(vDown))
-        let c = Vertex(x: -1.0, y: 1.0, z: 0.0, s: 0.0, t: LiveFloat(vUp))
-        let d = Vertex(x: 1.0, y: 1.0, z: 0.0, s: 1.0, t: LiveFloat(vUp))
+        let a = Vertex(x: -1.0, y: -1.0, z: 0.0, s: 0.0, t: CGFloat(vDown))
+        let b = Vertex(x: 1.0, y: -1.0, z: 0.0, s: 1.0, t: CGFloat(vDown))
+        let c = Vertex(x: -1.0, y: 1.0, z: 0.0, s: 0.0, t: CGFloat(vUp))
+        let d = Vertex(x: 1.0, y: 1.0, z: 0.0, s: 1.0, t: CGFloat(vUp))
         let verticesArray: Array<Vertex> = [a,b,c,b,c,d]
         var vertexData = Array<Float>()
         for vertex in verticesArray {
