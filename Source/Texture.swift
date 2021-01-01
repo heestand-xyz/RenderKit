@@ -178,7 +178,7 @@ public struct Texture {
         return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
     }
     
-    public static func makeTexture(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, vFlip: Bool = true) throws -> MTLTexture {
+    public static func makeTexture(from ciImage: CIImage, at size: CGSize, colorSpace: CGColorSpace, bits: Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, vFlip: Bool = true) throws -> MTLTexture {
         guard let image: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else {
             throw TextureError.makeTexture("CIImage to CGImage conversion failed.")
         }
@@ -452,26 +452,26 @@ public struct Texture {
     
     // MARK: - Conversions
     
-    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) -> CGImage? {
+    public static func cgImage(from texture: MTLTexture, colorSpace: CGColorSpace, bits: Bits, vFlip: Bool = true) -> CGImage? {
         guard let ciImage: CIImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         let size = CGSize(width: texture.width, height: texture.height)
         guard let cgImage: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else { return nil }
         return cgImage
     }
     
-    public static func ciImage(from texture: MTLTexture, colorSpace: LiveColor.Space) -> CIImage? {
-        CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace.cg])
+    public static func ciImage(from texture: MTLTexture, colorSpace: CGColorSpace) -> CIImage? {
+        CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace])
     }
     
-    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) -> CGImage? {
-        guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
+    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: CGColorSpace, bits: Bits, vFlip: Bool = true) -> CGImage? {
+        guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace) else { return nil }
         #if os(iOS) || os(tvOS)
         let flip: Bool = vFlip
         #elseif os(macOS)
         let flip: Bool = true
         #endif
         if flip {
-            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace.cg, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
             context.scaleBy(x: 1, y: -1)
             context.translateBy(x: 0, y: -size.height)
             context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
@@ -492,7 +492,7 @@ public struct Texture {
         #endif
     }
 
-    public static func image(from texture: MTLTexture, colorSpace: LiveColor.Space, vFlip: Bool = true) -> _Image? {
+    public static func image(from texture: MTLTexture, colorSpace: CGColorSpace, vFlip: Bool = true) -> _Image? {
         let size = CGSize(width: texture.width, height: texture.height)
         guard let ciImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         guard let bits = Bits.bits(for: texture.pixelFormat) else { return nil }
@@ -515,7 +515,7 @@ public struct Texture {
         case cgImage
     }
     
-    public static func pixelBuffer(from image: _Image, colorSpace: LiveColor.Space, bits: Bits) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from image: _Image, colorSpace: CGColorSpace, bits: Bits) throws -> CVPixelBuffer {
         #if os(iOS) || os(tvOS)
         guard let cgImage = image.cgImage else { throw PixelBufferError.cgImage }
         #elseif os(macOS)
@@ -524,7 +524,7 @@ public struct Texture {
         return try pixelBuffer(from: cgImage, colorSpace: colorSpace, bits: bits)
     }
     
-    public static func pixelBuffer(from cgImage: CGImage, colorSpace: LiveColor.Space, bits: Bits) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from cgImage: CGImage, colorSpace: CGColorSpace, bits: Bits) throws -> CVPixelBuffer {
         var maybePixelBuffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferPixelFormatTypeKey: Int(bits.os) as CFNumber,
@@ -551,7 +551,7 @@ public struct Texture {
                                       height: cgImage.height,
                                       bitsPerComponent: bits.rawValue,
                                       bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
-                                      space: colorSpace.cg,
+                                      space: colorSpace,
                                       bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
             throw PixelBufferError.status("Context failed to be created.")
         }
@@ -559,7 +559,7 @@ public struct Texture {
         return pixelBuffer
     }
     
-    public static func pixelBuffer(from texture: MTLTexture, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from texture: MTLTexture, at size: CGSize, colorSpace: CGColorSpace, bits: Bits, vFlip: Bool = true) throws -> CVPixelBuffer {
         guard let ciImage: CIImage = Texture.ciImage(from: texture, colorSpace: colorSpace) else {
             throw PixelBufferError.status("CIImage failed.")
         }
