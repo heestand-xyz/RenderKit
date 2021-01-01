@@ -6,7 +6,6 @@
 //  Open Source - MIT License
 //
 
-import LiveValues
 import CoreGraphics
 import Metal
 import QuartzCore.CoreAnimation
