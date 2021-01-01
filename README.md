@@ -6,8 +6,6 @@ The render engine for:
 | --- | --- | --- |
 | [PixelKit](https://github.com/hexagons/PixelKit) | [VoxelKit](https://github.com/hexagons/VoxelKit) | [VertexKit](https://github.com/hexagons/VertexKit) |
 
-Runs on [LiveValues](https://github.com/hexagons/LiveValues)
-
 ```swift
 Render.engine.renderMode = .frameLoop | frameLoopTiles | manual | manualTiles
 ```
