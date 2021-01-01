@@ -22,7 +22,7 @@ public protocol NODE {
     
     var view: NODEView { get }
     
-    var overrideBits: LiveColor.Bits? { get }
+    var overrideBits: Bits? { get }
     
     var values: [CoreValue] { get }
     var floatArray: [[CGFloat]] { get }

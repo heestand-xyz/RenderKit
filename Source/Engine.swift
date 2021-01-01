@@ -58,7 +58,7 @@ protocol EngineInternalDelegate {
     var linkedNodes: [NODE] { get set }
     var commandQueue: MTLCommandQueue! { get set }
     var metalDevice: MTLDevice! { get set }
-    var bits: LiveColor.Bits { get set }
+    var bits: Bits { get set }
     var quadVertecis: Vertices! { get set }
     func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction) throws -> MTLSamplerState
     func engineFrameIndex() -> Int

@@ -46,7 +46,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 
     // MARK: Color
     
-    public var bits: LiveColor.Bits = ._8
+    public var bits: Bits = ._8
     public var colorSpace: LiveColor.Space = .sRGB
     
     // MARK: Linked NODEs
@@ -591,7 +591,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: Pipeline
     
-    public func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false, overrideBits: LiveColor.Bits? = nil) throws -> MTLRenderPipelineState {
+    public func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false, overrideBits: Bits? = nil) throws -> MTLRenderPipelineState {
         logger.log(.detail, .fileIO, "Pipeline - Fragment Shader: \(fragmentShader.name)")
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = customVertexShader ?? quadVertexShader

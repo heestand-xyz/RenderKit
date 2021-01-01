@@ -24,8 +24,8 @@ public struct Texture {
         case makeTexture(String)
     }
     
-    public static func buffer(from image: CGImage, at size: CGSize?, bits: LiveColor.Bits? = nil, swizzel: Bool = false) -> CVPixelBuffer? {
-        guard let bits: LiveColor.Bits = bits ?? LiveColor.Bits(rawValue: image.bitsPerPixel) else {
+    public static func buffer(from image: CGImage, at size: CGSize?, bits: Bits? = nil, swizzel: Bool = false) -> CVPixelBuffer? {
+        guard let bits: Bits = bits ?? Bits(rawValue: image.bitsPerPixel) else {
             return nil
         }
         #if os(iOS) || os(tvOS)
@@ -41,7 +41,7 @@ public struct Texture {
     #elseif os(macOS)
     public typealias _Image = NSImage
     #endif
-    public static func buffer(from image: _Image, bits: LiveColor.Bits, swizzel: Bool = false) -> CVPixelBuffer? {
+    public static func buffer(from image: _Image, bits: Bits, swizzel: Bool = false) -> CVPixelBuffer? {
         
         #if os(iOS) || os(tvOS)
         let scale: CGFloat = image.scale
@@ -178,7 +178,7 @@ public struct Texture {
         return try makeTexture(from: image, with: commandBuffer, on: metalDevice)
     }
     
-    public static func makeTexture(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, vFlip: Bool = true) throws -> MTLTexture {
+    public static func makeTexture(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, with commandBuffer: MTLCommandBuffer, on metalDevice: MTLDevice, vFlip: Bool = true) throws -> MTLTexture {
         guard let image: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else {
             throw TextureError.makeTexture("CIImage to CGImage conversion failed.")
         }
@@ -192,7 +192,7 @@ public struct Texture {
         return texture
     }
     
-    public static func makeTextureFromCache(from pixelBuffer: CVPixelBuffer, bits: LiveColor.Bits, in textureCache: CVMetalTextureCache) throws -> MTLTexture {
+    public static func makeTextureFromCache(from pixelBuffer: CVPixelBuffer, bits: Bits, in textureCache: CVMetalTextureCache) throws -> MTLTexture {
         
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
@@ -202,11 +202,11 @@ public struct Texture {
         let pixelFormat: MTLPixelFormat
         switch CVPixelBufferGetPixelFormatType(pixelBuffer) {
         case 1278226534: // OneComponent32Float
-            pixelFormat = LiveColor.Bits._32.monochromePixelFormat
+            pixelFormat = Bits._32.monochromePixelFormat
         default:
             switch channelCount {
             case 4: pixelFormat = bits.pixelFormat
-            case 2: pixelFormat = LiveColor.Bits._16.monochromePixelFormat
+            case 2: pixelFormat = Bits._16.monochromePixelFormat
             default: pixelFormat = bits.pixelFormat
             }
         }
@@ -232,7 +232,7 @@ public struct Texture {
         commandEncoder.endEncoding()
     }
     
-    public static func emptyTexture(size: CGSize, bits: LiveColor.Bits, on metalDevice: MTLDevice, write: Bool = false/*, makeIOSurface: Bool = false*/) throws -> MTLTexture {
+    public static func emptyTexture(size: CGSize, bits: Bits, on metalDevice: MTLDevice, write: Bool = false/*, makeIOSurface: Bool = false*/) throws -> MTLTexture {
         guard size.width > 0 && size.height > 0 else { throw TextureError.emptyFail }
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
         descriptor.usage = MTLTextureUsage(rawValue: write ? (MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue) : (MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue))
@@ -259,7 +259,7 @@ public struct Texture {
         return texture
     }
     
-    public static func emptyTextureCube(size: Int, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+    public static func emptyTextureCube(size: Int, bits: Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
         let descriptor = MTLTextureDescriptor.textureCubeDescriptor(pixelFormat: bits.pixelFormat, size: size, mipmapped: false)
         descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue)
         guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
@@ -268,7 +268,7 @@ public struct Texture {
         return texture
     }
     
-    public static func emptyTexture3D(at resolution: Resolution3D, bits: LiveColor.Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
+    public static func emptyTexture3D(at resolution: Resolution3D, bits: Bits, on metalDevice: MTLDevice) throws -> MTLTexture {
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = bits.pixelFormat
         descriptor.textureType = .type3D
@@ -290,7 +290,7 @@ public struct Texture {
     }
     
     public static func copy(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.copy("Bits not found.")
         }
         let textureCopy = try emptyTexture(size: CGSize(width: texture.width, height: texture.height), bits: bits, on: metalDevice)
@@ -316,7 +316,7 @@ public struct Texture {
         let height = firstTexture.height
         let fullWidth = width * textures.first!.count
         let fullHeight = height * textures.count
-        guard let bits = LiveColor.Bits.bits(for: firstTexture.pixelFormat) else {
+        guard let bits = Bits.bits(for: firstTexture.pixelFormat) else {
             throw TextureError.copy("Tile bits not found.")
         }
         let textureCopy = try emptyTexture(size: CGSize(width: fullWidth, height: fullHeight), bits: bits, on: metalDevice)
@@ -350,7 +350,7 @@ public struct Texture {
         let fullWidth = width * textures.first!.first!.count
         let fullHeight = height * textures.first!.count
         let fullDetph = depth * textures.count
-        guard let bits = LiveColor.Bits.bits(for: firstTexture.pixelFormat) else {
+        guard let bits = Bits.bits(for: firstTexture.pixelFormat) else {
             throw TextureError.copy("Tile bits not found.")
         }
         let textureCopy = try emptyTexture3D(at: .custom(x: fullWidth, y: fullHeight, z: fullDetph), bits: bits, on: metalDevice)
@@ -376,7 +376,7 @@ public struct Texture {
     }
     
     public static func copy3D(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> MTLTexture {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.copy("Bits not found.")
         }
         let textureCopy = try emptyTexture3D(at: .custom(x: texture.width, y: texture.height, z: texture.depth), bits: bits, on: metalDevice)
@@ -452,7 +452,7 @@ public struct Texture {
     
     // MARK: - Conversions
     
-    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) -> CGImage? {
+    public static func cgImage(from texture: MTLTexture, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) -> CGImage? {
         guard let ciImage: CIImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         let size = CGSize(width: texture.width, height: texture.height)
         guard let cgImage: CGImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else { return nil }
@@ -463,7 +463,7 @@ public struct Texture {
         CIImage(mtlTexture: texture, options: [.colorSpace: colorSpace.cg])
     }
     
-    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) -> CGImage? {
+    public static func cgImage(from ciImage: CIImage, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) -> CGImage? {
         guard let cgImage = CIContext(options: nil).createCGImage(ciImage, from: ciImage.extent, format: bits.ci, colorSpace: colorSpace.cg) else { return nil }
         #if os(iOS) || os(tvOS)
         let flip: Bool = vFlip
@@ -495,7 +495,7 @@ public struct Texture {
     public static func image(from texture: MTLTexture, colorSpace: LiveColor.Space, vFlip: Bool = true) -> _Image? {
         let size = CGSize(width: texture.width, height: texture.height)
         guard let ciImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else { return nil }
+        guard let bits = Bits.bits(for: texture.pixelFormat) else { return nil }
         guard let cgImage = cgImage(from: ciImage, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else { return nil }
         return image(from: cgImage, at: size)
     }
@@ -515,7 +515,7 @@ public struct Texture {
         case cgImage
     }
     
-    public static func pixelBuffer(from image: _Image, colorSpace: LiveColor.Space, bits: LiveColor.Bits) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from image: _Image, colorSpace: LiveColor.Space, bits: Bits) throws -> CVPixelBuffer {
         #if os(iOS) || os(tvOS)
         guard let cgImage = image.cgImage else { throw PixelBufferError.cgImage }
         #elseif os(macOS)
@@ -524,7 +524,7 @@ public struct Texture {
         return try pixelBuffer(from: cgImage, colorSpace: colorSpace, bits: bits)
     }
     
-    public static func pixelBuffer(from cgImage: CGImage, colorSpace: LiveColor.Space, bits: LiveColor.Bits) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from cgImage: CGImage, colorSpace: LiveColor.Space, bits: Bits) throws -> CVPixelBuffer {
         var maybePixelBuffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferPixelFormatTypeKey: Int(bits.os) as CFNumber,
@@ -559,7 +559,7 @@ public struct Texture {
         return pixelBuffer
     }
     
-    public static func pixelBuffer(from texture: MTLTexture, at size: CGSize, colorSpace: LiveColor.Space, bits: LiveColor.Bits, vFlip: Bool = true) throws -> CVPixelBuffer {
+    public static func pixelBuffer(from texture: MTLTexture, at size: CGSize, colorSpace: LiveColor.Space, bits: Bits, vFlip: Bool = true) throws -> CVPixelBuffer {
         guard let ciImage: CIImage = Texture.ciImage(from: texture, colorSpace: colorSpace) else {
             throw PixelBufferError.status("CIImage failed.")
         }
@@ -573,7 +573,7 @@ public struct Texture {
     // MARK: - Raw
     
     public static func raw8(texture: MTLTexture) throws -> [UInt8] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
         }
         guard bits == ._8 else {
@@ -589,7 +589,7 @@ public struct Texture {
     }
     
     public static func rawCopy8(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [UInt8] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
         }
         guard bits == ._8 else {
@@ -624,7 +624,7 @@ public struct Texture {
     }
     
     public static func raw3d8(texture: MTLTexture) throws -> [UInt8] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
         }
         guard bits == ._8 else {
@@ -641,7 +641,7 @@ public struct Texture {
     }
     
     public static func rawCopy3d8(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [UInt8] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
         }
         guard bits == ._8 else {
@@ -684,7 +684,7 @@ public struct Texture {
     @available(tvOS 14.0, *)
     @available(macOS 11.0, *)
     public static func raw16(texture: MTLTexture) throws -> [Float16] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
         }
         guard bits == ._16 else {
@@ -703,7 +703,7 @@ public struct Texture {
     @available(tvOS 14.0, *)
     @available(macOS 11.0, *)
     public static func raw3d16(texture: MTLTexture) throws -> [Float16] {
-        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+        guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 16 - Texture bits out of range.")
         }
         guard bits == ._16 else {
@@ -722,7 +722,7 @@ public struct Texture {
     #endif
     
 //    public static func rawCopy3d16(texture: MTLTexture, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [Float] {
-//        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+//        guard let bits = Bits.bits(for: texture.pixelFormat) else {
 //            throw TextureError.raw("Raw 16 - Texture bits out of range.")
 //        }
 //        guard bits == ._16 else {
@@ -760,7 +760,7 @@ public struct Texture {
 //    }
     
     public static func raw32(texture: MTLTexture) throws -> [Float] {
-//        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+//        guard let bits = Bits.bits(for: texture.pixelFormat) else {
 //            throw TextureError.raw("Raw 32 - Texture bits out of range.")
 //        }
 //        guard bits == ._32 else {
@@ -776,7 +776,7 @@ public struct Texture {
     }
     
     public static func raw3d32(texture: MTLTexture) throws -> [Float] {
-//        guard let bits = LiveColor.Bits.bits(for: texture.pixelFormat) else {
+//        guard let bits = Bits.bits(for: texture.pixelFormat) else {
 //            throw TextureError.raw("Raw 32 - Texture bits out of range.")
 //        }
 //        guard bits == ._32 else {
@@ -792,7 +792,7 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalized(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+    public static func rawNormalized(texture: MTLTexture, bits: Bits) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
@@ -823,7 +823,7 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalizedCopy(texture: MTLTexture, bits: LiveColor.Bits, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [CGFloat] {
+    public static func rawNormalizedCopy(texture: MTLTexture, bits: Bits, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
@@ -836,7 +836,7 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalized3d(texture: MTLTexture, bits: LiveColor.Bits) throws -> [CGFloat] {
+    public static func rawNormalized3d(texture: MTLTexture, bits: Bits) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
@@ -867,7 +867,7 @@ public struct Texture {
         return raw
     }
     
-    public static func rawNormalizedCopy3d(texture: MTLTexture, bits: LiveColor.Bits, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [CGFloat] {
+    public static func rawNormalizedCopy3d(texture: MTLTexture, bits: Bits, on metalDevice: MTLDevice, in commandQueue: MTLCommandQueue) throws -> [CGFloat] {
         let raw: [CGFloat]
         switch bits {
         case ._8:
