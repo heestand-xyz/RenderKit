@@ -277,7 +277,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
             let scale: CGFloat = UIScreen.main.scale
             return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
             #elseif os(macOS)
-            let size = NSScreen.main?.frame.size ?? Resolution._128.size.cg
+            let size = NSScreen.main?.frame.size ?? Resolution._128.size
             let scale = NSScreen.main?.backingScaleFactor ?? 1.0
             return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
             #endif
@@ -535,16 +535,16 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         case .fit:
             return Resolution.raw(Raw(
                 w: Int((width / inRes.width > height / inRes.height <?>
-                    inRes.width <=> width * (inRes.height / height)).cg),
+                    inRes.width <=> width * (inRes.height / height))),
                 h: Int((width / inRes.width < height / inRes.height <?>
-                    inRes.height <=> height * (inRes.width / width)).cg)
+                    inRes.height <=> height * (inRes.width / width)))
             ))
         case .fill:
             return Resolution.raw(Raw(
                 w: Int((width / inRes.width < height / inRes.height <?>
-                    inRes.width <=> width * (inRes.height / height)).cg),
+                    inRes.width <=> width * (inRes.height / height))),
                 h: Int((width / inRes.width > height / inRes.height <?>
-                    inRes.height <=> height * (inRes.width / width)).cg)
+                    inRes.height <=> height * (inRes.width / width)))
             ))
         }
     }
@@ -586,10 +586,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - rhs.w, h: lhs.h - rhs.h))
     }
     public static func *(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width* rhs.width.cg), h: Int(lhs.height* rhs.height.cg)))
+        return Resolution(Raw(w: Int(lhs.width* rhs.width), h: Int(lhs.height* rhs.height)))
     }
     public static func /(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width/ rhs.width.cg), h: Int(lhs.height/ rhs.height.cg)))
+        return Resolution(Raw(w: Int(lhs.width/ rhs.width), h: Int(lhs.height/ rhs.height)))
     }
     
     public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
@@ -659,16 +659,16 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     }
     
     public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: lhs.w + Int(rhs.cg), h: lhs.h + Int(rhs.cg)))
+        return Resolution(Raw(w: lhs.w + Int(rhs), h: lhs.h + Int(rhs)))
     }
     public static func -(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: lhs.w - Int(rhs.cg), h: lhs.h - Int(rhs.cg)))
+        return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width* rhs.cg)), h: Int(round(lhs.height* rhs.cg))))
+        return Resolution(Raw(w: Int(round(lhs.width* rhs)), h: Int(round(lhs.height* rhs))))
     }
     public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width/ rhs.cg)), h: Int(round(lhs.height/ rhs.cg))))
+        return Resolution(Raw(w: Int(round(lhs.width/ rhs)), h: Int(round(lhs.height/ rhs))))
     }
     public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs + lhs

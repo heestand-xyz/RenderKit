@@ -32,8 +32,8 @@ public struct Pixel {
     public let x: Int
     public let y: Int
     public let uv: CGVector
-    public let color: LiveColor
-    public init(x: Int, y: Int, uv: CGVector, color: LiveColor) {
+    public let color: PXColor
+    public init(x: Int, y: Int, uv: CGVector, color: PXColor) {
         self.x = x
         self.y = y
         self.uv = uv
@@ -46,8 +46,8 @@ public struct Voxel {
     public let y: Int
     public let z: Int
     public let uvw: Vector
-    public let color: LiveColor
-    public init(x: Int, y: Int, z: Int, uvw: Vector, color: LiveColor) {
+    public let color: PXColor
+    public init(x: Int, y: Int, z: Int, uvw: Vector, color: PXColor) {
         self.x = x
         self.y = y
         self.z = z
@@ -75,10 +75,10 @@ public struct Vertex {
     public var x,y,z: CGFloat
     public var s,t: CGFloat
     public var buffer: [Float] {
-        return [x,y,s,t].map({ Float($0.cg) })
+        return [x,y,s,t].map({ Float($0) })
     }
     public var buffer3d: [Float] {
-        return [x,y,z,s,t].map({ Float($0.cg) })
+        return [x,y,z,s,t].map({ Float($0) })
     }
     public init(x: CGFloat, y: CGFloat, z: CGFloat = 0.0, s: CGFloat, t: CGFloat) {
         self.x = x; self.y = y; self.z = z; self.s = s; self.t = t

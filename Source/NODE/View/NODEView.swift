@@ -65,7 +65,7 @@ open class NODEView: _View {
 
     public var resolution: Resolution? {
         didSet {
-            resolutionSize = resolution?.size.cg
+            resolutionSize = resolution?.size
         }
     }
     public var resolutionSize: CGSize?
@@ -139,7 +139,7 @@ open class NODEView: _View {
         guard boundsReady else { return }
         guard let res = resolution else { return }
         
-        let resolutionAspect = res.width / res.height.cg
+        let resolutionAspect = res.width / res.height
         let viewAspect = bounds.width / bounds.height
         let combinedAspect = resolutionAspect / viewAspect
         let dynamicAspect = resolutionAspect > viewAspect ? combinedAspect : 1 / combinedAspect
@@ -154,7 +154,7 @@ open class NODEView: _View {
             width = resolutionAspect <= viewAspect ? bounds.width : bounds.width * dynamicAspect
             height = resolutionAspect >= viewAspect ? bounds.height : bounds.height * dynamicAspect
         case .center:
-            let scale: CGFloat = Resolution.scale.cg
+            let scale: CGFloat = Resolution.scale
             width = res.width / scale
             height = res.height / scale
         case .stretch:

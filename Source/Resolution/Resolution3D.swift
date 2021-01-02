@@ -60,7 +60,7 @@ public enum Resolution3D: ResolutionStandard {
         case ._256: return Raw(x: 256, y: 256, z: 256)
         case ._512: return Raw(x: 512, y: 512, z: 512)
         case ._1024: return Raw(x: 1024, y: 1024, z: 1024)
-        case .vec(let vec): return Raw(x: Int(vec.x.cg), y: Int(vec.y.cg), z: Int(vec.z.cg))
+        case .vec(let vec): return Raw(x: Int(vec.x), y: Int(vec.y), z: Int(vec.z))
         case .custom(let x, let y, let z): return Raw(x: x, y: y, z: z)
         case .cube(let val): return Raw(x: val, y: val, z: val)
         case .raw(let raw): return raw
@@ -242,20 +242,20 @@ public enum Resolution3D: ResolutionStandard {
     }
     
     public static func +(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
-        return Resolution3D(Raw(x: lhs.x + Int(rhs.cg), y: lhs.y + Int(rhs.cg), z: lhs.z + Int(rhs.cg)))
+        return Resolution3D(Raw(x: lhs.x + Int(rhs), y: lhs.y + Int(rhs), z: lhs.z + Int(rhs)))
     }
     public static func -(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
-        return Resolution3D(Raw(x: lhs.x - Int(rhs.cg), y: lhs.y - Int(rhs.cg), z: lhs.z - Int(rhs.cg)))
+        return Resolution3D(Raw(x: lhs.x - Int(rhs), y: lhs.y - Int(rhs), z: lhs.z - Int(rhs)))
     }
     public static func *(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
-        return Resolution3D(Raw(x: Int(round(lhs.vector.x * rhs.cg)),
-                                y: Int(round(lhs.vector.y * rhs.cg)),
-                                z: Int(round(lhs.vector.z * rhs.cg))))
+        return Resolution3D(Raw(x: Int(round(lhs.vector.x * rhs)),
+                                y: Int(round(lhs.vector.y * rhs)),
+                                z: Int(round(lhs.vector.z * rhs))))
     }
     public static func /(lhs: Resolution3D, rhs: CGFloat) -> Resolution3D {
-        return Resolution3D(Raw(x: Int(round(lhs.vector.x / rhs.cg)),
-                                y: Int(round(lhs.vector.y / rhs.cg)),
-                                z: Int(round(lhs.vector.z / rhs.cg))))
+        return Resolution3D(Raw(x: Int(round(lhs.vector.x / rhs)),
+                                y: Int(round(lhs.vector.y / rhs)),
+                                z: Int(round(lhs.vector.z / rhs))))
     }
     public static func +(lhs: CGFloat, rhs: Resolution3D) -> Resolution3D {
         return rhs + lhs

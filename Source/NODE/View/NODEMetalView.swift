@@ -29,7 +29,7 @@ public class NODEMetalView: MTKView {
     public var resolution: Resolution? {
         didSet {
             guard let resolution = resolution else { return }
-            drawableSize = resolution.size.cg
+            drawableSize = resolution.size
         }
     }
     

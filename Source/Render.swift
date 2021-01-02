@@ -47,7 +47,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Color
     
     public var bits: Bits = ._8
-    public var colorSpace: LiveColor.Space = .sRGB
+    public var colorSpace: PXColor.Space = .sRGB
     
     // MARK: Linked NODEs
     

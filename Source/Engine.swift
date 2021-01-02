@@ -258,7 +258,7 @@ public class Engine: LoggerDelegate {
 //                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
-                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width.cg, height: size.height.cg))
+                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
                         #endif
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
@@ -390,7 +390,7 @@ public class Engine: LoggerDelegate {
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
                         let size = node.renderResolution.size
-                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width.cg, height: size.height.cg))
+                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
                         #endif
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
                         let currentDrawable: CAMetalDrawable? = node.view.metalView.currentDrawable
@@ -542,10 +542,10 @@ public class Engine: LoggerDelegate {
     
     func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
         if var nodeTileable2d = node as? NODETileable2D {
-            if (node.renderResolution.width / nodeTileable2d.tileResolution.width.cg).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.renderResolution.width / nodeTileable2d.tileResolution.width).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
             }
-            if (node.renderResolution.height / nodeTileable2d.tileResolution.height.cg).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.renderResolution.height / nodeTileable2d.tileResolution.height).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
             }
             let tileCountResolution: Resolution = node.renderResolution / nodeTileable2d.tileResolution
