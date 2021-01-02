@@ -18,8 +18,10 @@ extension CGSize: CoreValue {}
 extension CGRect: CoreValue {}
 
 #if os(macOS)
+/// PXColor is just UIColor & NSColor
 public typealias PXColor = NSColor
 #else
+/// PXColor is just UIColor & NSColor
 public typealias PXColor = UIColor
 #endif
 extension PXColor: CoreValue {}
