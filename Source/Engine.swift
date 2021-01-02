@@ -105,11 +105,11 @@ public class Engine: LoggerDelegate {
     public let logger: Logger
 
     public enum MetalErrorCode {
-        case IOAF(Int)
+        case IOAF(Error)
         public var info: String {
             switch self {
-            case .IOAF(let code):
-                return "IOAF code \(code)"
+            case .IOAF(let error):
+                return "IOAF Error: \(error.localizedDescription)"
             }
         }
     }
@@ -467,13 +467,11 @@ public class Engine: LoggerDelegate {
             let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
             var ioafMsg: String? = nil
             let err = error.localizedDescription
-            if err.contains("IOAF code") {
-                if let iofaCode = Int(err[err.count - 2..<err.count - 1]) {
-                    frameLoopRenderThread.call {
-                        self.metalErrorCodeCallback?(.IOAF(iofaCode))
-                    }
-                    ioafMsg = "IOAF code \(iofaCode). Sorry, this is an Metal GPU error, usually seen on older devices."
+            if err.contains("IOAF") {
+                frameLoopRenderThread.call {
+                    self.metalErrorCodeCallback?(.IOAF(error))
                 }
+                ioafMsg = "IOAF. Sorry, this is an Metal GPU error, usually seen on older devices. Error: \(err)"
             }
             self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
             node.inRender = false

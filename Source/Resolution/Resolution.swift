@@ -530,24 +530,24 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         case fit
     }
     
-    public func reRes(in inRes: Resolution, _ placement: ImagePlacement = .fit) -> Resolution {
-        switch placement {
-        case .fit:
-            return Resolution.raw(Raw(
-                w: Int((width / inRes.width > height / inRes.height <?>
-                    inRes.width <=> width * (inRes.height / height))),
-                h: Int((width / inRes.width < height / inRes.height <?>
-                    inRes.height <=> height * (inRes.width / width)))
-            ))
-        case .fill:
-            return Resolution.raw(Raw(
-                w: Int((width / inRes.width < height / inRes.height <?>
-                    inRes.width <=> width * (inRes.height / height))),
-                h: Int((width / inRes.width > height / inRes.height <?>
-                    inRes.height <=> height * (inRes.width / width)))
-            ))
-        }
-    }
+//    public func reRes(in inRes: Resolution, _ placement: ImagePlacement = .fit) -> Resolution {
+//        switch placement {
+//        case .fit:
+//            return Resolution.raw(Raw(
+//                w: Int((width / inRes.width > height / inRes.height <?>
+//                    inRes.width <=> width * (inRes.height / height))),
+//                h: Int((width / inRes.width < height / inRes.height <?>
+//                    inRes.height <=> height * (inRes.width / width)))
+//            ))
+//        case .fill:
+//            return Resolution.raw(Raw(
+//                w: Int((width / inRes.width < height / inRes.height <?>
+//                    inRes.width <=> width * (inRes.height / height))),
+//                h: Int((width / inRes.width > height / inRes.height <?>
+//                    inRes.height <=> height * (inRes.width / width)))
+//            ))
+//        }
+//    }
     
     // MARK: - Operator Overloads
     
@@ -586,10 +586,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - rhs.w, h: lhs.h - rhs.h))
     }
     public static func *(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width* rhs.width), h: Int(lhs.height* rhs.height)))
+        return Resolution(Raw(w: Int(lhs.width * rhs.width), h: Int(lhs.height * rhs.height)))
     }
     public static func /(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width/ rhs.width), h: Int(lhs.height/ rhs.height)))
+        return Resolution(Raw(w: Int(lhs.width / rhs.width), h: Int(lhs.height / rhs.height)))
     }
     
     public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
@@ -599,10 +599,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width* rhs)), h: Int(round(lhs.height* rhs))))
+        return Resolution(Raw(w: Int(round(lhs.width * rhs)), h: Int(round(lhs.height * rhs))))
     }
     public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width/ rhs)), h: Int(round(lhs.height/ rhs))))
+        return Resolution(Raw(w: Int(round(lhs.width / rhs)), h: Int(round(lhs.height / rhs))))
     }
     public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -621,10 +621,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: Int) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width* CGFloat(rhs))), h: Int(round(lhs.height* CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width * CGFloat(rhs))), h: Int(round(lhs.height * CGFloat(rhs)))))
     }
     public static func /(lhs: Resolution, rhs: Int) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width/ CGFloat(rhs))), h: Int(round(lhs.height/ CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width / CGFloat(rhs))), h: Int(round(lhs.height / CGFloat(rhs)))))
     }
     public static func +(lhs: Int, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -643,10 +643,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: Double) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width* CGFloat(rhs))), h: Int(round(lhs.height* CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width * CGFloat(rhs))), h: Int(round(lhs.height * CGFloat(rhs)))))
     }
     public static func /(lhs: Resolution, rhs: Double) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width/ CGFloat(rhs))), h: Int(round(lhs.height/ CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width / CGFloat(rhs))), h: Int(round(lhs.height / CGFloat(rhs)))))
     }
     public static func +(lhs: Double, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -655,28 +655,6 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return (rhs - lhs) * Double(-1.0)
     }
     public static func *(lhs: Double, rhs: Resolution) -> Resolution {
-        return rhs * lhs
-    }
-    
-    public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: lhs.w + Int(rhs), h: lhs.h + Int(rhs)))
-    }
-    public static func -(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
-    }
-    public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width* rhs)), h: Int(round(lhs.height* rhs))))
-    }
-    public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width/ rhs)), h: Int(round(lhs.height/ rhs))))
-    }
-    public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
-        return rhs + lhs
-    }
-    public static func -(lhs: CGFloat, rhs: Resolution) -> Resolution {
-        return (rhs - lhs) * CGFloat(-1.0)
-    }
-    public static func *(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs * lhs
     }
     

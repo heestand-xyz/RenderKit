@@ -7,7 +7,6 @@
 //
 
 import Foundation
-
 import CoreGraphics
 import MetalKit
 import simd
@@ -47,7 +46,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Color
     
     public var bits: Bits = ._8
-    public var colorSpace: PXColor.Space = .sRGB
+    public var colorSpace: CGColorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
     
     // MARK: Linked NODEs
     
