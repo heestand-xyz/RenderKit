@@ -2,7 +2,7 @@
 //  NODEView.swift
 //  NodeelKit
 //
-//  Created by Hexagons on 2018-07-26.
+//  Created by Heestand XYZ on 2018-07-26.
 //  Open Source - MIT License
 //
 

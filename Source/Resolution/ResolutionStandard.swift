@@ -3,7 +3,6 @@
 //  RenderKit
 //
 //  Created by Anton Heestand on 2019-10-04.
-//  Copyright © 2019 Heestand XYZ. All rights reserved.
 //
 
 

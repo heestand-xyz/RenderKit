@@ -2,7 +2,7 @@
 //  NODEMetalView.swift
 //  PixelKit
 //
-//  Created by Hexagons on 2018-08-07.
+//  Created by Heestand XYZ on 2018-08-07.
 //  Open Source - MIT License
 //
 
