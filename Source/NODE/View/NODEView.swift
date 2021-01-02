@@ -139,7 +139,7 @@ open class NODEView: _View {
         guard boundsReady else { return }
         guard let res = resolution else { return }
         
-        let resolutionAspect = res.width.cg / res.height.cg
+        let resolutionAspect = res.width / res.height.cg
         let viewAspect = bounds.width / bounds.height
         let combinedAspect = resolutionAspect / viewAspect
         let dynamicAspect = resolutionAspect > viewAspect ? combinedAspect : 1 / combinedAspect
@@ -155,8 +155,8 @@ open class NODEView: _View {
             height = resolutionAspect >= viewAspect ? bounds.height : bounds.height * dynamicAspect
         case .center:
             let scale: CGFloat = Resolution.scale.cg
-            width = res.width.cg / scale
-            height = res.height.cg / scale
+            width = res.width / scale
+            height = res.height / scale
         case .stretch:
             width = bounds.width
             height = bounds.height
@@ -222,7 +222,7 @@ open class NODEView: _View {
     func checkAutoRes() {
         for node in render.linkedNodes {
             if let nodeRes = node as? NODEResolution {
-                if nodeRes.resolution.size.cg != resolutionSize {
+                if nodeRes.resolution.size != resolutionSize {
                     node.applyResolution {
                         node.setNeedsRender()
                     }

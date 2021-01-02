@@ -277,7 +277,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
 //    func checkAutoRes() {
 //        for node in linkedNodes {
-//            if node.resolution.size.cg != node.view.resSize {
+//            if node.resolution.size != node.view.resSize {
 //                logger.log(node: node, .info, .render, "Res Change Detected.")
 //                node.applyRes {
 //                    node.setNeedsRender()

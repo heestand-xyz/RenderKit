@@ -542,10 +542,10 @@ public class Engine: LoggerDelegate {
     
     func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
         if var nodeTileable2d = node as? NODETileable2D {
-            if (node.renderResolution.width.cg / nodeTileable2d.tileResolution.width.cg).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.renderResolution.width / nodeTileable2d.tileResolution.width.cg).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
             }
-            if (node.renderResolution.height.cg / nodeTileable2d.tileResolution.height.cg).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.renderResolution.height / nodeTileable2d.tileResolution.height.cg).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
             }
             let tileCountResolution: Resolution = node.renderResolution / nodeTileable2d.tileResolution

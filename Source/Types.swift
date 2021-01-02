@@ -26,7 +26,7 @@ public struct Vector: Equatable {
     }
 }
 
-// MARK: - #xel
+// MARK: - Pixel
 
 public struct Pixel {
     public let x: Int

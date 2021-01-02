@@ -25,7 +25,6 @@ public protocol NODE {
     var overrideBits: Bits? { get }
     
     var values: [CoreValue] { get }
-    var floatArray: [[CGFloat]] { get }
     var preUniforms: [CGFloat] { get }
     var uniforms: [CGFloat] { get }
     var postUniforms: [CGFloat] { get }

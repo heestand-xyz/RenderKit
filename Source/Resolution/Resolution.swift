@@ -86,8 +86,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     
     case fullscreen
     
+    @available(*, deprecated, renamed: "size(_:)")
     case cgSize(_ size: CGSize)
-    case size(_ size: LiveSize)
+    
+    case size(_ size: CGSize)
     case custom(w: Int, h: Int)
     case square(_ val: Int)
     case raw(_ raw: Raw)
@@ -160,7 +162,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     // MARK: Pro
     
     public var isPro: Bool {
-        let resolution: Resolution = .init(size: size.cg)
+        let resolution: Resolution = .init(size: size)
         switch resolution {
         case .iPhone11Pro, .iPhone11ProMax:
             return true
@@ -189,7 +191,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     public var raw: Raw {
         switch self {
         case .auto(let render):
-            let scale = Resolution.scale.cg
+            let scale = Resolution.scale
             for node in render.linkedNodes {
                 guard let superview = node.view.superview else { continue }
                 let size = superview.frame.size
@@ -279,11 +281,11 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
             let scale = NSScreen.main?.backingScaleFactor ?? 1.0
             return Raw(w: Int(size.width * scale), h: Int(size.height * scale))
             #endif
-        case .cgSize(let size): return Raw(w: Int(size.width), h: Int(size.height))
-        case .size(let size): return Raw(w: Int(size.w.cg), h: Int(size.h.cg))
+        case .size(let size): return Raw(w: Int(size.width), h: Int(size.height))
         case .custom(let w, let h): return Raw(w: w, h: h)
         case .square(let val): return Raw(w: val, h: val)
         case .raw(let raw): return raw
+        default: return Raw(w: 1, h: 1)
         }
     }
     
@@ -300,9 +302,9 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
 
     // MARK: Size
 
-    public var size: LiveSize {
+    public var size: CGSize {
         let raw = self.raw
-        return LiveSize(w: CGFloat(raw.w), h: CGFloat(raw.h))
+        return CGSize(width: CGFloat(raw.w), height: CGFloat(raw.h))
     }
     
     public static var scale: CGFloat {
@@ -390,80 +392,80 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         case fill
     }
     
-    public func aspectResolution(to aspectPlacement: AspectPlacement, in res: Resolution) -> Resolution {
-        var comboAspect = aspect.cg / res.aspect.cg
-        if aspect.cg < res.aspect.cg {
-            comboAspect = 1 / comboAspect
-        }
-        let width: CGFloat
-        let height: CGFloat
-        switch aspectPlacement {
-        case .fit:
-            width = aspect.cg >= res.aspect.cg ? res.width.cg : res.width.cg / comboAspect
-            height = aspect.cg <= res.aspect.cg ? res.height.cg : res.height.cg / comboAspect
-        case .fill:
-            width = aspect.cg <= res.aspect.cg ? res.width.cg : res.width.cg * comboAspect
-            height = aspect.cg >= res.aspect.cg ? res.height.cg : res.height.cg * comboAspect
-        }
-        return .cgSize(CGSize(width: width, height: height))
-    }
-    public func aspectBounds(to aspectPlacement: AspectPlacement, in res: Resolution) -> CGRect {
-        let aRes = aspectResolution(to: aspectPlacement, in: res)
-        return CGRect(x: 0, y: 0, width: aRes.width.cg / Resolution.scale.cg, height: aRes.height.cg / Resolution.scale.cg)
-    }
+//    public func aspectResolution(to aspectPlacement: AspectPlacement, in res: Resolution) -> Resolution {
+//        var comboAspect = aspect / res.aspect.cg
+//        if aspect < res.aspect{
+//            comboAspect = 1 / comboAspect
+//        }
+//        let width: CGFloat
+//        let height: CGFloat
+//        switch aspectPlacement {
+//        case .fit:
+//            width = aspect >= res.aspect? res.width: res.width/ comboAspect
+//            height = aspect<= res.aspect? res.height: res.height/ comboAspect
+//        case .fill:
+//            width = aspect <= res.aspect? res.width: res.width* comboAspect
+//            height = aspect>= res.aspect? res.height: res.height* comboAspect
+//        }
+//        return .size(CGSize(width: width, height: height))
+//    }
+//    public func aspectBounds(to aspectPlacement: AspectPlacement, in res: Resolution) -> CGRect {
+//        let aRes = aspectResolution(to: aspectPlacement, in: res)
+//        return CGRect(x: 0, y: 0, width: aRes.width/ Resolution.scale.cg, height: aRes.height/ Resolution.scale.cg)
+//    }
     
     // MARK: - Life Cycle
     
     public init(size: CGSize) {
         switch size {
-        case Resolution._540p.size.cg: self = ._540p
-        case Resolution._720p.size.cg: self = ._720p
-        case Resolution._1080p.size.cg: self = ._1080p
-        case Resolution._4K.size.cg: self = ._4K
-        case Resolution._8K.size.cg: self = ._8K
-        case Resolution.fullHD(.portrait).size.cg: self = .fullHD(.portrait)
-        case Resolution.fullHD(.landscape).size.cg: self = .fullHD(.landscape)
-        case Resolution.ultraHD(.portrait).size.cg: self = .ultraHD(.portrait)
-        case Resolution.ultraHD(.landscape).size.cg: self = .ultraHD(.landscape)
-        case Resolution._128.size.cg: self = ._128
-        case Resolution._256.size.cg: self = ._256
-        case Resolution._512.size.cg: self = ._512
-        case Resolution._1024.size.cg: self = ._1024
-        case Resolution._2048.size.cg: self = ._2048
-        case Resolution._4096.size.cg: self = ._4096
-        case Resolution._8192.size.cg: self = ._8192
-        case Resolution._16384.size.cg: self = ._16384
-        case Resolution.iPhone(.portrait).size.cg: self = .iPhone(.portrait)
-        case Resolution.iPhone(.landscape).size.cg: self = .iPhone(.landscape)
-        case Resolution.iPhonePlus(.portrait).size.cg: self = .iPhonePlus(.portrait)
-        case Resolution.iPhonePlus(.landscape).size.cg: self = .iPhonePlus(.landscape)
-        case Resolution.iPhoneX(.portrait).size.cg: self = .iPhoneX(.portrait)
-        case Resolution.iPhoneX(.landscape).size.cg: self = .iPhoneX(.landscape)
-        case Resolution.iPhoneXR(.portrait).size.cg: self = .iPhoneXR(.portrait)
-        case Resolution.iPhoneXR(.landscape).size.cg: self = .iPhoneXR(.landscape)
-        case Resolution.iPhone11(.portrait).size.cg: self = .iPhone11(.portrait)
-        case Resolution.iPhone11(.landscape).size.cg: self = .iPhone11(.landscape)
-        case Resolution.iPhone11Pro(.portrait).size.cg: self = .iPhone11Pro(.portrait)
-        case Resolution.iPhone11Pro(.landscape).size.cg: self = .iPhone11Pro(.landscape)
-        case Resolution.iPhone11ProMax(.portrait).size.cg: self = .iPhone11ProMax(.portrait)
-        case Resolution.iPhone11ProMax(.landscape).size.cg: self = .iPhone11ProMax(.landscape)
-        case Resolution.iPad(.portrait).size.cg: self = .iPad(.portrait)
-        case Resolution.iPad(.landscape).size.cg: self = .iPad(.landscape)
-        case Resolution.iPad_10_2(.portrait).size.cg: self = .iPad_10_2(.portrait)
-        case Resolution.iPad_10_2(.landscape).size.cg: self = .iPad_10_2(.landscape)
-        case Resolution.iPadPro_10_5(.portrait).size.cg: self = .iPadPro_10_5(.portrait)
-        case Resolution.iPadPro_10_5(.landscape).size.cg: self = .iPadPro_10_5(.landscape)
-        case Resolution.iPadPro_11(.portrait).size.cg: self = .iPadPro_11(.portrait)
-        case Resolution.iPadPro_11(.landscape).size.cg: self = .iPadPro_11(.landscape)
-        case Resolution.iPadPro_12_9(.portrait).size.cg: self = .iPadPro_12_9(.portrait)
-        case Resolution.iPadPro_12_9(.landscape).size.cg: self = .iPadPro_12_9(.landscape)
-        case Resolution.fullscreen.size.cg: self = .fullscreen
+        case Resolution._540p.size: self = ._540p
+        case Resolution._720p.size: self = ._720p
+        case Resolution._1080p.size: self = ._1080p
+        case Resolution._4K.size: self = ._4K
+        case Resolution._8K.size: self = ._8K
+        case Resolution.fullHD(.portrait).size: self = .fullHD(.portrait)
+        case Resolution.fullHD(.landscape).size: self = .fullHD(.landscape)
+        case Resolution.ultraHD(.portrait).size: self = .ultraHD(.portrait)
+        case Resolution.ultraHD(.landscape).size: self = .ultraHD(.landscape)
+        case Resolution._128.size: self = ._128
+        case Resolution._256.size: self = ._256
+        case Resolution._512.size: self = ._512
+        case Resolution._1024.size: self = ._1024
+        case Resolution._2048.size: self = ._2048
+        case Resolution._4096.size: self = ._4096
+        case Resolution._8192.size: self = ._8192
+        case Resolution._16384.size: self = ._16384
+        case Resolution.iPhone(.portrait).size: self = .iPhone(.portrait)
+        case Resolution.iPhone(.landscape).size: self = .iPhone(.landscape)
+        case Resolution.iPhonePlus(.portrait).size: self = .iPhonePlus(.portrait)
+        case Resolution.iPhonePlus(.landscape).size: self = .iPhonePlus(.landscape)
+        case Resolution.iPhoneX(.portrait).size: self = .iPhoneX(.portrait)
+        case Resolution.iPhoneX(.landscape).size: self = .iPhoneX(.landscape)
+        case Resolution.iPhoneXR(.portrait).size: self = .iPhoneXR(.portrait)
+        case Resolution.iPhoneXR(.landscape).size: self = .iPhoneXR(.landscape)
+        case Resolution.iPhone11(.portrait).size: self = .iPhone11(.portrait)
+        case Resolution.iPhone11(.landscape).size: self = .iPhone11(.landscape)
+        case Resolution.iPhone11Pro(.portrait).size: self = .iPhone11Pro(.portrait)
+        case Resolution.iPhone11Pro(.landscape).size: self = .iPhone11Pro(.landscape)
+        case Resolution.iPhone11ProMax(.portrait).size: self = .iPhone11ProMax(.portrait)
+        case Resolution.iPhone11ProMax(.landscape).size: self = .iPhone11ProMax(.landscape)
+        case Resolution.iPad(.portrait).size: self = .iPad(.portrait)
+        case Resolution.iPad(.landscape).size: self = .iPad(.landscape)
+        case Resolution.iPad_10_2(.portrait).size: self = .iPad_10_2(.portrait)
+        case Resolution.iPad_10_2(.landscape).size: self = .iPad_10_2(.landscape)
+        case Resolution.iPadPro_10_5(.portrait).size: self = .iPadPro_10_5(.portrait)
+        case Resolution.iPadPro_10_5(.landscape).size: self = .iPadPro_10_5(.landscape)
+        case Resolution.iPadPro_11(.portrait).size: self = .iPadPro_11(.portrait)
+        case Resolution.iPadPro_11(.landscape).size: self = .iPadPro_11(.landscape)
+        case Resolution.iPadPro_12_9(.portrait).size: self = .iPadPro_12_9(.portrait)
+        case Resolution.iPadPro_12_9(.landscape).size: self = .iPadPro_12_9(.landscape)
+        case Resolution.fullscreen.size: self = .fullscreen
         default: self = .custom(w: Int(size.width), h: Int(size.height))
         }
     }
     
     public init(autoScaleSize: CGSize) {
-        self.init(size: CGSize(width: autoScaleSize.width * Resolution.scale.cg, height: autoScaleSize.height * Resolution.scale.cg))
+        self.init(size: CGSize(width: autoScaleSize.width * Resolution.scale, height: autoScaleSize.height * Resolution.scale))
     }
     
     public init(_ raw: Raw) {
@@ -584,10 +586,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - rhs.w, h: lhs.h - rhs.h))
     }
     public static func *(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width.cg * rhs.width.cg), h: Int(lhs.height.cg * rhs.height.cg)))
+        return Resolution(Raw(w: Int(lhs.width* rhs.width.cg), h: Int(lhs.height* rhs.height.cg)))
     }
     public static func /(lhs: Resolution, rhs: Resolution) -> Resolution {
-        return Resolution(Raw(w: Int(lhs.width.cg / rhs.width.cg), h: Int(lhs.height.cg / rhs.height.cg)))
+        return Resolution(Raw(w: Int(lhs.width/ rhs.width.cg), h: Int(lhs.height/ rhs.height.cg)))
     }
     
     public static func +(lhs: Resolution, rhs: CGFloat) -> Resolution {
@@ -597,10 +599,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg * rhs)), h: Int(round(lhs.height.cg * rhs))))
+        return Resolution(Raw(w: Int(round(lhs.width* rhs)), h: Int(round(lhs.height* rhs))))
     }
     public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg / rhs)), h: Int(round(lhs.height.cg / rhs))))
+        return Resolution(Raw(w: Int(round(lhs.width/ rhs)), h: Int(round(lhs.height/ rhs))))
     }
     public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -619,10 +621,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: Int) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg * CGFloat(rhs))), h: Int(round(lhs.height.cg * CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width* CGFloat(rhs))), h: Int(round(lhs.height* CGFloat(rhs)))))
     }
     public static func /(lhs: Resolution, rhs: Int) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg / CGFloat(rhs))), h: Int(round(lhs.height.cg / CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width/ CGFloat(rhs))), h: Int(round(lhs.height/ CGFloat(rhs)))))
     }
     public static func +(lhs: Int, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -641,10 +643,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs), h: lhs.h - Int(rhs)))
     }
     public static func *(lhs: Resolution, rhs: Double) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg * CGFloat(rhs))), h: Int(round(lhs.height.cg * CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width* CGFloat(rhs))), h: Int(round(lhs.height* CGFloat(rhs)))))
     }
     public static func /(lhs: Resolution, rhs: Double) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg / CGFloat(rhs))), h: Int(round(lhs.height.cg / CGFloat(rhs)))))
+        return Resolution(Raw(w: Int(round(lhs.width/ CGFloat(rhs))), h: Int(round(lhs.height/ CGFloat(rhs)))))
     }
     public static func +(lhs: Double, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -663,10 +665,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         return Resolution(Raw(w: lhs.w - Int(rhs.cg), h: lhs.h - Int(rhs.cg)))
     }
     public static func *(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg * rhs.cg)), h: Int(round(lhs.height.cg * rhs.cg))))
+        return Resolution(Raw(w: Int(round(lhs.width* rhs.cg)), h: Int(round(lhs.height* rhs.cg))))
     }
     public static func /(lhs: Resolution, rhs: CGFloat) -> Resolution {
-        return Resolution(Raw(w: Int(round(lhs.width.cg / rhs.cg)), h: Int(round(lhs.height.cg / rhs.cg))))
+        return Resolution(Raw(w: Int(round(lhs.width/ rhs.cg)), h: Int(round(lhs.height/ rhs.cg))))
     }
     public static func +(lhs: CGFloat, rhs: Resolution) -> Resolution {
         return rhs + lhs
@@ -697,7 +699,7 @@ public extension _Image {
         #else
         _scale = scale
         #endif
-        return .cgSize(size) * CGFloat(_scale)
+        return .size(size) * CGFloat(_scale)
     }
 }
 
