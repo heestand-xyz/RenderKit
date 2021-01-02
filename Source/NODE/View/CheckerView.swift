@@ -2,8 +2,8 @@
 //  CheckerView.swift
 //  PixelKit
 //
-//  Created by Hexagons on 2017-12-18.
-//  Copyright © 2017 Hexagons. All rights reserved.
+//  Created by Heestand XYZ on 2017-12-18.
+//  Copyright © 2017 Heestand XYZ. All rights reserved.
 //
 
 #if os(iOS) || os(tvOS)

@@ -3,7 +3,7 @@
 //  RenderKit-macOS
 //
 //  Created by Anton Heestand on 2019-10-02.
-//  Copyright © 2019 Hexagons. All rights reserved.
+//  Copyright © 2019 Heestand XYZ. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

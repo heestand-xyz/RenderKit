@@ -2,7 +2,7 @@
 //  PixelKitTexture.swift
 //  PixelKit
 //
-//  Created by Hexagons on 2018-08-23.
+//  Created by Heestand XYZ on 2018-08-23.
 //  Open Source - MIT License
 //
 

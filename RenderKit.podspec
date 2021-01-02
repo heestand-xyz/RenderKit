@@ -12,7 +12,7 @@ Pod::Spec.new do |spec|
 
   spec.license      = { :type => "MIT", :file => "LICENSE" }
 
-  spec.author             = { "Hexagons" => "anton@hexagons.se" }
+  spec.author             = { "Heestand XYZ" => "anton@hexagons.se" }
   spec.social_media_url   = "https://twitter.com/anton_hexagons"
 
   spec.ios.deployment_target  = "11.0"
