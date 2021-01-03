@@ -45,7 +45,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Color
     
     public var bits: Bits = ._8
-    public var colorSpace: CGColorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+    public var colorSpace: CGColorSpace = CGColorSpace(name: CGColorSpace.displayP3)!
     
     // MARK: Linked NODEs
     

@@ -31,8 +31,8 @@ public struct Pixel {
     public let x: Int
     public let y: Int
     public let uv: CGVector
-    public let color: PXColor
-    public init(x: Int, y: Int, uv: CGVector, color: PXColor) {
+    public let color: PixelColor
+    public init(x: Int, y: Int, uv: CGVector, color: PixelColor) {
         self.x = x
         self.y = y
         self.uv = uv
@@ -45,8 +45,8 @@ public struct Voxel {
     public let y: Int
     public let z: Int
     public let uvw: Vector
-    public let color: PXColor
-    public init(x: Int, y: Int, z: Int, uvw: Vector, color: PXColor) {
+    public let color: PixelColor
+    public init(x: Int, y: Int, z: Int, uvw: Vector, color: PixelColor) {
         self.x = x
         self.y = y
         self.z = z
