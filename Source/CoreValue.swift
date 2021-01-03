@@ -12,4 +12,4 @@ extension CGPoint: CoreValue {}
 extension CGSize: CoreValue {}
 extension CGRect: CoreValue {}
 
-extension UINSColor: CoreValue {}
+extension PixelColor: CoreValue {}
