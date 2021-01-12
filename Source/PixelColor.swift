@@ -14,19 +14,19 @@ import SwiftUI
 
 public struct PixelColor {
     
-    var red: CGFloat
-    var green: CGFloat
-    var blue: CGFloat
-    var alpha: CGFloat
+    public var red: CGFloat
+    public var green: CGFloat
+    public var blue: CGFloat
+    public var alpha: CGFloat
     
     @available(*, deprecated, renamed: "red")
-    var r: CGFloat { red }
+    public var r: CGFloat { red }
     @available(*, deprecated, renamed: "green")
-    var g: CGFloat { green }
+    public var g: CGFloat { green }
     @available(*, deprecated, renamed: "blue")
-    var b: CGFloat { blue }
+    public var b: CGFloat { blue }
     @available(*, deprecated, renamed: "alpha")
-    var a: CGFloat { alpha }
+    public var a: CGFloat { alpha }
 
     public static var clear: PixelColor       { return PixelColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0) }
     public static var clearWhite: PixelColor  { return PixelColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.0) }
@@ -272,6 +272,60 @@ public struct PixelColor {
         green = CGFloat((hexInt & 0xff00) >> 8) / 255.0
         blue = CGFloat((hexInt & 0xff) >> 0) / 255.0
         alpha = a
+    }
+    
+    // MARK: - Channel
+    /// Used by ChannelMixPIX
+    
+    public enum Channel {
+        case red
+        case green
+        case blue
+        case alpha
+        var color: PixelColor {
+            switch self {
+            case .red:   return .init(red: 1.0, green: 0.0, blue: 0.0, alpha: 0.0)
+            case .green: return .init(red: 0.0, green: 1.0, blue: 0.0, alpha: 0.0)
+            case .blue:  return .init(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.0)
+            case .alpha: return .init(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
+            }
+        }
+    }
+    
+    public var isPureChannel: Bool {
+        let oneCount: Int = (red == 1.0 ? 1 : 0) + (green == 1.0 ? 1 : 0) + (blue == 1.0 ? 1 : 0) + (alpha == 1.0 ? 1 : 0)
+        let zeroCount: Int = (red == 0.0 ? 1 : 0) + (green == 0.0 ? 1 : 0) + (blue == 0.0 ? 1 : 0) + (alpha == 0.0 ? 1 : 0)
+        return oneCount == 1 && zeroCount == 3
+    }
+    
+    public var pureChannel: Channel? {
+        guard Bool(isPureChannel) else { return nil }
+        if CGFloat(red) == 1.0 {
+            return .red
+        } else if CGFloat(green) == 1.0 {
+            return .green
+        } else if CGFloat(blue) == 1.0 {
+            return .blue
+        } else if CGFloat(alpha) == 1.0 {
+            return .alpha
+        } else { return nil }
+    }
+    
+    public init(channel: Channel) {
+        red = 0
+        green = 0
+        blue = 0
+        alpha = 0
+        switch channel {
+        case .red:
+            red = 1
+        case .green:
+            green = 1
+        case .blue:
+            blue = 1
+        case .alpha:
+            alpha = 1
+        }
     }
     
     // MARK: - Functions

@@ -128,75 +128,75 @@ public enum BlendMode: String, Codable, CaseIterable {
     /// **add with alpha** blend mode operator: `++`
     case addWithAlpha
     
-    @available(*, deprecated, renamed: "mult")
-    public static var multiply: BlendMode { .mult }
-    /// **mult** or *multiply* blend mode operator: `*`
-    case mult
+    @available(*, deprecated, renamed: "multiply")
+    public static var mult: BlendMode { .multiply }
+    /// **multiply** blend mode operator: `*`
+    case multiply
     
-    @available(*, deprecated, renamed: "diff")
-    public static var difference: BlendMode { .diff }
-    /// **diff** or *difference* blend mode operator: `%`
-    case diff
+    @available(*, deprecated, renamed: "difference")
+    public static var diff: BlendMode { .difference }
+    /// **difference** blend mode operator: `%`
+    case difference
     
-    @available(*, deprecated, renamed: "sub")
-    public static var subtract: BlendMode { .sub }
-    /// **sub** or *subtract* blend mode operator: `-`
-    case sub
+    @available(*, deprecated, renamed: "subtract")
+    public static var sub: BlendMode { .subtract }
+    /// **subtract** blend mode operator: `-`
+    case subtract
     
-    @available(*, deprecated, renamed: "subWithAlpha")
-    public static var subtractWithAlpha: BlendMode { .subWithAlpha }
-    /// **sub with alpha** or *subtract with alpha* blend mode operator: `--`
-    case subWithAlpha
+    @available(*, deprecated, renamed: "subtractWithAlpha")
+    public static var subWithAlpha: BlendMode { .subtractWithAlpha }
+    /// **subtract with alpha** blend mode operator: `--`
+    case subtractWithAlpha
     
-    @available(*, deprecated, renamed: "max")
-    public static var maximum: BlendMode { .max }
-    /// **max** or *maximum* blend mode operator: `><`
-    case max
+    @available(*, deprecated, renamed: "maximum")
+    public static var max: BlendMode { .maximum }
+    /// **maximum** blend mode operator: `><`
+    case maximum
     
-    @available(*, deprecated, renamed: "min")
-    public static var minimum: BlendMode { .min }
-    /// **min** or *minimum* blend mode operator: `<>`
-    case min
+    @available(*, deprecated, renamed: "minimum")
+    public static var min: BlendMode { .minimum }
+    /// **minimum** blend mode operator: `<>`
+    case minimum
     
-    @available(*, deprecated, renamed: "gam")
-    public static var gamma: BlendMode { .gam }
-    /// **gam** or *gamma* blend mode operator: `!**`
-    case gam
+    @available(*, deprecated, renamed: "gamma")
+    public static var gam: BlendMode { .gamma }
+    /// **gamma** blend mode operator: `!**`
+    case gamma
     
-    @available(*, deprecated, renamed: "pow")
-    public static var power: BlendMode { .pow }
-    /// **pow** or *power* blend mode operator: `**`
-    case pow
+    @available(*, deprecated, renamed: "power")
+    public static var pow: BlendMode { .power }
+    /// **power** blend mode operator: `**`
+    case power
     
-    @available(*, deprecated, renamed: "div")
-    public static var divide: BlendMode { .div }
-    /// **div** or *divide* blend mode operator: `/`
-    case div
+    @available(*, deprecated, renamed: "divide")
+    public static var div: BlendMode { .divide }
+    /// **divide** blend mode operator: `/`
+    case divide
     
-    @available(*, deprecated, renamed: "avg")
-    public static var average: BlendMode { .avg }
-    /// **avg** or *average* blend mode operator: `~`
-    case avg
+    @available(*, deprecated, renamed: "average")
+    public static var avg: BlendMode { .average }
+    /// **average** blend mode operator: `~`
+    case average
     
-    @available(*, deprecated, renamed: "cos")
-    public static var cosine: BlendMode { .cos }
-    /// **cos** or *cosine* blend mode operator: `°`
-    case cos
+    @available(*, deprecated, renamed: "cosine")
+    public static var cos: BlendMode { .cosine }
+    /// **cosine** blend mode operator: `°`
+    case cosine
     
-    @available(*, deprecated, renamed: "in")
-    public static var inside: BlendMode { .in }
-    /// **in** or *inside* blend mode operator: `<->`
-    case `in`
+    @available(*, deprecated, renamed: "inside")
+    public static var `in`: BlendMode { .inside }
+    /// **inside** blend mode operator: `<->`
+    case inside
     
-    @available(*, deprecated, renamed: "out")
-    public static var outside: BlendMode { .out }
-    /// **out** or *outside* blend mode operator: `>-<`
-    case out
+    @available(*, deprecated, renamed: "outside")
+    public static var out: BlendMode { .outside }
+    /// **outside** blend mode operator: `>-<`
+    case outside
     
-    @available(*, deprecated, renamed: "xor")
-    public static var exclusiveOr: BlendMode { .xor }
-    /// **xor** or *exclusive or* blend mode operator: `+-+`
-    case xor
+    @available(*, deprecated, renamed: "exclusiveOr")
+    public static var xor: BlendMode { .exclusiveOr }
+    /// **exclusive or** blend mode operator: `+-+`
+    case exclusiveOr
     
     public var index: Int {
         switch self {
@@ -204,20 +204,20 @@ public enum BlendMode: String, Codable, CaseIterable {
         case .under: return 1
         case .add: return 2
         case .addWithAlpha: return 3
-        case .mult: return 4
-        case .diff: return 5
-        case .sub: return 6
-        case .subWithAlpha: return 7
-        case .max: return 8
-        case .min: return 9
-        case .gam: return 10
-        case .pow: return 11
-        case .div: return 12
-        case .avg: return 13
-        case .cos: return 14
-        case .in: return 15
-        case .out: return 16
-        case .xor: return 17
+        case .multiply: return 4
+        case .difference: return 5
+        case .subtract: return 6
+        case .subtractWithAlpha: return 7
+        case .maximum: return 8
+        case .minimum: return 9
+        case .gamma: return 10
+        case .power: return 11
+        case .divide: return 12
+        case .average: return 13
+        case .cosine: return 14
+        case .inside: return 15
+        case .outside: return 16
+        case .exclusiveOr: return 17
         }
     }
     

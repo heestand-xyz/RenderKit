@@ -392,27 +392,27 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         case fill
     }
     
-//    public func aspectResolution(to aspectPlacement: AspectPlacement, in res: Resolution) -> Resolution {
-//        var comboAspect = aspect / res.aspect.cg
-//        if aspect < res.aspect{
-//            comboAspect = 1 / comboAspect
-//        }
-//        let width: CGFloat
-//        let height: CGFloat
-//        switch aspectPlacement {
-//        case .fit:
-//            width = aspect >= res.aspect? res.width: res.width/ comboAspect
-//            height = aspect<= res.aspect? res.height: res.height/ comboAspect
-//        case .fill:
-//            width = aspect <= res.aspect? res.width: res.width* comboAspect
-//            height = aspect>= res.aspect? res.height: res.height* comboAspect
-//        }
-//        return .size(CGSize(width: width, height: height))
-//    }
-//    public func aspectBounds(to aspectPlacement: AspectPlacement, in res: Resolution) -> CGRect {
-//        let aRes = aspectResolution(to: aspectPlacement, in: res)
-//        return CGRect(x: 0, y: 0, width: aRes.width/ Resolution.scale.cg, height: aRes.height/ Resolution.scale.cg)
-//    }
+    public func aspectResolution(to aspectPlacement: AspectPlacement, in res: Resolution) -> Resolution {
+        var comboAspect = aspect / res.aspect
+        if aspect < res.aspect{
+            comboAspect = 1 / comboAspect
+        }
+        let width: CGFloat
+        let height: CGFloat
+        switch aspectPlacement {
+        case .fit:
+            width = aspect >= res.aspect ? res.width: res.width / comboAspect
+            height = aspect <= res.aspect ? res.height: res.height / comboAspect
+        case .fill:
+            width = aspect <= res.aspect ? res.width: res.width * comboAspect
+            height = aspect >= res.aspect ? res.height: res.height * comboAspect
+        }
+        return .size(CGSize(width: width, height: height))
+    }
+    public func aspectBounds(to aspectPlacement: AspectPlacement, in res: Resolution) -> CGRect {
+        let aRes = aspectResolution(to: aspectPlacement, in: res)
+        return CGRect(x: 0, y: 0, width: aRes.width / Resolution.scale, height: aRes.height / Resolution.scale)
+    }
     
     // MARK: - Life Cycle
     
