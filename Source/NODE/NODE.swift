@@ -69,7 +69,6 @@ public protocol NODE {
     func applyResolution(applied: @escaping () -> ())
     func setNeedsRender()
     func didRender(texture: MTLTexture, force: Bool)
-    func checkLive()
     func destroy()
     
     func isEqual(to node: NODE) -> Bool

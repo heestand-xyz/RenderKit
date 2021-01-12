@@ -231,8 +231,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         for frameCallback in self.frameCallbacks {
             frameCallback.callback()
         }
-//        self.checkAutoRes()
-        self.checkAllLive()
         self.engine.frameLoop()
         self.calcFPS()
     }
@@ -285,12 +283,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 //    }
     
     // MARK: - Live
-    
-    func checkAllLive() {
-        for linkedNode in linkedNodes {
-            linkedNode.checkLive()
-        }
-    }
     
     func calcFPS() {
 
