@@ -5,9 +5,9 @@ public protocol CoreValue {
     var valueList: [CGFloat] { get }
 }
 
-public struct AnyCoreValue: CoreValue {
-    public var valueList: [CGFloat] { [] }
-}
+//public struct AnyCoreValue: CoreValue {
+//    public var valueList: [CGFloat] { [] }
+//}
 
 
 extension Bool: CoreValue {
