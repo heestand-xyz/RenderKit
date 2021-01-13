@@ -405,6 +405,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: - NODE Linking
     
     public func add(node: NODE) {
+        logger.log(node: node, .detail, .connection, "Linked Node \"\(node.name)\"")
         linkedNodes.append(node)
     }
     
