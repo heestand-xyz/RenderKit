@@ -2,6 +2,11 @@ import Foundation
 
 public class LiveProp {
     public var node: NODE!
+    var getCoreValue: () -> CoreValue
+    public var coreValue: CoreValue { getCoreValue() }
+    internal init(_ getCoreValue: @escaping () -> CoreValue) {
+        self.getCoreValue = getCoreValue
+    }
 }
 
 @propertyWrapper public class Live<CV: CoreValue>: LiveProp {
@@ -18,6 +23,7 @@ public class LiveProp {
     
     public init(wrappedValue: CV) {
         self.wrappedValue = wrappedValue
+        super.init({ wrappedValue })
     }
 
 }
