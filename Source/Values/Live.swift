@@ -1,8 +1,10 @@
 import Foundation
 
-@propertyWrapper public struct Live<CV: CoreValue> {
-    
-    public var node: NODE?
+public class LiveProp {
+    public var node: NODE!
+}
+
+@propertyWrapper public class Live<CV: CoreValue>: LiveProp {
     
     public var wrappedValue: CV {
         didSet {
