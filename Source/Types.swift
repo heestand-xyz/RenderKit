@@ -240,7 +240,7 @@ public enum InterpolateMode: String, Codable, CaseIterable {
 
 // MARK: - Extend
 
-public enum ExtendMode: String, Codable, CaseIterable {
+public enum ExtendMode: String, Codable, CaseIterable, Floatable {
     case hold
     case zero
     case loop
@@ -279,6 +279,7 @@ public enum ExtendMode: String, Codable, CaseIterable {
         case .mirror: return 3
         }
     }
+    public var floats: [CGFloat] { [CGFloat(index)] }
 }
 
 // MARK: - Tile Index

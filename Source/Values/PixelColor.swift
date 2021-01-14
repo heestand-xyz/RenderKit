@@ -12,7 +12,7 @@ import UIKit
 #endif
 import SwiftUI
 
-public struct PixelColor {
+public struct PixelColor: Floatable {
     
     public var red: CGFloat
     public var green: CGFloat
@@ -66,6 +66,7 @@ public struct PixelColor {
     public var components: [CGFloat] {
         return [red, green, blue, alpha]
     }
+    public var floats: [CGFloat] { components }
     
     public var ciColor: CIColor {
         CIColor(red: red, green: green, blue: blue, alpha: alpha, colorSpace: CGColorSpace(name: CGColorSpace.displayP3)!) ?? .clear

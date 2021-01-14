@@ -2,16 +2,16 @@ import Foundation
 
 public class LiveProp {
     public var node: NODE!
-    var getCoreValue: () -> CoreValue
-    public var coreValue: CoreValue { getCoreValue() }
-    internal init(_ getCoreValue: @escaping () -> CoreValue) {
-        self.getCoreValue = getCoreValue
+    var getFloatable: () -> Floatable
+    public var floatable: Floatable { getFloatable() }
+    internal init(get getFloatable: @escaping () -> Floatable) {
+        self.getFloatable = getFloatable
     }
 }
 
-@propertyWrapper public class Live<CV: CoreValue>: LiveProp {
+@propertyWrapper public class Live<F: Floatable>: LiveProp {
     
-    public var wrappedValue: CV {
+    public var wrappedValue: F {
         didSet {
             guard let node: NODE = node else {
                 print("RenderKit Live property wrapper not linked to node.")
@@ -21,10 +21,28 @@ public class LiveProp {
         }
     }
     
-    public init(wrappedValue: CV) {
+    public init(wrappedValue: F) {
         self.wrappedValue = wrappedValue
-        super.init({ wrappedValue })
+        super.init(get: { wrappedValue })
     }
 
 }
 
+//@propertyWrapper public class LiveArray<F: Floatable>: LiveProp {
+//
+//    public var wrappedValue: [F] {
+//        didSet {
+//            guard let node: NODE = node else {
+//                print("RenderKit Live property wrapper not linked to node.")
+//                return
+//            }
+//            node.setNeedsRender()
+//        }
+//    }
+//
+//    public init(wrappedValue: [F]) {
+//        self.wrappedValue = wrappedValue
+//        super.init(get: { wrappedValue })
+//    }
+//
+//}

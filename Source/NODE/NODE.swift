@@ -24,10 +24,11 @@ public protocol NODE {
     var overrideBits: Bits? { get }
     
     var liveList: [LiveProp] { get }
-    var values: [CoreValue] { get }
-    var preUniforms: [CGFloat] { get }
+    var values: [Floatable] { get }
+//    var preUniforms: [CGFloat] { get }
     var uniforms: [CGFloat] { get }
-    var postUniforms: [CGFloat] { get }
+//    var postUniforms: [CGFloat] { get }
+    var extraUniforms: [CGFloat] { get }
     var uniformArray: [[CGFloat]] { get }
     var uniformArrayMaxLimit: Int? { get }
     var uniformIndexArray: [[Int]] { get }
