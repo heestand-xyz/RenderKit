@@ -21,3 +21,24 @@ public class LiveWrap {
     }
 
 }
+
+@propertyWrapper public class LiveResolution<F: Floatable>: LiveWrap {
+    
+    public var wrappedValue: F {
+        didSet {
+            guard let node: NODE = node else {
+                print("RenderKit LiveResolution property wrapper not linked to node.")
+                return
+            }
+            node.applyResolution {
+                node.setNeedsRender()
+            }
+        }
+    }
+    
+    public init(wrappedValue: F) {
+        self.wrappedValue = wrappedValue
+    }
+
+}
+
