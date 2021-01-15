@@ -278,7 +278,7 @@ public struct PixelColor: Floatable {
     // MARK: - Channel
     /// Used by ChannelMixPIX
     
-    public enum Channel {
+    public enum Channel: Int, Floatable {
         case red
         case green
         case blue
@@ -291,6 +291,7 @@ public struct PixelColor: Floatable {
             case .alpha: return .init(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
             }
         }
+        public var floats: [CGFloat] { [CGFloat(rawValue)] }
     }
     
     public var isPureChannel: Bool {
