@@ -115,7 +115,7 @@ public enum Placement: String, Codable, CaseIterable, Floatable {
 
 // MARK: - Blend
 
-public enum BlendMode: String, Codable, CaseIterable {
+public enum BlendMode: String, Codable, CaseIterable, Floatable {
     
     /// **over** blend mode operator: `&`
     case over
@@ -221,6 +221,7 @@ public enum BlendMode: String, Codable, CaseIterable {
         case .exclusiveOr: return 17
         }
     }
+    public var floats: [CGFloat] { [CGFloat(index)] }
     
 }
 
