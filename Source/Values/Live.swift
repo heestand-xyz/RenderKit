@@ -1,10 +1,10 @@
 import Foundation
 
-public class LiveProp {
+public class LiveWrap {
     public var node: NODE!
 }
 
-@propertyWrapper public class Live<F: Floatable>: LiveProp {
+@propertyWrapper public class Live<F: Floatable>: LiveWrap {
     
     public var wrappedValue: F {
         didSet {

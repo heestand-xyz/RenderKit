@@ -23,7 +23,7 @@ public protocol NODE {
     
     var overrideBits: Bits? { get }
     
-    var liveList: [LiveProp] { get }
+    var liveList: [LiveWrap] { get }
     var values: [Floatable] { get }
 //    var preUniforms: [CGFloat] { get }
     var uniforms: [CGFloat] { get }
