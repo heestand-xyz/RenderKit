@@ -97,7 +97,7 @@ public class MetalUniform {
 
 // MARK: - Placement
 
-public enum Placement: String, Codable, CaseIterable {
+public enum Placement: String, Codable, CaseIterable, Floatable {
     case fit
     case fill
     case center
@@ -110,6 +110,7 @@ public enum Placement: String, Codable, CaseIterable {
         case .center: return 3
         }
     }
+    public var floats: [CGFloat] { [CGFloat(index)] }
 }
 
 // MARK: - Blend

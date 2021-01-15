@@ -14,7 +14,7 @@ import AppKit
 #endif
 import MetalKit
 
-public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable, Hashable {
+public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codable, Hashable, Floatable {
     
     case auto(render: Render)
     
@@ -337,6 +337,8 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     public var flopped: Resolution {
         return .raw(raw.flopped)
     }
+    
+    public var floats: [CGFloat] { [width, height] }
     
     // MARK: Checks
     
