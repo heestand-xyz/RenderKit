@@ -11,6 +11,7 @@ import Metal
 #if !os(tvOS) && !targetEnvironment(simulator)
 import MetalPerformanceShaders
 #endif
+import PixelColor
 
 // MARK: - Vector
 

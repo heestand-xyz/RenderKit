@@ -12,9 +12,11 @@ let package = Package(
     products: [
         .library(name: "RenderKit", targets: ["RenderKit"]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/heestand-xyz/PixelColor.git", from: "1.0.0"),
+    ],
     targets: [
-        .target(name: "RenderKit", dependencies: [], path: "Source"),
+        .target(name: "RenderKit", dependencies: ["PixelColor"], path: "Source"),
         .testTarget(name: "RenderKitTests", dependencies: ["RenderKit"]),
     ]
 )
