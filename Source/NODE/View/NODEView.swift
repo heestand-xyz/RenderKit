@@ -11,7 +11,6 @@ import MetalKit
 import SwiftUI
 #endif
 
-#if canImport(SwiftUI)
 #if os(macOS)
 @available(OSX 10.15, *)
 public struct NODERepView: NSViewRepresentable {
@@ -36,19 +35,6 @@ public struct NODERepView: UIViewRepresentable {
         return node.view
     }
     public func updateUIView(_ nodeView: NODEView, context: Context) {}
-}
-#endif
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-public struct RawNODEUI: View, NODEUI {
-    public let node: NODE
-    public var body: some View {
-        NODERepView(node: node)
-    }
-    public init(node: NODE) {
-        self.node = node
-    }
 }
 #endif
 

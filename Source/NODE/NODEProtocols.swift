@@ -9,7 +9,7 @@
 import CoreGraphics
 import Metal
 
-public protocol NODEDelegate: class {
+public protocol NODEDelegate: AnyObject {
     func nodeDidRender(_ node: NODE)
 }
 
@@ -36,44 +36,3 @@ public protocol NODEOutIO: NODEOut {
     var outputPathList: [NODEOutPath] { get set }
     var connectedOut: Bool { get }
 }
-
-
-#if canImport(SwiftUI)
-
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-public protocol NODEUI {
-    var node: NODE { get }
-}
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-public protocol NODEUISingleEffect: NODEUI {
-    var input: NODE & NODEOut { get }
-}
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-public protocol NODEUIMergerEffect: NODEUI {
-    var inputA: NODE & NODEOut { get }
-    var inputB: NODE & NODEOut { get }
-}
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-public protocol NODEUIMultiEffect: NODEUI {
-    var inputs: [NODE & NODEOut] { get }
-}
-
-@available(iOS 13.0.0, *)
-@available(OSX 10.15, *)
-@available(tvOS 13.0.0, *)
-@_functionBuilder
-public struct NODEUIMultiEffectBuilder {
-    public static func buildBlock(_ children: NODEUI...) -> [NODE & NODEOut] {
-        return children.compactMap { $0.node as? NODE & NODEOut }
-    }
-}
-
-#endif
