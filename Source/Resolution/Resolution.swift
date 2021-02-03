@@ -663,12 +663,12 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
 }
 
 #if os(iOS) || os(tvOS)
-public typealias _Image = UIImage
+public typealias UINSImage = UIImage
 #elseif os(macOS)
-public typealias _Image = NSImage
+public typealias UINSImage = NSImage
 #endif
 
-public extension _Image {
+public extension UINSImage {
     var resolution: Resolution {
         var _scale: CGFloat = 1.0
         #if os(macOS)
