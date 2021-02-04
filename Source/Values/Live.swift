@@ -8,6 +8,7 @@ public class LiveWrap {
     
     public var wrappedValue: F {
         didSet {
+            guard wrappedValue.floats != oldValue.floats else { return }
             guard let node: NODE = node else {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
