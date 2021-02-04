@@ -112,6 +112,9 @@ public enum Placement: String, Codable, CaseIterable, Floatable {
         }
     }
     public var floats: [CGFloat] { [CGFloat(index)] }
+    public init(floats: [CGFloat]) {
+        self = Self.allCases.first(where: { $0.index == Int(floats.first ?? 0.0) }) ?? Self.allCases.first!
+    }
 }
 
 // MARK: - Blend
@@ -223,6 +226,9 @@ public enum BlendMode: String, Codable, CaseIterable, Floatable {
         }
     }
     public var floats: [CGFloat] { [CGFloat(index)] }
+    public init(floats: [CGFloat]) {
+        self = Self.allCases.first(where: { $0.index == Int(floats.first ?? 0.0) }) ?? Self.allCases.first!
+    }
     
 }
 
@@ -283,6 +289,9 @@ public enum ExtendMode: String, Codable, CaseIterable, Floatable {
         }
     }
     public var floats: [CGFloat] { [CGFloat(index)] }
+    public init(floats: [CGFloat]) {
+        self = Self.allCases.first(where: { $0.index == Int(floats.first ?? 0.0) }) ?? Self.allCases.first!
+    }
 }
 
 // MARK: - Tile Index

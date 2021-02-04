@@ -339,6 +339,10 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     }
     
     public var floats: [CGFloat] { [width, height] }
+    public init(floats: [CGFloat]) {
+        guard floats.count == 2 else { self = ._128; return }
+        self = .custom(w: Int(floats[0]), h: Int(floats[1]))
+    }
     
     // MARK: Checks
     
