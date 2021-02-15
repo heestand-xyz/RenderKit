@@ -471,7 +471,7 @@ public struct Texture {
         let flip: Bool = true
         #endif
         if flip {
-            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 4 * Int(size.width), space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: bits.rawValue, bytesPerRow: 4 * Int(size.width) * (bits.rawValue / 8), space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
             context.scaleBy(x: 1, y: -1)
             context.translateBy(x: 0, y: -size.height)
             context.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
