@@ -7,7 +7,6 @@
 //
 
 import CoreGraphics
-
 import MetalKit
 import VideoToolbox
 import Accelerate
@@ -17,6 +16,7 @@ public struct Texture {
     public enum TextureError: Error {
         case pixelBuffer(Int)
         case emptyFail
+        case cgImage
         case copy(String)
         case multi(String)
         case mipmap
@@ -34,6 +34,77 @@ public struct Texture {
         guard size != nil else { return nil }
         return buffer(from: NSImage(cgImage: image, size: size!), bits: bits)
         #endif
+    }
+    
+    public static func cgImage(from image: _Image) -> CGImage? {
+        #if os(macOS)
+        var imageRect = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+        return image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil)
+        #else
+        return image.cgImage
+        #endif
+    }
+    
+    public static func image(from cgImage: CGImage) -> _Image {
+        #if os(macOS)
+        return _Image(cgImage: cgImage, size: CGSize(width: cgImage.width, height: cgImage.height))
+        #else
+        return _Image(cgImage: cgImage)
+        #endif
+    }
+    
+    public static func loadTexture(from image: _Image, device: MTLDevice) throws -> MTLTexture {
+        guard let cgImage: CGImage = Texture.cgImage(from: image) else {
+            throw TextureError.cgImage
+        }
+        return try Texture.loadTexture(from: cgImage, device: device)
+    }
+    
+    public static func loadTexture(from cgImage: CGImage, device: MTLDevice) throws -> MTLTexture {
+        let loader = MTKTextureLoader(device: device)
+        return try loader.newTexture(cgImage: cgImage, options: nil)
+    }
+    
+    @available(iOS 14.0, *)
+    @available(tvOS 14.0, *)
+    @available(macOS 11.0, *)
+    public static func pixelbuffer16(from image: _Image, device: MTLDevice, colorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()) -> CVPixelBuffer? {
+        guard let cgImage: CGImage = Texture.cgImage(from: image) else { return nil }
+        guard let texture: MTLTexture = Texture.texture16(from: cgImage, size: image.size, device: device) else { return nil }
+        return try? Texture.pixelBuffer(from: texture, at: image.size, colorSpace: colorSpace, bits: ._16)
+    }
+    
+    @available(iOS 14.0, *)
+    @available(tvOS 14.0, *)
+    @available(macOS 11.0, *)
+    public static func texture16(from image: _Image, device: MTLDevice) -> MTLTexture? {
+        guard let cgImage: CGImage = Texture.cgImage(from: image) else { return nil }
+        return Texture.texture16(from: cgImage, size: image.size, device: device)
+    }
+    
+    @available(iOS 14.0, *)
+    @available(tvOS 14.0, *)
+    @available(macOS 11.0, *)
+    public static func texture16(from image: CGImage, size: CGSize, device: MTLDevice) -> MTLTexture? {
+        
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba16Float,
+                                                                  width: Int(size.width),
+                                                                  height: Int(size.height),
+                                                                  mipmapped: false)
+        descriptor.usage = .shaderRead
+        guard let texture = device.makeTexture(descriptor: descriptor) else { return nil }
+
+        if image.bitsPerComponent == 16 && image.bitsPerPixel == 64 {
+            let srcData: CFData! = image.dataProvider?.data
+            CFDataGetBytePtr(srcData).withMemoryRebound(to: UInt16.self, capacity: image.width * image.height * 4) { srcPixels in
+                texture.replace(region: MTLRegionMake2D(0, 0, image.width, image.height),
+                                mipmapLevel: 0,
+                                withBytes: srcPixels,
+                                bytesPerRow: MemoryLayout<UInt16>.size * 4 * image.width)
+            }
+        }
+
+        return texture
     }
     
     #if os(iOS) || os(tvOS)
@@ -56,6 +127,8 @@ public struct Texture {
         let height = image.size.height * scale
         
         let attrs = [
+//            kCVPixelBufferPixelFormatTypeKey: bits.os,
+//            kCVPixelBufferMetalCompatibilityKey: kCFBooleanTrue,
             kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
             kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue
 //            String(kCVPixelBufferIOSurfacePropertiesKey): [
@@ -78,14 +151,14 @@ public struct Texture {
         CVPixelBufferLockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
         let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer!)
         
-        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+        let rgbColorSpace: CGColorSpace = CGColorSpaceCreateDeviceRGB()
         guard let context = CGContext(data: pixelData,
                                       width: Int(width),
                                       height: Int(height),
-                                      bitsPerComponent: 8, // FIXME: bits.rawValue,
+                                      bitsPerComponent: 8, //bits.rawValue,
                                       bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!),
                                       space: rgbColorSpace,
-                                      bitmapInfo: swizzel ? CGImageAlphaInfo.premultipliedFirst.rawValue : CGImageAlphaInfo.premultipliedLast.rawValue)
+                                      bitmapInfo: swizzel || bits.os == kCVPixelFormatType_64ARGB ? CGImageAlphaInfo.premultipliedFirst.rawValue : CGImageAlphaInfo.premultipliedLast.rawValue)
         else {
             return nil
         }

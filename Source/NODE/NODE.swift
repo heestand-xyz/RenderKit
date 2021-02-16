@@ -43,7 +43,7 @@ public protocol NODE {
     var bypass: Bool { get set }
     var contentLoaded: Bool? { get set }
     
-    var renderResolution: Resolution { get }
+    var finalResolution: Resolution { get }
 
     var vertexUniforms: [CGFloat] { get }
     var shaderNeedsAspect: Bool { get }
@@ -102,7 +102,9 @@ public protocol NODE3D: NODE {
 public protocol NODEContent: NODE {}
 
 public protocol NODEResource: NODEContent {
-    var pixelBuffer: CVPixelBuffer? { get set }
+    var resourceTexture: MTLTexture? { get set }
+    var resourcePixelBuffer: CVPixelBuffer? { get set }
+    func getResourceTexture(commandBuffer: MTLCommandBuffer) throws -> MTLTexture
 }
 
 public protocol NODEResourceCustom: NODEContent, NODEResolution3D {}

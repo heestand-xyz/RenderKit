@@ -45,11 +45,19 @@ public enum Bits: Int, Codable, CaseIterable {
     public var ci: CIFormat {
         switch self {
         case ._8, ._10: return .RGBA8
-        case ._16, ._32: return .RGBA16
+        case ._16: return .RGBAh
+        case ._32: return .RGBAf
         }
     }
     public var os: OSType {
-        return kCVPixelFormatType_32BGRA
+        switch self {
+        case ._8, ._10, ._16:
+            return kCVPixelFormatType_32BGRA
+//        case ._16:
+//            return kCVPixelFormatType_64ARGB
+        default:
+            return kCVPixelFormatType_128RGBAFloat
+        }
     }
     public var osARGB: OSType {
         return kCVPixelFormatType_32ARGB

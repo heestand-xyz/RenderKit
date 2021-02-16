@@ -254,7 +254,7 @@ public class Engine: LoggerDelegate {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
-                        let size = node.renderResolution.size
+                        let size = node.finalResolution.size
 //                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
 //                            return
 //                        }
@@ -389,7 +389,7 @@ public class Engine: LoggerDelegate {
                         #if os(iOS) || os(tvOS)
                         node.view.metalView.setNeedsDisplay()
                         #elseif os(macOS)
-                        let size = node.renderResolution.size
+                        let size = node.finalResolution.size
                         node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
                         #endif
                         self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
@@ -540,13 +540,13 @@ public class Engine: LoggerDelegate {
     
     func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
         if var nodeTileable2d = node as? NODETileable2D {
-            if (node.renderResolution.width / nodeTileable2d.tileResolution.width).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.finalResolution.width / nodeTileable2d.tileResolution.width).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
             }
-            if (node.renderResolution.height / nodeTileable2d.tileResolution.height).remainder(dividingBy: 1.0) != 0.0 {
+            if (node.finalResolution.height / nodeTileable2d.tileResolution.height).remainder(dividingBy: 1.0) != 0.0 {
                 logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
             }
-            let tileCountResolution: Resolution = node.renderResolution / nodeTileable2d.tileResolution
+            let tileCountResolution: Resolution = node.finalResolution / nodeTileable2d.tileResolution
             
             var tileTextures: [[MTLTexture]] = []
             for y in 0..<tileCountResolution.h {
@@ -710,8 +710,8 @@ public class Engine: LoggerDelegate {
             height = node is NODE3D ? (node as! NODETileable3D).tileResolution.y : (node as! NODETileable2D).tileResolution.h
             depth = node is NODE3D ? (node as! NODETileable3D).tileResolution.z : 1
         } else {
-            width = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
-            height = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.renderResolution.h
+            width = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.finalResolution.w
+            height = node is NODE3D ? (node as! NODE3D).renderedResolution3d.y : node.finalResolution.h
             depth = node is NODE3D ? (node as! NODE3D).renderedResolution3d.z : 1
         }
         var tileCountX: Int = 0
@@ -719,7 +719,7 @@ public class Engine: LoggerDelegate {
         var tileCountZ: Int = 0
         var tileFraction: CGFloat = 0.0
         if tileIndex != nil {
-            let realSize = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.renderResolution.w
+            let realSize = node is NODE3D ? (node as! NODE3D).renderedResolution3d.x : node.finalResolution.w
             tileFraction = CGFloat(width) / CGFloat(realSize)
             tileCountX = realSize / width
             tileCountY = realSize / height
