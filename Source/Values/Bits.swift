@@ -23,7 +23,7 @@ public enum Bits: Int, Codable, CaseIterable {
             return .bgra8Unorm
             #endif
         case ._16: return .rgba16Float
-        case ._32: return .rgba32Float
+        case ._32: return .rgba32Float // invalid pixel format 125
         }
     }
     public var monochromePixelFormat: MTLPixelFormat {
