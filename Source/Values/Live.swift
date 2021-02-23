@@ -25,6 +25,8 @@ public class LiveWrap {
 
 @propertyWrapper public class Live<F: Floatable>: LiveWrap {
     
+    let updateResolution: Bool
+    
     public var wrappedValue: F {
         didSet {
             guard wrappedValue.floats != oldValue.floats else { return }
@@ -32,18 +34,27 @@ public class LiveWrap {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
         }
     }
     
-    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil) {
+    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: min, max: max)
     }
 
 }
 
 @propertyWrapper public class LiveFloat: LiveWrap {
+    
+    let updateResolution: Bool
     
     public var wrappedValue: CGFloat {
         didSet {
@@ -52,18 +63,27 @@ public class LiveWrap {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
         }
     }
     
-    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat>) {
+    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat> = 0.0...1.0, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
     }
 
 }
 
 @propertyWrapper public class LiveInt: LiveWrap {
+    
+    let updateResolution: Bool
     
     public var wrappedValue: Int {
         didSet {
@@ -72,18 +92,27 @@ public class LiveWrap {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
         }
     }
     
-    public init(wrappedValue: Int, name: String, range: ClosedRange<Int>) {
+    public init(wrappedValue: Int, name: String, range: ClosedRange<Int>, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
     }
 
 }
 
 @propertyWrapper public class LiveBool: LiveWrap {
+    
+    let updateResolution: Bool
     
     public var wrappedValue: Bool {
         didSet {
@@ -92,12 +121,19 @@ public class LiveWrap {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
         }
     }
     
-    public init(wrappedValue: Bool, name: String) {
+    public init(wrappedValue: Bool, name: String, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue)
     }
 
@@ -166,25 +202,3 @@ public class LiveWrap {
     }
 
 }
-
-@propertyWrapper public class LiveResolution<F: Floatable>: LiveWrap {
-    
-    public var wrappedValue: F {
-        didSet {
-            guard let node: NODE = node else {
-                print("RenderKit LiveResolution property wrapper not linked to node.")
-                return
-            }
-            node.applyResolution {
-                node.setNeedsRender()
-            }
-        }
-    }
-    
-    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil) {
-        self.wrappedValue = wrappedValue
-        super.init(name: name, value: wrappedValue, min: min, max: max)
-    }
-
-}
-
