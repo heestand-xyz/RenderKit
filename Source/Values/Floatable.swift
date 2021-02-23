@@ -6,6 +6,15 @@ public protocol Floatable {
     init(floats: [CGFloat])
 }
 
+//extension Floatable { // : Comparable
+//    public static func < (lhs: Self, rhs: Self) -> Bool {
+//        #warning("Fix Comparable Implementation")
+//        guard let lhs: CGFloat = lhs.floats.first else { return false }
+//        guard let rhs: CGFloat = rhs.floats.first else { return false }
+//        return lhs < rhs
+//    }
+//}
+
 extension Bool: Floatable {
     public var floats: [CGFloat] { [self ? 1.0 : 0.0] }
     public init(floats: [CGFloat]) {
