@@ -22,17 +22,16 @@ extension PixelColor: Floatable {
 
 }
 
-extension PixelColor.Channel: Floatable {
+extension PixelColor.Channel: Enumable {
     
-    public var floats: [CGFloat] { [CGFloat(rawValue)] }
-
-    public init(floats: [CGFloat]) {
-        guard let float: CGFloat = floats.first else {
-            self = .red
-            return
-        }
-        let int: Int = Int(float)
-        self = PixelColor.Channel(rawValue: int) ?? .red
+    public static var allCases: [PixelColor.Channel] {
+        [.red, .green, .blue, .alpha]
+    }
+    
+    public var index: Int { rawValue }
+    
+    public var names: [String] {
+        ["Red", "Green", "Blue", "Alpha"]
     }
     
 }

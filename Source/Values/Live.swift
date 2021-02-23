@@ -202,3 +202,90 @@ public class LiveWrap {
     }
 
 }
+
+@propertyWrapper public class LiveResolution: LiveWrap {
+    
+    public var wrappedValue: Resolution {
+        didSet {
+            guard wrappedValue != oldValue else { return }
+            guard let node: NODE = node else {
+                print("RenderKit Live property wrapper not linked to node.")
+                return
+            }
+            node.applyResolution {
+                node.setNeedsRender()
+            }
+        }
+    }
+    
+    public init(wrappedValue: Resolution, name: String) {
+        self.wrappedValue = wrappedValue
+        super.init(name: name, value: wrappedValue)
+    }
+
+}
+
+public class LiveEnumWrap: LiveWrap {
+    let caseNames: [String]
+    var dynamicCaseTypeNames: [String] {
+        caseNames.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
+    }
+    public init(name: String, index: Int, caseNames: [String]) {
+        self.caseNames = caseNames
+        super.init(name: name, value: index)
+    }
+}
+
+public protocol Enumable: CaseIterable, Floatable {
+    var index: Int { get }
+    var names: [String] { get }
+    init(index: Int)
+}
+
+extension Enumable {
+    public init(index: Int) {
+        self = Self.allCases.first(where: { $0.index == index }) ?? Self.allCases.first!
+    }
+}
+
+extension Enumable {
+    public var floats: [CGFloat] {
+        [CGFloat(index)]
+    }
+    public init(floats: [CGFloat]) {
+        guard let float: CGFloat = floats.first else {
+            self.init(index: 0)
+            return
+        }
+        self.init(index: Int(float))
+    }
+}
+
+@propertyWrapper public class LiveEnum<E: Enumable>: LiveEnumWrap {
+    
+    let updateResolution: Bool
+    
+    public var wrappedValue: E {
+        didSet {
+            guard wrappedValue.index != oldValue.index else { return }
+            guard let node: NODE = node else {
+                print("RenderKit Live property wrapper not linked to node.")
+                return
+            }
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
+        }
+    }
+    
+    public init(wrappedValue: E, name: String, updateResolution: Bool = false) {
+        self.updateResolution = updateResolution
+        self.wrappedValue = wrappedValue
+        super.init(name: name, index: wrappedValue.index, caseNames: wrappedValue.names)
+    }
+
+}
