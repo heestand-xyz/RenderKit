@@ -1,16 +1,16 @@
 import Foundation
 import PixelColor
 
-public class LiveWrap {
+public class LiveWrap: Identifiable {
     
-    var name: String
-    var dynamicTypeName: String {
+    public var name: String
+    public var dynamicTypeName: String {
         name.lowercased().replacingOccurrences(of: " ", with: "-")
     }
     
-    var defaultValue: Floatable
-    var minimumValue: Floatable?
-    var maximumValue: Floatable?
+    public var defaultValue: Floatable
+    public var minimumValue: Floatable?
+    public var maximumValue: Floatable?
     
     public var node: NODE!
     
