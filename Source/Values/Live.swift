@@ -14,7 +14,27 @@ public class LiveWrap: Identifiable {
     
     public var node: NODE!
     
-    public init(name: String, value: Floatable, min: Floatable? = nil, max: Floatable? = nil) {
+    public enum LiveType {
+        case bool
+        case int
+        case float
+        case point
+        case size
+        case color
+        case resolution
+        case enumable
+    }
+    public let type: LiveType?
+    
+    public var get: (() -> (Floatable))!
+    public var set: ((Floatable) -> ())!
+    
+    public init(type: LiveType? = nil,
+                name: String,
+                value: Floatable,
+                min: Floatable? = nil,
+                max: Floatable? = nil) {
+        self.type = type
         self.name = name
         defaultValue = value
         minimumValue = min
@@ -48,64 +68,8 @@ public class LiveWrap: Identifiable {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: min, max: max)
-    }
-
-}
-
-@propertyWrapper public class LiveFloat: LiveWrap {
-    
-    let updateResolution: Bool
-    
-    public var wrappedValue: CGFloat {
-        didSet {
-            guard wrappedValue != oldValue else { return }
-            guard let node: NODE = node else {
-                print("RenderKit Live property wrapper not linked to node.")
-                return
-            }
-            if updateResolution {
-                node.applyResolution {
-                    node.setNeedsRender()
-                }
-            } else {
-                node.setNeedsRender()
-            }
-        }
-    }
-    
-    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat> = 0.0...1.0, updateResolution: Bool = false) {
-        self.wrappedValue = wrappedValue
-        self.updateResolution = updateResolution
-        super.init(name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
-    }
-
-}
-
-@propertyWrapper public class LiveInt: LiveWrap {
-    
-    let updateResolution: Bool
-    
-    public var wrappedValue: Int {
-        didSet {
-            guard wrappedValue != oldValue else { return }
-            guard let node: NODE = node else {
-                print("RenderKit Live property wrapper not linked to node.")
-                return
-            }
-            if updateResolution {
-                node.applyResolution {
-                    node.setNeedsRender()
-                }
-            } else {
-                node.setNeedsRender()
-            }
-        }
-    }
-    
-    public init(wrappedValue: Int, name: String, range: ClosedRange<Int>, updateResolution: Bool = false) {
-        self.wrappedValue = wrappedValue
-        self.updateResolution = updateResolution
-        super.init(name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! F }
     }
 
 }
@@ -134,7 +98,71 @@ public class LiveWrap: Identifiable {
     public init(wrappedValue: Bool, name: String, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
-        super.init(name: name, value: wrappedValue)
+        super.init(type: .bool, name: name, value: wrappedValue)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! Bool }
+    }
+
+}
+
+@propertyWrapper public class LiveInt: LiveWrap {
+    
+    let updateResolution: Bool
+    
+    public var wrappedValue: Int {
+        didSet {
+            guard wrappedValue != oldValue else { return }
+            guard let node: NODE = node else {
+                print("RenderKit Live property wrapper not linked to node.")
+                return
+            }
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
+        }
+    }
+    
+    public init(wrappedValue: Int, name: String, range: ClosedRange<Int>, updateResolution: Bool = false) {
+        self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
+        super.init(type: .int, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! Int }
+    }
+
+}
+
+@propertyWrapper public class LiveFloat: LiveWrap {
+    
+    let updateResolution: Bool
+    
+    public var wrappedValue: CGFloat {
+        didSet {
+            guard wrappedValue != oldValue else { return }
+            guard let node: NODE = node else {
+                print("RenderKit Live property wrapper not linked to node.")
+                return
+            }
+            if updateResolution {
+                node.applyResolution {
+                    node.setNeedsRender()
+                }
+            } else {
+                node.setNeedsRender()
+            }
+        }
+    }
+    
+    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat> = 0.0...1.0, updateResolution: Bool = false) {
+        self.wrappedValue = wrappedValue
+        self.updateResolution = updateResolution
+        super.init(type: .float, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! CGFloat }
     }
 
 }
@@ -154,9 +182,9 @@ public class LiveWrap: Identifiable {
     
     public init(wrappedValue: CGPoint, name: String) {
         self.wrappedValue = wrappedValue
-        super.init(name: name, value: wrappedValue,
-                   min: CGPoint(x: -1.0, y: -1.0),
-                   max: CGPoint(x: 1.0, y: 1.0))
+        super.init(type: .point, name: name, value: wrappedValue, min: CGPoint(x: -1.0, y: -1.0), max: CGPoint(x: 1.0, y: 1.0))
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! CGPoint }
     }
 
 }
@@ -176,9 +204,9 @@ public class LiveWrap: Identifiable {
     
     public init(wrappedValue: CGSize, name: String) {
         self.wrappedValue = wrappedValue
-        super.init(name: name, value: wrappedValue,
-                   min: CGSize(width: 0.0, height: 0.0),
-                   max: CGSize(width: 2.0, height: 2.0))
+        super.init(type: .size, name: name, value: wrappedValue, min: CGSize(width: 0.0, height: 0.0), max: CGSize(width: 2.0, height: 2.0))
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! CGSize }
     }
 
 }
@@ -198,7 +226,9 @@ public class LiveWrap: Identifiable {
     
     public init(wrappedValue: PixelColor, name: String) {
         self.wrappedValue = wrappedValue
-        super.init(name: name, value: wrappedValue)
+        super.init(type: .color, name: name, value: wrappedValue)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! PixelColor }
     }
 
 }
@@ -220,19 +250,21 @@ public class LiveWrap: Identifiable {
     
     public init(wrappedValue: Resolution, name: String) {
         self.wrappedValue = wrappedValue
-        super.init(name: name, value: wrappedValue)
+        super.init(type: .resolution, name: name, value: wrappedValue)
+        get = { self.wrappedValue }
+        set = { self.wrappedValue = $0 as! Resolution }
     }
 
 }
 
-public class LiveEnumWrap: LiveWrap {
+public class LiveEnumWrap<E: Enumable>: LiveWrap {
     let caseNames: [String]
     var dynamicCaseTypeNames: [String] {
         caseNames.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
     }
-    public init(name: String, index: Int, caseNames: [String]) {
-        self.caseNames = caseNames
-        super.init(name: name, value: index)
+    public init(name: String, index: Int) {
+        self.caseNames = E.names
+        super.init(type: .enumable, name: name, value: index)
     }
 }
 
@@ -277,7 +309,7 @@ extension Enumable {
     }
 }
 
-@propertyWrapper public class LiveEnum<E: Enumable>: LiveEnumWrap {
+@propertyWrapper public class LiveEnum<E: Enumable>: LiveEnumWrap<E> {
     
     let updateResolution: Bool
     
@@ -301,7 +333,9 @@ extension Enumable {
     public init(wrappedValue: E, name: String, updateResolution: Bool = false) {
         self.updateResolution = updateResolution
         self.wrappedValue = wrappedValue
-        super.init(name: name, index: wrappedValue.index, caseNames: E.names)
+        super.init(name: name, index: wrappedValue.index)
+        self.get = { self.wrappedValue }
+        self.set = { self.wrappedValue = $0 as! E }
     }
 
 }
