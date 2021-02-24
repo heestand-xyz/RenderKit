@@ -111,9 +111,7 @@ public enum Placement: String, Enumable {
         case .center: return 3
         }
     }
-    public var names: [String] {
-        Self.allCases.map(\.rawValue)
-    }
+    public var name: String { rawValue }
 }
 
 // MARK: - Blend
@@ -225,9 +223,7 @@ public enum BlendMode: String, Enumable {
         }
     }
     
-    public var names: [String] {
-        Self.allCases.map(\.rawValue)
-    }
+    public var name: String { rawValue }
     
 }
 
@@ -287,9 +283,7 @@ public enum ExtendMode: String, Enumable {
         case .mirror: return 3
         }
     }
-    public var names: [String] {
-        Self.allCases.map(\.rawValue)
-    }
+    public var name: String { rawValue }
 }
 
 // MARK: - Tile Index

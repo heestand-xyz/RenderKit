@@ -238,13 +238,29 @@ public class LiveEnumWrap: LiveWrap {
 
 public protocol Enumable: CaseIterable, Floatable {
     var index: Int { get }
-    var names: [String] { get }
-    init(index: Int)
+    var name: String { get }
 }
 
-extension Enumable {
-    public init(index: Int) {
-        self = Self.allCases.first(where: { $0.index == index }) ?? Self.allCases.first!
+public extension Enumable {
+    var rawIndex: Int { index }
+    var orderIndex: Int {
+        Self.allCases.firstIndex(where: { $0.rawIndex == rawIndex }) as! Int
+    }
+    static var names: [String] {
+        Self.allCases.map(\.name)
+    }
+    init(rawIndex: Int) {
+        self = Self.allCases.first(where: { $0.index == rawIndex }) ?? Self.allCases.first!
+    }
+    init(orderIndex: Int) {
+        guard orderIndex >= 0 && orderIndex < Self.allCases.count else {
+            self = Self.allCases.first!
+            return
+        }
+        self = Self.allCases[orderIndex as! Self.AllCases.Index]
+    }
+    init(name: String) {
+        self = Self.allCases.first(where: { $0.name == name }) ?? Self.allCases.first!
     }
 }
 
@@ -254,10 +270,10 @@ extension Enumable {
     }
     public init(floats: [CGFloat]) {
         guard let float: CGFloat = floats.first else {
-            self.init(index: 0)
+            self = Self.allCases.first!
             return
         }
-        self.init(index: Int(float))
+        self.init(rawIndex: Int(float))
     }
 }
 
@@ -285,7 +301,7 @@ extension Enumable {
     public init(wrappedValue: E, name: String, updateResolution: Bool = false) {
         self.updateResolution = updateResolution
         self.wrappedValue = wrappedValue
-        super.init(name: name, index: wrappedValue.index, caseNames: wrappedValue.names)
+        super.init(name: name, index: wrappedValue.index, caseNames: E.names)
     }
 
 }

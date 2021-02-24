@@ -30,8 +30,17 @@ extension PixelColor.Channel: Enumable {
     
     public var index: Int { rawValue }
     
-    public var names: [String] {
-        ["Red", "Green", "Blue", "Alpha"]
+    public var name: String {
+        switch self {
+        case .red:
+            return "Red"
+        case .green:
+            return "Green"
+        case .blue:
+            return "Blue"
+        case .alpha:
+            return "Alpha"
+        }
     }
     
 }

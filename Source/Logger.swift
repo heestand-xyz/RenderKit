@@ -96,7 +96,7 @@ public class Logger {
         case effect = "Effect"
         case connection = "Connection"
         case view = "View"
-        case res = "Res"
+        case resolution = "Resolution"
         case fileIO = "File IO"
         case metal = "Metal"
     }

@@ -58,12 +58,6 @@ open class NODEView: _View {
 
     public var boundsReady: Bool { return bounds.width > 0 }
 
-    public enum Placement {
-        case fit
-        case fill
-        case center
-        case stretch
-    }
     /// Defaults to `.aspectFit`.
     public var placement: Placement = .fit { didSet { layoutPlacement() } }
     
