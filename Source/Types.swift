@@ -99,10 +99,10 @@ public class MetalUniform {
 // MARK: - Placement
 
 public enum Placement: String, Enumable {
-    case fit = "Fit"
-    case fill = "Fill"
-    case center = "Center"
-    case stretch = "Stretch"
+    case fit
+    case fill
+    case center
+    case stretch
     public var index: Int {
         switch self {
         case .stretch: return 0
@@ -111,7 +111,14 @@ public enum Placement: String, Enumable {
         case .center: return 3
         }
     }
-    public var name: String { rawValue }
+    public var name: String {
+            switch self {
+            case .fit: return "Fit"
+            case .fill: return "Fill"
+            case .center: return "Center"
+            case .stretch: return "Stretch"
+            }
+        }
 }
 
 // MARK: - Blend
@@ -119,86 +126,86 @@ public enum Placement: String, Enumable {
 public enum BlendMode: String, Enumable {
     
     /// **over** blend mode operator: `&`
-    case over = "Over"
+    case over
     
     /// **under** blend mode operator: `!&`
-    case under = "Under"
+    case under
     
     /// **add** blend mode operator: `+`
-    case add = "Add"
+    case add
     
     /// **add with alpha** blend mode operator: `++`
-    case addWithAlpha = "Add with Alpha"
+    case addWithAlpha
     
     @available(*, deprecated, renamed: "multiply")
     public static var mult: BlendMode { .multiply }
     /// **multiply** blend mode operator: `*`
-    case multiply = "Multiply"
+    case multiply
     
     @available(*, deprecated, renamed: "difference")
     public static var diff: BlendMode { .difference }
     /// **difference** blend mode operator: `%`
-    case difference = "Difference"
+    case difference
     
     @available(*, deprecated, renamed: "subtract")
     public static var sub: BlendMode { .subtract }
     /// **subtract** blend mode operator: `-`
-    case subtract = "Subtract"
+    case subtract
     
     @available(*, deprecated, renamed: "subtractWithAlpha")
     public static var subWithAlpha: BlendMode { .subtractWithAlpha }
     /// **subtract with alpha** blend mode operator: `--`
-    case subtractWithAlpha = "Subtract with Alpha"
+    case subtractWithAlpha
     
     @available(*, deprecated, renamed: "maximum")
     public static var max: BlendMode { .maximum }
     /// **maximum** blend mode operator: `><`
-    case maximum = "Maximum"
+    case maximum
     
     @available(*, deprecated, renamed: "minimum")
     public static var min: BlendMode { .minimum }
     /// **minimum** blend mode operator: `<>`
-    case minimum = "Minimum"
+    case minimum
     
     @available(*, deprecated, renamed: "gamma")
     public static var gam: BlendMode { .gamma }
     /// **gamma** blend mode operator: `!**`
-    case gamma = "Gamma"
+    case gamma
     
     @available(*, deprecated, renamed: "power")
     public static var pow: BlendMode { .power }
     /// **power** blend mode operator: `**`
-    case power = "Power"
+    case power
     
     @available(*, deprecated, renamed: "divide")
     public static var div: BlendMode { .divide }
     /// **divide** blend mode operator: `/`
-    case divide = "Divide"
+    case divide
     
     @available(*, deprecated, renamed: "average")
     public static var avg: BlendMode { .average }
     /// **average** blend mode operator: `~`
-    case average = "Average"
+    case average
     
     @available(*, deprecated, renamed: "cosine")
     public static var cos: BlendMode { .cosine }
     /// **cosine** blend mode operator: `°`
-    case cosine = "Cosine"
+    case cosine
     
     @available(*, deprecated, renamed: "inside")
     public static var `in`: BlendMode { .inside }
     /// **inside** blend mode operator: `<->`
-    case inside = "Inside"
+    case inside
     
     @available(*, deprecated, renamed: "outside")
     public static var out: BlendMode { .outside }
     /// **outside** blend mode operator: `>-<`
-    case outside = "Outside"
+    case outside
     
     @available(*, deprecated, renamed: "exclusiveOr")
     public static var xor: BlendMode { .exclusiveOr }
     /// **exclusive or** blend mode operator: `+-+`
-    case exclusiveOr = "Exclusive Or"
+    case exclusiveOr
     
     public var index: Int {
         switch self {
@@ -223,7 +230,28 @@ public enum BlendMode: String, Enumable {
         }
     }
     
-    public var name: String { rawValue }
+    public var name: String {
+            switch self {
+            case .over: return "Over"
+            case .under: return "Under"
+            case .add: return "Add"
+            case .addWithAlpha: return "Add with Alpha"
+            case .multiply: return "Multiply"
+            case .difference: return "Difference"
+            case .subtract: return "Subtract"
+            case .subtractWithAlpha: return "Subtract with Alpha"
+            case .maximum: return "Maximum"
+            case .minimum: return "Minimum"
+            case .gamma: return "Gamma"
+            case .power: return "Power"
+            case .divide: return "Divide"
+            case .average: return "Average"
+            case .cosine: return "Cosine"
+            case .inside: return "Inside"
+            case .outside: return "Outside"
+            case .exclusiveOr: return "Exclusive Or"
+            }
+        }
     
 }
 
@@ -283,7 +311,14 @@ public enum ExtendMode: String, Enumable {
         case .mirror: return 3
         }
     }
-    public var name: String { rawValue }
+    public var name: String {
+            switch self {
+            case .hold: return "Hold"
+            case .zero: return "Zero"
+            case .loop: return "Loop"
+            case .mirror: return "Mirror"
+            }
+        }
 }
 
 // MARK: - Tile Index

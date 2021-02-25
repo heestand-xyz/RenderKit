@@ -1,5 +1,6 @@
 import Foundation
 import PixelColor
+import CoreGraphics
 
 public class LiveWrap: Identifiable {
     
@@ -268,21 +269,21 @@ public class LiveEnumWrap<E: Enumable>: LiveWrap {
     }
 }
 
-public protocol Enumable: CaseIterable, Floatable {
+public protocol Enumable: CaseIterable, Codable, Floatable {
     var index: Int { get }
     var name: String { get }
 }
 
 public extension Enumable {
     var rawIndex: Int { index }
-    var orderIndex: Int {
-        Self.allCases.firstIndex(where: { $0.rawIndex == rawIndex }) as! Int
-    }
-    static var names: [String] {
-        Self.allCases.map(\.name)
-    }
     init(rawIndex: Int) {
         self = Self.allCases.first(where: { $0.index == rawIndex }) ?? Self.allCases.first!
+    }
+}
+
+public extension Enumable {
+    var orderIndex: Int {
+        Self.allCases.firstIndex(where: { $0.rawIndex == rawIndex }) as! Int
     }
     init(orderIndex: Int) {
         guard orderIndex >= 0 && orderIndex < Self.allCases.count else {
@@ -290,6 +291,12 @@ public extension Enumable {
             return
         }
         self = Self.allCases[orderIndex as! Self.AllCases.Index]
+    }
+}
+
+public extension Enumable {
+    static var names: [String] {
+        Self.allCases.map(\.name)
     }
     init(name: String) {
         self = Self.allCases.first(where: { $0.name == name }) ?? Self.allCases.first!
