@@ -259,7 +259,7 @@ public class LiveWrap: Identifiable {
     
     public init(wrappedValue: Resolution, name: String) {
         self.wrappedValue = wrappedValue
-        super.init(type: .resolution, name: name, value: wrappedValue)
+        super.init(type: .resolution, name: name, value: wrappedValue, min: 1, max: 3_840)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! Resolution }
         setFloats = { self.wrappedValue = Resolution(floats: $0) }
@@ -268,12 +268,14 @@ public class LiveWrap: Identifiable {
 }
 
 public class LiveEnumWrap: LiveWrap {
-    let caseNames: [String]
-    var dynamicCaseTypeNames: [String] {
-        caseNames.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
+    public let rawIndices: [Int]
+    public let names: [String]
+    public var dynamicTypeNames: [String] {
+        names.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
     }
-    public init(name: String, rawIndex: Int, names: [String]) {
-        self.caseNames = names
+    public init(name: String, rawIndex: Int, rawIndices: [Int], names: [String]) {
+        self.rawIndices = rawIndices
+        self.names = names
         super.init(type: .enumable, name: name, value: rawIndex)
     }
 }
@@ -349,7 +351,7 @@ extension Enumable {
     public init(wrappedValue: E, name: String, updateResolution: Bool = false) {
         self.updateResolution = updateResolution
         self.wrappedValue = wrappedValue
-        super.init(name: name, rawIndex: wrappedValue.rawIndex, names: E.names)
+        super.init(name: name, rawIndex: wrappedValue.rawIndex, rawIndices: E.allCases.map(\.rawIndex), names: E.names)
         get = { self.wrappedValue.rawIndex }
         set = { self.wrappedValue = E(rawIndex: $0 as! Int) }
         setFloats = { self.wrappedValue = E(rawIndex: Int(floats: $0)) }
