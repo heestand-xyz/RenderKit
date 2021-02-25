@@ -29,7 +29,8 @@ public class LiveWrap: Identifiable {
     
     public var get: (() -> (Floatable))!
     public var set: ((Floatable) -> ())!
-    
+    public var setFloats: (([CGFloat]) -> ())!
+
     public init(type: LiveType? = nil,
                 name: String,
                 value: Floatable,
@@ -71,6 +72,7 @@ public class LiveWrap: Identifiable {
         super.init(name: name, value: wrappedValue, min: min, max: max)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! F }
+        setFloats = { self.wrappedValue = F(floats: $0) }
     }
 
 }
@@ -102,6 +104,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .bool, name: name, value: wrappedValue)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! Bool }
+        setFloats = { self.wrappedValue = Bool(floats: $0) }
     }
 
 }
@@ -133,6 +136,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .int, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! Int }
+        setFloats = { self.wrappedValue = Int(floats: $0) }
     }
 
 }
@@ -164,6 +168,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .float, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! CGFloat }
+        setFloats = { self.wrappedValue = CGFloat(floats: $0) }
     }
 
 }
@@ -186,6 +191,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .point, name: name, value: wrappedValue, min: CGPoint(x: -1.0, y: -1.0), max: CGPoint(x: 1.0, y: 1.0))
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! CGPoint }
+        setFloats = { self.wrappedValue = CGPoint(floats: $0) }
     }
 
 }
@@ -208,6 +214,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .size, name: name, value: wrappedValue, min: CGSize(width: 0.0, height: 0.0), max: CGSize(width: 2.0, height: 2.0))
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! CGSize }
+        setFloats = { self.wrappedValue = CGSize(floats: $0) }
     }
 
 }
@@ -230,6 +237,7 @@ public class LiveWrap: Identifiable {
         super.init(type: .color, name: name, value: wrappedValue)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! PixelColor }
+        setFloats = { self.wrappedValue = PixelColor(floats: $0) }
     }
 
 }
@@ -254,22 +262,23 @@ public class LiveWrap: Identifiable {
         super.init(type: .resolution, name: name, value: wrappedValue)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! Resolution }
+        setFloats = { self.wrappedValue = Resolution(floats: $0) }
     }
 
 }
 
-public class LiveEnumWrap<E: Enumable>: LiveWrap {
+public class LiveEnumWrap: LiveWrap {
     let caseNames: [String]
     var dynamicCaseTypeNames: [String] {
         caseNames.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
     }
-    public init(name: String, index: Int) {
-        self.caseNames = E.names
-        super.init(type: .enumable, name: name, value: index)
+    public init(name: String, rawIndex: Int, names: [String]) {
+        self.caseNames = names
+        super.init(type: .enumable, name: name, value: rawIndex)
     }
 }
 
-public protocol Enumable: CaseIterable, Codable, Floatable {
+public protocol Enumable: CaseIterable, Floatable {
     var index: Int { get }
     var name: String { get }
 }
@@ -316,7 +325,7 @@ extension Enumable {
     }
 }
 
-@propertyWrapper public class LiveEnum<E: Enumable>: LiveEnumWrap<E> {
+@propertyWrapper public class LiveEnum<E: Enumable>: LiveEnumWrap {
     
     let updateResolution: Bool
     
@@ -340,9 +349,10 @@ extension Enumable {
     public init(wrappedValue: E, name: String, updateResolution: Bool = false) {
         self.updateResolution = updateResolution
         self.wrappedValue = wrappedValue
-        super.init(name: name, index: wrappedValue.index)
-        self.get = { self.wrappedValue }
-        self.set = { self.wrappedValue = $0 as! E }
+        super.init(name: name, rawIndex: wrappedValue.rawIndex, names: E.names)
+        get = { self.wrappedValue.rawIndex }
+        set = { self.wrappedValue = E(rawIndex: $0 as! Int) }
+        setFloats = { self.wrappedValue = E(rawIndex: Int(floats: $0)) }
     }
 
 }

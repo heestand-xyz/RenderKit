@@ -19,7 +19,7 @@ extension PixelColor: Floatable {
         }
         self = PixelColor(red: floats[0], green: floats[1], blue: floats[2], alpha: floats[3])
     }
-
+    
 }
 
 extension PixelColor.Channel: Enumable {

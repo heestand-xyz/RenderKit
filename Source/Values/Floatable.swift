@@ -1,17 +1,17 @@
 import CoreGraphics
 
 
-public protocol Floatable {
+public protocol Floatable: Codable {
     var floats: [CGFloat] { get }
     init(floats: [CGFloat])
 }
 
-//extension Floatable { // : Comparable
-//    public static func < (lhs: Self, rhs: Self) -> Bool {
-//        #warning("Fix Comparable Implementation")
-//        guard let lhs: CGFloat = lhs.floats.first else { return false }
-//        guard let rhs: CGFloat = rhs.floats.first else { return false }
-//        return lhs < rhs
+//extension Floatable {
+//    static func == (lhs: Floatable, rhs: Floatable) -> Bool {
+//        lhs.floats == rhs.floats
+//    }
+//    static func != (lhs: Floatable, rhs: Floatable) -> Bool {
+//        lhs.floats != rhs.floats
 //    }
 //}
 
