@@ -66,7 +66,8 @@ public class LiveWrap: Identifiable {
         }
     }
     
-    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false) {
+    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false, funcName: String = #function) {
+        print(name, ">>>", funcName)
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: min, max: max)
