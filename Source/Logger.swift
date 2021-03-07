@@ -74,7 +74,7 @@ public class Logger {
         case info = "INFO"
         case detail = "DETAIL"
         case debug = "DEBUG"
-        static let `default`: LogLevel = .warning
+        static let `default`: LogLevel = .info
         public var index: Int {
             switch self {
             case .fatal: return 0

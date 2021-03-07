@@ -490,8 +490,8 @@ public class Engine: LoggerDelegate {
                 do {
                     try self.tileRender(nodeTileable, force: force, completed: {
                         frameLoopRenderThread.call {
-                            renderDone()
                             nodeTileable.didRenderTiles(force: force)
+                            renderDone()
                             done(true)
                         }
                     }, failed: { error in
@@ -507,8 +507,8 @@ public class Engine: LoggerDelegate {
         } else {
             do {
                 try self.render(node, with: currentDrawable, force: force, completed: { texture in
-                    renderDone()
                     node.didRender(texture: texture, force: force)
+                    renderDone()
                     done(true)
                 }, failed: { error in
                     renderFailed(with: error)
