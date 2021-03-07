@@ -6,14 +6,14 @@ let package = Package(
     name: "RenderKit",
     platforms: [
         .iOS(.v13),
-        .macOS(.v10_15),
-        .tvOS(.v13)
+        .tvOS(.v13),
+        .macOS(.v10_14),
     ],
     products: [
         .library(name: "RenderKit", targets: ["RenderKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/heestand-xyz/PixelColor.git", from: "1.0.0"),
+        .package(url: "https://github.com/heestand-xyz/PixelColor.git", from: "1.1.4"),
     ],
     targets: [
         .target(name: "RenderKit", dependencies: ["PixelColor"], path: "Source"),
