@@ -25,20 +25,14 @@ public protocol NODE {
     
     var liveList: [LiveWrap] { get }
     var values: [Floatable] { get }
-//    var preUniforms: [CGFloat] { get }
     var uniforms: [CGFloat] { get }
-//    var postUniforms: [CGFloat] { get }
     var extraUniforms: [CGFloat] { get }
     var uniformArray: [[CGFloat]] { get }
     var uniformArrayMaxLimit: Int? { get }
     var uniformIndexArray: [[Int]] { get }
     var uniformIndexArrayMaxLimit: Int? { get }
     
-    var needsRender: Bool { get set }
-    /// Rendering [GPU]
-    var rendering: Bool { get set }
-    /// In Render [CPU + GPU]
-    var inRender: Bool { get set }
+    var renderInProgress: Bool { get set }
     var renderIndex: Int { get set }
     var bypass: Bool { get set }
     var contentLoaded: Bool? { get set }
@@ -62,15 +56,16 @@ public protocol NODE {
     var customVertexTextureActive: Bool { get }
     var customVertexNodeIn: (NODE & NODEOut)? { get }
     var customMatrices: [matrix_float4x4] { get }
-    var customLinkedNodes: [NODE] { get set }
+//    var customLinkedNodes: [NODE] { get set }
     
     var destroyed: Bool { get set }
     
     var texture: MTLTexture? { get set }
     
     func applyResolution(applied: @escaping () -> ())
-    func setNeedsRender()
-    func didRender(texture: MTLTexture, force: Bool)
+//    func render()
+    func render()
+//    func didRender(texture: MTLTexture, force: Bool)
     func destroy()
     
     func isEqual(to node: NODE) -> Bool

@@ -37,7 +37,11 @@ public class NODEMetalView: MTKView {
     
     public var viewInterpolation: ViewInterpolation = .linear {
         didSet {
-            #if os(iOS)
+            #if os(macOS)
+            wantsLayer = true
+            layer?.minificationFilter = viewInterpolation.filter
+            layer?.magnificationFilter = viewInterpolation.filter
+            #else
             layer.minificationFilter = viewInterpolation.filter
             layer.magnificationFilter = viewInterpolation.filter
             #endif
@@ -65,7 +69,11 @@ public class NODEMetalView: MTKView {
         enableSetNeedsDisplay = true
         isPaused = true
         
-        #if os(iOS)
+        #if os(macOS)
+        wantsLayer = true
+        layer?.minificationFilter = viewInterpolation.filter
+        layer?.magnificationFilter = viewInterpolation.filter
+        #else
         layer.minificationFilter = viewInterpolation.filter
         layer.magnificationFilter = viewInterpolation.filter
         #endif
@@ -75,17 +83,15 @@ public class NODEMetalView: MTKView {
     // MARK: Draw
     
     override public func draw(_ rect: CGRect) {
-        autoreleasepool { // CHECK
-            if rect.width > 0 && rect.height > 0 {
-                if resolution != nil {
-                    render.logger.log(.detail, .view, "Ready to Render.", loop: true)
-                    readyToRender?()
-                } else {
-                    render.logger.log(.warning, .view, "Draw: Resolution not set.", loop: true)
-                }
+        if rect.width > 0 && rect.height > 0 {
+            if resolution != nil {
+                render.logger.log(.detail, .view, "View is Ready to Render.", loop: true)
+                readyToRender?()
             } else {
-                render.logger.log(.error, .view, "Draw: Rect is zero.", loop: true)
+                render.logger.log(.warning, .view, "View Resolution not set.", loop: true)
             }
+        } else {
+            render.logger.log(.error, .view, "View Rect is zero.", loop: true)
         }
     }
     

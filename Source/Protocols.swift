@@ -7,9 +7,9 @@
 
 import Metal
 
-public protocol RenderDelegate: AnyObject {
-    func pixelFrameLoop()
-}
+//public protocol RenderDelegate: AnyObject {
+//    func pixelFrameLoop()
+//}
 
 public protocol ManualRenderDelegate {
     func pixelNeedsManualRender()

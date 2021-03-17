@@ -245,7 +245,7 @@ public class Logger {
         logList.append(log.message)
         
         if let e = log.error {
-            logList.append("Error: \(e) LD: \"\(e.localizedDescription)\"")
+            logList.append("x>> Error: \(e) (\"\(e.localizedDescription)\")")
         }
         
         if source {

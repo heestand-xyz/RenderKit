@@ -202,9 +202,10 @@ open class NODEView: _View {
     func checkAutoRes() {
         for node in render.linkedNodes {
             if let nodeRes = node as? NODEResolution {
+                // TODO: Check if not auto
                 if nodeRes.resolution.size != resolutionSize {
                     node.applyResolution {
-                        node.setNeedsRender()
+                        node.render()
                     }
                 }
             }

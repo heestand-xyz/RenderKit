@@ -12,7 +12,7 @@ import simd
 
 public class Render: EngineInternalDelegate, LoggerDelegate {
     
-    public weak var delegate: RenderDelegate?
+//    public weak var delegate: RenderDelegate?
     
     // MARK: - Version
     
@@ -29,6 +29,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: Engine
     
     public let engine: Engine
+    
+    // MARK: Queuer
+    
+    public let queuer: Queuer
     
     // MARK: - Frame Loop Active
     
@@ -55,28 +59,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     /// Render Time is in Milliseconds
     public var lastRenderTimes: [UUID: Double] = [:]
-    
-//    struct RenderedNODE {
-//        let node: NODE
-//        let rendered: Bool
-//    }
-//    var renderedNodes: [RenderedNODE] = []
-//    var allNodeRendered: Bool {
-//        for renderedNode in renderedNodes {
-//            if !renderedNode.rendered {
-//                return false
-//            }
-//        }
-//        return true
-//    }
-//    var noNodeRendered: Bool {
-//        for renderedNode in renderedNodes {
-//            if renderedNode.rendered {
-//                return false
-//            }
-//        }
-//        return true
-//    }
 
     public func linkIndex(of node: NODE) -> Int? {
         for (i, linkedNode) in linkedNodes.enumerated() {
@@ -98,7 +80,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     var frameCallbacks: [(id: UUID, callback: () -> ())] = []
     
-    public var frame = 0
+    public var frameIndex = 0
     public var finalFrame = 0
     let startDate = Date()
     var frameDate = Date()
@@ -117,7 +99,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         #elseif os(macOS)
         return 60
         #endif
-    } else { return -1 } }
+    } else { return 1 } }
+    public var maxSecondsPerFrame: Double {
+        1.0 / Double(fpsMax)
+    }
     
     var fpxFirstPreDate: Date?
     var fpxLastPostDate: Date?
@@ -126,12 +111,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     public var fFpx: Double?
     public var fpx: Int? { fFpx != nil ? Int(round(fFpx!)) : nil }
     
-    public var linkedNodesRendering: Int { linkedNodes.filter({ $0.inRender }).count }
-    public var rendering: Bool { linkedNodesRendering > 0 }
-    public var frameCountSinceLastRender: Int?
+//    public var linkedNodesRendering: Int { linkedNodes.filter({ $0.renderInProgress }).count }
+//    public var rendering: Bool { linkedNodesRendering > 0 }
+//    public var frameCountSinceLastRender: Int?
     
     /// guards the frame loop; waits for all linked nodes to finish rendering
-    public var waitForAllRenders: Bool = false
+//    public var waitForAllRenders: Bool = false
 
     // MARK: Metal
     
@@ -149,9 +134,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         self.metalLibURL = metalLibURL
         
         engine = Engine()
-        
+        queuer = Queuer()
         logger = Logger(name: "RenderKit")
-        
         
         engine.internalDelegate = self
         logger.delegate = self
@@ -186,26 +170,11 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             frameLoopRenderThread.timerLoop(duration: frameTime, frameLoop)
         }
         #elseif os(macOS)
-//        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-//        let displayLinkOutputCallback: CVDisplayLinkOutputCallback = {
-//                (displayLink: CVDisplayLink,
-//                inNow: UnsafePointer<CVTimeStamp>,
-//                inOutputTime: UnsafePointer<CVTimeStamp>,
-//                flagsIn: CVOptionFlags,
-//                flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-//                displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn in
-//            self.frameLoop()
-//            return kCVReturnSuccess
-//        }
-//        CVDisplayLinkSetOutputCallback(displayLink!, displayLinkOutputCallback, UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
-//        CVDisplayLinkStart(displayLink!)
         let frameTime: Double = 1.0 / Double(self.fpsMax)
         frameLoopRenderThread.timerLoop(duration: frameTime, frameLoop)
-//        RunLoop.current.add(Timer(timeInterval: 1.0 / Double(self.fpsMax), repeats: true, block: { _ in
-//            print("FRAME LOOP")
-//            self.frameLoop()
-//        }), forMode: .common)
         #endif
+        
+        queuer.delegate = self
         
         logger.log(.info, .pixelKit, "ready to render.", clean: true)
         
@@ -223,63 +192,51 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     func doFrameLoop() {
-        frameCountSinceLastRender? += 1
-        guard !waitForAllRenders || !rendering else { return }
-        preFrameFPX()
+//        frameCountSinceLastRender? += 1
+//        guard !waitForAllRenders || !rendering else { return }
+//        preFrameFPX()
         guard frameLoopActive else { return }
-        self.delegate?.pixelFrameLoop()
+//        self.delegate?.pixelFrameLoop()
+        queuer.frameLoop()
         for frameCallback in self.frameCallbacks {
             frameCallback.callback()
         }
-        self.engine.frameLoop()
+//        self.engine.frameLoop()
         self.calcFPS()
     }
     
     // MARK: - FPX
     
-    func preFrameFPX() {
-        guard frameLoopActive else {
-            if fFpx != nil { fFpx = nil }
-            return
-        }
-        if let fpxFromDate: Date = fpxFirstPreDate,
-            let fpxToDate: Date = fpxLastPostDate {
-            let fpxFrom: Double = fpxFromDate.timeIntervalSinceNow
-            let fpxTo: Double = fpxToDate.timeIntervalSinceNow
-            let fpxSec: Double = fpxTo - fpxFrom
-            fFpx = 1.0 / fpxSec
-            fpxEmptyFrameCount = 0
-        } else {
-            fpxEmptyFrameCount += 1
-            if fpxEmptyFrameCount > fpxEmptyFrameCountLimit {
-                if fFpx != nil { fFpx = nil }
-            }
-        }
-        fpxFirstPreDate = nil
-        fpxLastPostDate = nil
-    }
-    
-    func willRenderFPX() {
-        if fpxFirstPreDate == nil {
-            fpxFirstPreDate = Date()
-        }
-    }
-    
-    func didRenderFPX() {
-        fpxLastPostDate = Date()
-    }
-    
-    // MARK: - Check Auto Res
-    
-//    func checkAutoRes() {
-//        for node in linkedNodes {
-//            if node.resolution.size != node.view.resSize {
-//                logger.log(node: node, .info, .render, "Res Change Detected.")
-//                node.applyRes {
-//                    node.setNeedsRender()
-//                }
+//    func preFrameFPX() {
+//        guard frameLoopActive else {
+//            if fFpx != nil { fFpx = nil }
+//            return
+//        }
+//        if let fpxFromDate: Date = fpxFirstPreDate,
+//            let fpxToDate: Date = fpxLastPostDate {
+//            let fpxFrom: Double = fpxFromDate.timeIntervalSinceNow
+//            let fpxTo: Double = fpxToDate.timeIntervalSinceNow
+//            let fpxSec: Double = fpxTo - fpxFrom
+//            fFpx = 1.0 / fpxSec
+//            fpxEmptyFrameCount = 0
+//        } else {
+//            fpxEmptyFrameCount += 1
+//            if fpxEmptyFrameCount > fpxEmptyFrameCountLimit {
+//                if fFpx != nil { fFpx = nil }
 //            }
 //        }
+//        fpxFirstPreDate = nil
+//        fpxLastPostDate = nil
+//    }
+//
+//    func willRenderFPX() {
+//        if fpxFirstPreDate == nil {
+//            fpxFirstPreDate = Date()
+//        }
+//    }
+//
+//    func didRenderFPX() {
+//        fpxLastPostDate = Date()
 //    }
     
     // MARK: - Live
@@ -289,7 +246,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         let frameTime = -frameDate.timeIntervalSinceNow
         _fps = Int(round(1.0 / frameTime))
         frameDate = Date()
-        frame += 1
+        frameIndex += 1
 
         if let finalFrameDate = finalFrameDate {
             let finalFrameTime = -finalFrameDate.timeIntervalSinceNow
@@ -307,7 +264,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         case `continue`
         case done
     }
-    
+
     public func listenToFramesUntil(callback: @escaping () -> (ListenState)) {
         let id = UUID()
         frameCallbacks.append((id: id, callback: {
@@ -316,19 +273,19 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             }
         }))
     }
-    
+
     public func listenToFrames(id: UUID, callback: @escaping () -> ()) {
         frameCallbacks.append((id: id, callback: {
             callback()
         }))
     }
-    
+
     public func listenToFrames(callback: @escaping () -> ()) {
         frameCallbacks.append((id: UUID(), callback: {
             callback()
         }))
     }
-    
+
     public func unlistenToFrames(for id: UUID) {
         for (i, frameCallback) in self.frameCallbacks.enumerated() {
             if frameCallback.id == id {
@@ -338,11 +295,10 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
     }
     
-    
     public func delay(frames: Int, done: @escaping () -> ()) {
-        let startFrameIndex = frame
+        let startFrameIndex = frameIndex
         listenToFramesUntil(callback: {
-            if self.frame >= startFrameIndex + frames {
+            if self.frameIndex >= startFrameIndex + frames {
                 done()
                 return .done
             } else {
@@ -350,57 +306,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             }
         })
     }
-    
-    // MARK: Flow Timer
-    
-//    public struct NodeRenderState {
-//        public let ref: NODERef
-//        public var requested: Bool = false
-//        public va´r rendered: Bool = false
-//        init(_ node: NODE) {
-//            ref = NODERef(for: node)
-//        }
-//    }
-//    public class FlowTime: Equatable {
-//        let id: UUID = UUID()
-//        public let requestTime: Date = Date()
-//        public var startTime: Date!
-//        public var renderedFrames: Int = 0
-//        public var fromNodeRenderState: NODEodeRenderState
-//        public var thoughNodeRenderStates: [NodeRenderState] = []
-//        public var toNodeRenderState: NODEodeRenderState
-//        public var renderedSeconds: CGFloat!
-//        public var endTime: Date!
-//        var callback: (FlowTime) -> ()
-//        init(from fromNodeRenderState: NODEodeRenderState, to toNodeRenderState: NODEodeRenderState, callback: @escaping (FlowTime) -> ()) {
-//            self.fromNodeRenderState = fromNodeRenderState
-//            self.toNodeRenderState = toNodeRenderState
-//            self.callback = callback
-//        }
-//        public static func == (lhs: PixelKit.FlowTime, rhs: PixelKit.FlowTime) -> Bool {
-//            return lhs.id == rhs.id
-//        }
-//    }
-//
-//    var flowTimes: [FlowTime] = []
-//
-//    public func flowTime(from nodeIn: NODE & NODEOut, to nodeOut: NODE & NODEIn, callback: @escaping (FlowTime) -> ()) {
-//        let fromNodeRenderState = NodeRenderState(nodeIn)
-//        let toNodeRenderState = NodeRenderState(nodeOut)
-//        let flowTime = FlowTime(from: fromNodeRenderState, to: toNodeRenderState) { flowTime in
-//            callback(flowTime)
-//        }
-//        flowTimes.append(flowTime)
-//    }
-//
-//    func unfollowTime(_ flowTime: FlowTime) {
-//        for (i, iFlowTime) in flowTimes.enumerated() {
-//            if iFlowTime == flowTime {
-//                flowTimes.remove(at: i)
-//                break
-//            }
-//        }
-//    }
     
     // MARK: - NODE Linking
     
@@ -445,13 +350,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     public func makeQuadVertexBuffer() throws -> MTLBuffer {
-//        #if os(iOS) || os(tvOS)
         let vUp: CGFloat = 0.0
         let vDown: CGFloat = 1.0
-//        #elseif os(macOS)
-//        let vUp: CGFloat = 1.0
-//        let vDown: CGFloat = 0.0
-//        #endif
         let a = Vertex(x: -1.0, y: -1.0, z: 0.0, s: 0.0, t: CGFloat(vDown))
         let b = Vertex(x: 1.0, y: -1.0, z: 0.0, s: 1.0, t: CGFloat(vDown))
         let c = Vertex(x: -1.0, y: 1.0, z: 0.0, s: 0.0, t: CGFloat(vUp))
@@ -567,19 +467,6 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
     }
     
-//    public func shader(url: URL, funcName: String) throws -> MTLFunction {
-//        do {
-//            #warning("might need to read url and pass in source...")
-//            let codeLib = try metalDevice!.makeLibrary(URL: url)
-//            guard let frag = codeLib.makeFunction(name: funcName) else {
-//                throw ShaderError.metal("makeMetalFrag: Metal func \"\(funcName)\" not found.")
-//            }
-//            return frag
-//        } catch {
-//            throw error
-//        }
-//    }
-    
     // MARK: Pipeline
     
     public func makeShaderPipeline(_ fragmentShader: MTLFunction, with customVertexShader: MTLFunction? = nil, addMode: Bool = false, overrideBits: Bits? = nil) throws -> MTLRenderPipelineState {
@@ -637,21 +524,15 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     public func embedMetalCode(uniforms: [MetalUniform], code: String, metalBaseCode: String) throws -> String {
-//        guard let bundle: Bundle = bundle else {
-//            throw MetalError.fileNotFound("No bundle provided. Can't look for file \"\(fileName).txt\"")
-//        }
-//        guard let metalFile = bundle.url(forResource: fileName, withExtension: "txt") else {
-//            throw MetalError.fileNotFound(fileName + ".txt")
-//        }
         do {
-            var metalCode = metalBaseCode //try String(contentsOf: metalFile)
-            let uniformsCode = try dynamicUniforms(uniforms: uniforms)
+            var metalCode: String = metalBaseCode
+            let uniformsCode: String = try dynamicUniforms(uniforms: uniforms)
             metalCode = try insert(uniformsCode, in: metalCode, at: "uniforms")
-            let comment = "/// PixelKit Dynamic Shader Code"
+            let comment: String = "/// PixelKit Dynamic Shader Code"
             metalCode = try insert("\(comment)\n\n\n\(code)\n", in: metalCode, at: "code")
             #if DEBUG
             if logger.dynamicShaderCode {
-                print("\nDYNAMIC SHADER CODE\n\n>>>>>>>>>>>>>>>>>\n\n\(metalCode)\n<<<<<<<<<<<<<<<<<\n")
+                print("\nDynamic Shader Code:\n\n\(metalCode)\n\n")
             }
             #endif
             return metalCode
@@ -688,7 +569,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: - Logger Delegate
     
     public func loggerFrameIndex() -> Int {
-        frame
+        frameIndex
     }
     
     public func loggerLinkIndex(of node: NODE) -> Int? {
@@ -698,16 +579,16 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     // MARK: - Engine Internal Delegate
     
     func engineFrameIndex() -> Int {
-        frame
+        frameIndex
     }
     
     func engineLinkIndex(of node: NODE) -> Int? {
         linkIndex(of: node)
     }
     
-    func engineDelay(frames: Int, done: @escaping () -> ()) {
-        delay(frames: frames, done: done)
-    }
+//    func engineDelay(frames: Int, done: @escaping () -> ()) {
+//        delay(frames: frames, done: done)
+//    }
     
     func didSetup(node: NODE, success: Bool) {
         if !success {
@@ -716,7 +597,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     func willRender(node: NODE) {
-        willRenderFPX()
+//        willRenderFPX()
         logger.log(node: node, .info, .render, "NODE Will Render", loop: true)
     }
     
@@ -724,12 +605,22 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         if success {
             logger.log(node: node, .info, .render, "NODE Did Render - Success", loop: true)
             lastRenderTimes[node.id] = renderTime
-            didRenderFPX()
-            frameCountSinceLastRender = 0
+//            didRenderFPX()
+//            frameCountSinceLastRender = 0
         } else {
             logger.log(node: node, .info, .render, "NODE Did Render - Failed", loop: true)
             lastRenderTimes.removeValue(forKey: node.id)
         }
     }
+    
+}
+
+extension Render: QueuerDelegate {
+    func queuerNode(id: UUID) -> NODE? {
+        linkedNodes.first { node in
+            node.id == id
+        }
+    }
+    
     
 }

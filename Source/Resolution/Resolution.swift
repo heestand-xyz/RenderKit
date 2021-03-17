@@ -36,6 +36,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         ]
     }
     
+    case _1
+    case _2
+    case _4
+    case _8
+    case _16
+    case _32
+    case _64
     case _128
     case _256
     case _512
@@ -45,7 +52,7 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
     case _8192
     case _16384
     public static var squareCases: [Resolution] {
-        return [._128, ._256, ._512, ._1024, ._2048, ._4096, ._8192, ._16384]
+        return [_1, ._2, ._4, ._8, ._16, ._32, ._64, ._128, ._256, ._512, ._1024, ._2048, ._4096, ._8192, ._16384]
     }
     
     case iPhone(Orientation)
@@ -211,6 +218,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
             let raw = Raw(w: 3840, h: 2160)
             if ori == .landscape { return raw }
             else { return raw.flopped }
+        case ._1: return Raw(w: 1, h: 1)
+        case ._2: return Raw(w: 2, h: 2)
+        case ._4: return Raw(w: 4, h: 4)
+        case ._8: return Raw(w: 8, h: 8)
+        case ._16: return Raw(w: 16, h: 16)
+        case ._32: return Raw(w: 32, h: 32)
+        case ._64: return Raw(w: 64, h: 64)
         case ._128: return Raw(w: 128, h: 128)
         case ._256: return Raw(w: 256, h: 256)
         case ._512: return Raw(w: 512, h: 512)
@@ -433,6 +447,13 @@ public enum Resolution: ResolutionStandard, CustomDebugStringConvertible, Codabl
         case Resolution.fullHD(.landscape).size: self = .fullHD(.landscape)
         case Resolution.ultraHD(.portrait).size: self = .ultraHD(.portrait)
         case Resolution.ultraHD(.landscape).size: self = .ultraHD(.landscape)
+        case Resolution._1.size: self = ._1
+        case Resolution._2.size: self = ._2
+        case Resolution._4.size: self = ._4
+        case Resolution._8.size: self = ._8
+        case Resolution._16.size: self = ._16
+        case Resolution._32.size: self = ._32
+        case Resolution._64.size: self = ._64
         case Resolution._128.size: self = ._128
         case Resolution._256.size: self = ._256
         case Resolution._512.size: self = ._512

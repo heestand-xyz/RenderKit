@@ -63,7 +63,7 @@ protocol EngineInternalDelegate {
     func makeSampler(interpolate: MTLSamplerMinMagFilter, extend: MTLSamplerAddressMode, mipFilter: MTLSamplerMipFilter, compare: MTLCompareFunction) throws -> MTLSamplerState
     func engineFrameIndex() -> Int
     func engineLinkIndex(of node: NODE) -> Int?
-    func engineDelay(frames: Int, done: @escaping () -> ())
+//    func engineDelay(frames: Int, done: @escaping () -> ())
     func didSetup(node: NODE, success: Bool)
     func willRender(node: NODE)
     func didRender(node: NODE, renderTime: Double, success: Bool)
@@ -74,27 +74,27 @@ public class Engine: LoggerDelegate {
     public var deleagte: EngineDelegate?
     var internalDelegate: EngineInternalDelegate!
     
-    public enum RenderMode {
-        case manual
-        case manualTiles
-        case frameTree
-        case frameLoop
-        case frameLoopTiles
-        case frameLoopQueue
-        case instantQueue
-        case instantQueueSemaphore
-        case direct
-        public var isManual: Bool {
-            [.manual, .manualTiles].contains(self)
-        }
-        public var isFrameLoop: Bool {
-            [.frameLoop, .frameLoopTiles, .frameLoopQueue].contains(self)
-        }
-        public var isTile: Bool {
-            [.manualTiles, .frameLoopTiles].contains(self)
-        }
-    }
-    public var renderMode: Engine.RenderMode = .frameLoop
+//    public enum RenderMode {
+//        case manual
+//        case manualTiles
+//        case frameTree
+//        case frameLoop
+//        case frameLoopTiles
+//        case frameLoopQueue
+//        case instantQueue
+//        case instantQueueSemaphore
+//        case direct
+//        public var isManual: Bool {
+//            [.manual, .manualTiles].contains(self)
+//        }
+//        public var isFrameLoop: Bool {
+//            [.frameLoop, .frameLoopTiles, .frameLoopQueue].contains(self)
+//        }
+//        public var isTile: Bool {
+//            [.manualTiles, .frameLoopTiles].contains(self)
+//        }
+//    }
+//    public var renderMode: Engine.RenderMode = .frameLoop
     
     var frameTreeRendering: Bool = false
     
@@ -134,26 +134,26 @@ public class Engine: LoggerDelegate {
     
     // MARK: - Frame Loop
     
-    func frameLoop() {
-        if self.renderMode == .frameTree {
-            if !self.frameTreeRendering {
-                self.renderNODEsTree()
-            }
-        } else if self.renderMode.isFrameLoop {
-            self.renderNODEs()
-        } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
-            if !self.instantQueueActivated {
-                frameLoopRenderThread.call {
-                    while true {
-                        self.renderNODEs()
-                    }
-                }
-                self.instantQueueActivated = true
-            }
-        } else if self.renderMode.isManual {
-            self.checkManualRender()
-        }
-    }
+//    func frameLoop() {
+//        if self.renderMode == .frameTree {
+//            if !self.frameTreeRendering {
+//                self.renderNODEsTree()
+//            }
+//        } else if self.renderMode.isFrameLoop {
+//            self.renderNODEs()
+//        } else if [.instantQueue, .instantQueueSemaphore].contains(self.renderMode) {
+//            if !self.instantQueueActivated {
+//                frameLoopRenderThread.call {
+//                    while true {
+//                        self.renderNODEs()
+//                    }
+//                }
+//                self.instantQueueActivated = true
+//            }
+//        } else if self.renderMode.isManual {
+//            self.checkManualRender()
+//        }
+//    }
     
     // MARK: - Logger Delegate
     
@@ -167,282 +167,331 @@ public class Engine: LoggerDelegate {
     
     // MARK: - Maual Render
     
-    enum ManualRenderError: Error {
-        case renderInProgress
-    }
+//    enum ManualRenderError: Error {
+//        case renderInProgress
+//    }
+//    
+//    public func manuallyRender(_ done: @escaping () -> ()) throws {
+//        guard !manualRenderInProgress else {
+//            throw ManualRenderError.renderInProgress
+//        }
+//        logger.log(.info, .render, "Manual Render Started.")
+//        manualRenderInProgress = true
+//        manualRenderCallback = { frameLoopRenderThread.call(done) }
+//    }
     
-    public func manuallyRender(_ done: @escaping () -> ()) throws {
-        guard !manualRenderInProgress else {
-            throw ManualRenderError.renderInProgress
-        }
-        logger.log(.info, .render, "Manual Render Started.")
-        manualRenderInProgress = true
-        manualRenderCallback = { frameLoopRenderThread.call(done) }
-    }
-    
-    func checkManualRender() {
-        
-//        #if os(macOS)
-//        let frameIndex = internalDelegate.engineFrameIndex()
-//        guard frameIndex >= 2 else {
-////            internalDelegate.engineDelay(frames: 1) {
-////                self.checkManualRender()
-////            }
+//    func checkManualRender() {
+//
+////        #if os(macOS)
+////        let frameIndex = internalDelegate.engineFrameIndex()
+////        guard frameIndex >= 2 else {
+//////            internalDelegate.engineDelay(frames: 1) {
+//////                self.checkManualRender()
+//////            }
+////            return
+////        }
+////        #endif
+//
+//        var someNodesNeedsRender: Bool = false
+//        for node in internalDelegate.linkedNodes {
+//            if node.needsRender {
+//                someNodesNeedsRender = true
+//                break
+//            }
+//        }
+//
+//        guard manualRenderInProgress else {
+//            if someNodesNeedsRender {
+//                manualRenderDelegate?.pixelNeedsManualRender()
+//            }
 //            return
 //        }
-//        #endif
-                
-        var someNodesNeedsRender: Bool = false
-        for node in internalDelegate.linkedNodes {
-            if node.needsRender {
-                someNodesNeedsRender = true
-                break
-            }
-        }
-        
-        guard manualRenderInProgress else {
-            if someNodesNeedsRender {
-                manualRenderDelegate?.pixelNeedsManualRender()
-            }
-            return
-        }
-        
-        if someNodesNeedsRender {
-            
-            self.renderNODEs()
-            
-        } else {
-        
-            var someNodesAreInRender: Bool = false
-            for node in internalDelegate.linkedNodes {
-                if node.inRender {
-                    someNodesAreInRender = true
-                    break
-                }
-            }
-            
-            if !someNodesAreInRender {
-
-                logger.log(.info, .render, "Manual Render Done.")
-                manualRenderInProgress = false
-                let cachedManualRenderCallback = manualRenderCallback!
-                manualRenderCallback = nil
-                cachedManualRenderCallback()
-                
-            }
-            
-        }
-        
-    }
+//
+//        if someNodesNeedsRender {
+//
+//            self.renderNODEs()
+//
+//        } else {
+//
+//            var someNodesAreInRender: Bool = false
+//            for node in internalDelegate.linkedNodes {
+//                if node.inRender {
+//                    someNodesAreInRender = true
+//                    break
+//                }
+//            }
+//
+//            if !someNodesAreInRender {
+//
+//                logger.log(.info, .render, "Manual Render Done.")
+//                manualRenderInProgress = false
+//                let cachedManualRenderCallback = manualRenderCallback!
+//                manualRenderCallback = nil
+//                cachedManualRenderCallback()
+//
+//            }
+//
+//        }
+//
+//    }
     
     // MARK: - Render
     
-    func renderNODEsTree() {
-        let nodesNeedsRender: [NODE] = internalDelegate.linkedNodes.filter { node -> Bool in
-            return node.needsRender
-        }
-        guard !nodesNeedsRender.isEmpty else { return }
-        frameTreeRendering = true
-        frameLoopRenderThread.call {
-            self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-", loop: true)
-            var renderedNodes: [NODE] = []
-            func render(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name)\"", loop: true)
-                let semaphore = DispatchSemaphore(value: 0)
-                frameLoopRenderThread.call {
-                    if node.view.superview != nil {
-                        #if os(iOS) || os(tvOS)
-                        node.view.metalView.setNeedsDisplay()
-                        #elseif os(macOS)
-                        let size = node.finalResolution.size
-//                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
+//    func renderNODEsTree() {
+//        let nodesNeedsRender: [NODE] = internalDelegate.linkedNodes.filter { node -> Bool in
+//            return node.needsRender
+//        }
+//        guard !nodesNeedsRender.isEmpty else { return }
+//        frameTreeRendering = true
+//        frameLoopRenderThread.call {
+//            self.logger.log(.debug, .render, "-=-=-=-> Tree Started <-=-=-=-", loop: true)
+//            var renderedNodes: [NODE] = []
+//            func render(_ node: NODE) {
+//                self.logger.log(.debug, .render, "-=-=-=-> Tree Render NODE: \"\(node.name)\"", loop: true)
+//                let semaphore = DispatchSemaphore(value: 0)
+//                frameLoopRenderThread.call {
+//                    if node.view.superview != nil {
+//                        #if os(iOS) || os(tvOS)
+//                        node.view.metalView.setNeedsDisplay()
+//                        #elseif os(macOS)
+//                        let size = node.finalResolution.size
+////                            logger.log(node: node, .warning, .render, "NODE Resolutuon unknown. Can't render in view.", loop: true)
+////                            return
+////                        }
+//                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
+//                        #endif
+//                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
+//                        guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
+//                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
 //                            return
 //                        }
-                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
-                        #endif
-                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
-                        guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
-                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
-                            return
-                        }
-                        node.view.metalView.readyToRender = {
-                            node.view.metalView.readyToRender = nil
-                            self.renderNODE(node, with: currentDrawable, done: { success in
-                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name)\"", loop: true)
-                                semaphore.signal()
-                            })
-                        }
-                    } else {
-                        self.renderNODE(node, done: { success in
-                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name)\"", loop: true)
-                            semaphore.signal()
-                        })
-                    }
-                }
-                _ = semaphore.wait(timeout: .distantFuture)
-                renderedNodes.append(node)
-            }
-            func reverse(_ inNode: NODE & NODEInIO) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name)\"", loop: true)
-                for subNode in inNode.inputList {
-                    if !subNode.contained(in: renderedNodes) {
-                        if let subInNode = subNode as? NODE & NODEInIO {
-                            reverse(subInNode)
-                        }
-                        render(subNode)
-                    }
-                }
-            }
-            func traverse(_ node: NODE) {
-                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name)\"", loop: true)
-                if let outNode = node as? NODEOutIO {
-                    for inNodePath in outNode.outputPathList {
-                        let inNode = inNodePath.nodeIn as! NODE & NODEInIO
-                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name)\"", loop: true)
-                        var allInsRendered = true
-                        for subNode in inNode.inputList {
-                            if !subNode.contained(in: renderedNodes) {
-                                allInsRendered = false
-                                break
-                            }
-                        }
-                        if !allInsRendered {
-                            reverse(inNode)
-                        }
-                        if !inNode.contained(in: renderedNodes) {
-                            render(inNode)
-                            traverse(inNode)
-                        }
-                    }
-                }
-            }
-            for node in nodesNeedsRender {
-                if !node.contained(in: renderedNodes) {
-                    render(node)
-                    traverse(node)
-                }
-            }
-            self.logger.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-", loop: true)
-            self.frameTreeRendering = false
-        }
-    }
+//                        node.view.metalView.readyToRender = {
+//                            node.view.metalView.readyToRender = nil
+//                            self.renderNODE(node, with: currentDrawable, done: { success in
+//                                self.logger.log(.debug, .render, "-=-=-=-> View Tree Did Render NODE: \"\(node.name)\"", loop: true)
+//                                semaphore.signal()
+//                            })
+//                        }
+//                    } else {
+//                        self.renderNODE(node, done: { success in
+//                            self.logger.log(.debug, .render, "-=-=-=-> Tree Did Render NODE: \"\(node.name)\"", loop: true)
+//                            semaphore.signal()
+//                        })
+//                    }
+//                }
+//                _ = semaphore.wait(timeout: .distantFuture)
+//                renderedNodes.append(node)
+//            }
+//            func reverse(_ inNode: NODE & NODEInIO) {
+//                self.logger.log(.debug, .render, "-=-=-=-> Tree Reverse NODE: \"\(inNode.name)\"", loop: true)
+//                for subNode in inNode.inputList {
+//                    if !subNode.contained(in: renderedNodes) {
+//                        if let subInNode = subNode as? NODE & NODEInIO {
+//                            reverse(subInNode)
+//                        }
+//                        render(subNode)
+//                    }
+//                }
+//            }
+//            func traverse(_ node: NODE) {
+//                self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse NODE: \"\(node.name)\"", loop: true)
+//                if let outNode = node as? NODEOutIO {
+//                    for inNodePath in outNode.outputPathList {
+//                        let inNode = inNodePath.nodeIn as! NODE & NODEInIO
+//                        self.logger.log(.debug, .render, "-=-=-=-> Tree Traverse Sub NODE: \"\(inNode.name)\"", loop: true)
+//                        var allInsRendered = true
+//                        for subNode in inNode.inputList {
+//                            if !subNode.contained(in: renderedNodes) {
+//                                allInsRendered = false
+//                                break
+//                            }
+//                        }
+//                        if !allInsRendered {
+//                            reverse(inNode)
+//                        }
+//                        if !inNode.contained(in: renderedNodes) {
+//                            render(inNode)
+//                            traverse(inNode)
+//                        }
+//                    }
+//                }
+//            }
+//            for node in nodesNeedsRender {
+//                if !node.contained(in: renderedNodes) {
+//                    render(node)
+//                    traverse(node)
+//                }
+//            }
+//            self.logger.log(.debug, .render, "-=-=-=-> Tree Ended <-=-=-=-", loop: true)
+//            self.frameTreeRendering = false
+//        }
+//    }
     
-    func renderNODEs() {
-        loop: for node in internalDelegate.linkedNodes {
-            var node = node
-            if node.needsRender {
-                
-                if [.frameLoopQueue, .instantQueue, .instantQueueSemaphore].contains(renderMode) {
-                    guard !node.rendering else {
-                        logger.log(node: node, .warning, .render, "Render in progress.", loop: true)
-                        continue
-                    }
-                    if let nodeIn = node as? NODEInIO {
-                        for nodeOut in nodeIn.inputList {
-                            guard node.renderIndex + 1 == nodeOut.renderIndex else {
-                                logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)", loop: true)
-                                continue
-                            }
-//                            log(node: node, .warning, .render, ">>> Queue In: \(node.renderIndex) + 1 == \(nodeOut.renderIndex)")
-                        }
-                    }
-                    if let nodeOut = node as? NODEOutIO {
-                        for nodeOutPath in nodeOut.outputPathList {
-                            guard node.renderIndex == nodeOutPath.nodeIn.renderIndex else {
-                                logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)", loop: true)
-                                continue
-                            }
-//                            log(node: node, .warning, .render, ">>> Queue Out: \(node.renderIndex) == \(nodeOutPath.nodeIn.renderIndex)")
-                        }
-                    }
-                }
-                
-                if let nodeIn = node as? NODE & NODEInIO {
-                    let nodeOuts = nodeIn.inputList
-                    for (i, nodeOut) in nodeOuts.enumerated() {
-                        var rendered: Bool = false
-                        if renderMode.isTile {
-                            if let tileNode2d = nodeOut as? NODETileable2D {
-                                rendered = tileNode2d.tileTextures != nil
-                            } else if let tileNode3d = nodeOut as? NODETileable3D {
-                                rendered = tileNode3d.tileTextures != nil
-                            }
-                        } else {
-                            rendered = nodeOut.texture != nil
-                        }
-                        if !rendered {
-                            logger.log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
-                            /// The chained node will call setNeedsRender when done
-                            node.needsRender = false
-                            continue loop
-                        }
-                    }
-                }
-                
-                var semaphore: DispatchSemaphore?
-                if renderMode == .instantQueueSemaphore {
-                    semaphore = DispatchSemaphore(value: 0)
-                }
-                
-                frameLoopRenderThread.call {
-                    if frameLoopRenderThread == .main && node.view.superview != nil {
-                        #if os(iOS) || os(tvOS)
-                        node.view.metalView.setNeedsDisplay()
-                        #elseif os(macOS)
-                        let size = node.finalResolution.size
-                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
-                        #endif
-                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
-                        let currentDrawable: CAMetalDrawable? = node.view.metalView.currentDrawable
-                        if currentDrawable == nil {
-                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
-                        }
-                        node.view.metalView.readyToRender = {
-                            node.view.metalView.readyToRender = nil
-                            self.renderNODE(node, with: currentDrawable, done: { success in
-                                if self.renderMode == .instantQueueSemaphore {
-                                    semaphore!.signal()
-                                }
-                            })
-                        }
-                    } else {
-                        self.renderNODE(node, done: { success in
-                            if self.renderMode == .instantQueueSemaphore {
-                                semaphore!.signal()
-                            }
-                        })
-                    }
-                }
-                
-                if self.renderMode == .instantQueueSemaphore {
-                    _ = semaphore!.wait(timeout: .distantFuture)
-                }
-                
-            }
-        }
-    }
+//    func renderNODEs() {
+//        loop: for node in internalDelegate.linkedNodes {
+//            var node = node
+//            if node.needsRender {
+//                
+//                if [.frameLoopQueue, .instantQueue, .instantQueueSemaphore].contains(renderMode) {
+//                    guard !node.rendering else {
+//                        logger.log(node: node, .warning, .render, "Render in progress.", loop: true)
+//                        continue
+//                    }
+//                    if let nodeIn = node as? NODEInIO {
+//                        for nodeOut in nodeIn.inputList {
+//                            guard node.renderIndex + 1 == nodeOut.renderIndex else {
+//                                logger.log(node: node, .detail, .render, "Queue In: \(node.renderIndex) + 1 != \(nodeOut.renderIndex)", loop: true)
+//                                continue
+//                            }
+////                            log(node: node, .warning, .render, ">>> Queue In: \(node.renderIndex) + 1 == \(nodeOut.renderIndex)")
+//                        }
+//                    }
+//                    if let nodeOut = node as? NODEOutIO {
+//                        for nodeOutPath in nodeOut.outputPathList {
+//                            guard node.renderIndex == nodeOutPath.nodeIn.renderIndex else {
+//                                logger.log(node: node, .detail, .render, "Queue Out: \(node.renderIndex) != \(nodeOutPath.nodeIn.renderIndex)", loop: true)
+//                                continue
+//                            }
+////                            log(node: node, .warning, .render, ">>> Queue Out: \(node.renderIndex) == \(nodeOutPath.nodeIn.renderIndex)")
+//                        }
+//                    }
+//                }
+//                
+//                if let nodeIn = node as? NODE & NODEInIO {
+//                    let nodeOuts = nodeIn.inputList
+//                    for (i, nodeOut) in nodeOuts.enumerated() {
+//                        var rendered: Bool = false
+//                        if renderMode.isTile {
+//                            if let tileNode2d = nodeOut as? NODETileable2D {
+//                                rendered = tileNode2d.tileTextures != nil
+//                            } else if let tileNode3d = nodeOut as? NODETileable3D {
+//                                rendered = tileNode3d.tileTextures != nil
+//                            }
+//                        } else {
+//                            rendered = nodeOut.texture != nil
+//                        }
+//                        if !rendered {
+//                            logger.log(node: node, .warning, .render, "NODE Ins \(i) not rendered.", loop: true)
+//                            /// The chained node will call setNeedsRender when done
+//                            node.needsRender = false
+//                            continue loop
+//                        }
+//                    }
+//                }
+//                
+//                var semaphore: DispatchSemaphore?
+//                if renderMode == .instantQueueSemaphore {
+//                    semaphore = DispatchSemaphore(value: 0)
+//                }
+//                
+//                frameLoopRenderThread.call {
+//                    if frameLoopRenderThread == .main && node.view.superview != nil {
+//                        #if os(iOS) || os(tvOS)
+//                        node.view.metalView.setNeedsDisplay()
+//                        #elseif os(macOS)
+//                        let size = node.finalResolution.size
+//                        node.view.metalView.setNeedsDisplay(CGRect(x: 0, y: 0, width: size.width, height: size.height))
+//                        #endif
+//                        self.logger.log(node: node, .detail, .render, "View Render requested.", loop: true)
+//                        let currentDrawable: CAMetalDrawable? = node.view.metalView.currentDrawable
+//                        if currentDrawable == nil {
+//                            self.logger.log(node: node, .error, .render, "Current Drawable not found.", loop: true)
+//                        }
+//                        node.view.metalView.readyToRender = {
+//                            node.view.metalView.readyToRender = nil
+//                            self.renderNODE(node, with: currentDrawable, done: { success in
+//                                if self.renderMode == .instantQueueSemaphore {
+//                                    semaphore!.signal()
+//                                }
+//                            })
+//                        }
+//                    } else {
+//                        self.renderNODE(node, done: { success in
+//                            if self.renderMode == .instantQueueSemaphore {
+//                                semaphore!.signal()
+//                            }
+//                        })
+//                    }
+//                }
+//                
+//                if self.renderMode == .instantQueueSemaphore {
+//                    _ = semaphore!.wait(timeout: .distantFuture)
+//                }
+//                
+//            }
+//        }
+//    }
     
     // MARK: - Render NODE
     
-    public func renderNODE(_ node: NODE, with currentDrawable: CAMetalDrawable? = nil, force: Bool = false, done: @escaping (Bool?) -> ()) {
+    enum RenderNODEError: LocalizedError {
+        case bypassed
+        case renderInProgress
+        case tileRenderNotSupported
+        case currentDrawableNotFound
+        var errorDescription: String? {
+            switch self {
+            case .bypassed:
+                return "Render NODE Error - Bypassed"
+            case .renderInProgress:
+                return "Render NODE Error - Render in Progress"
+            case .tileRenderNotSupported:
+                return "Render NODE Error - Tile Render Not Supported"
+            case .currentDrawableNotFound:
+                return "Render NODE Error - Current Drawable Not Found"
+            }
+        }
+    }
+    
+    public func renderNODE(_ node: NODE,
+                           renderRequest: RenderRequest,
+                           completion: @escaping (RenderResult) -> ()) {
+        logger.log(node: node, .info, .render, "Render NODE", loop: true)
+        frameLoopRenderThread.call {
+            if frameLoopRenderThread == .main && node.view.superview != nil {
+                guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
+                    completion(.failure(RenderNODEError.currentDrawableNotFound))
+                    return
+                }
+                node.view.metalView.readyToRender = {
+                    node.view.metalView.readyToRender = nil
+                    self.renderNODE(node,
+                                    renderRequest: renderRequest,
+                                    with: currentDrawable,
+                                    completion: completion)
+                }
+                #if os(iOS) || os(tvOS)
+                node.view.metalView.setNeedsDisplay()
+                #elseif os(macOS)
+                let size: CGSize = node.finalResolution.size
+                let frame: CGRect = CGRect(origin: .zero, size: size)
+                node.view.metalView.setNeedsDisplay(frame)
+                #endif
+            } else {
+                self.renderNODE(node,
+                                renderRequest: renderRequest,
+                                with: nil,
+                                completion: completion)
+            }
+        }
+    }
+    private func renderNODE(_ node: NODE,
+                            renderRequest: RenderRequest,
+                            with currentDrawable: CAMetalDrawable? = nil,
+                            force: Bool = false,
+                            completion: @escaping (RenderResult) -> ()) {
         var node = node
         guard !node.bypass || node is NODEGenerator else {
             logger.log(node: node, .debug, .render, "Render bypassed.", loop: true)
-            done(nil)
+            completion(.failure(RenderNODEError.bypassed))
             return
         }
-        guard !node.rendering else {
+        guard !node.renderInProgress else {
             logger.log(node: node, .debug, .render, "Render in progress...", loop: true)
-            done(nil)
+            completion(.failure(RenderNODEError.renderInProgress))
             return
         }
-        guard !node.inRender else {
-            logger.log(node: node, .debug, .render, "Render setup in progress...", loop: true)
-            done(nil)
-            return
-        }
-        node.needsRender = false
-        node.inRender = true
+        node.renderInProgress = true
         internalDelegate.willRender(node: node)
         let renderStartTime = CFAbsoluteTimeGetCurrent()
         logger.log(node: node, .detail, .render, "Starting render.\(force ? " Forced." : "")", loop: true)
@@ -451,15 +500,15 @@ public class Engine: LoggerDelegate {
         }
         func setupFailed(with error: Error) {
             logger.log(node: node, .error, .render, "Render setup failed.\(force ? " Forced." : "")", loop: true, e: error)
-            node.inRender = false
+            node.renderInProgress = false
             internalDelegate?.didSetup(node: node, success: false)
-            done(false)
+            completion(.failure(error))
         }
         func renderDone() {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
             let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
-            self.logger.log(node: node, .info, .render, "Rendered! \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
-            node.inRender = false
+            self.logger.log(node: node, .info, .render, "Rendered Done at \(node.finalResolution) \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
+            node.renderInProgress = false
             internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: true)
         }
         func renderFailed(with error: Error) {
@@ -474,47 +523,60 @@ public class Engine: LoggerDelegate {
                 ioafMsg = "IOAF. Sorry, this is an Metal GPU error, usually seen on older devices. Error: \(err)"
             }
             self.logger.log(node: node, .error, .render, "Render of shader failed... \(force ? "Forced." : "") \(ioafMsg ?? "")", loop: true, e: error)
-            node.inRender = false
+            node.renderInProgress = false
             internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: false)
-            done(false)
+            completion(.failure(error))
         }
-        if self.renderMode.isTile {
-            guard let nodeTileable = node as? NODE & NODETileable else {
-                setupFailed(with: RenderError.nodeNotTileable)
-                return
-            }
-            frameLoopRenderThread.call {
-                do {
-                    try self.tileRender(nodeTileable, force: force, completed: {
-                        frameLoopRenderThread.call {
-                            renderDone()
-                            nodeTileable.didRenderTiles(force: force)
-                            done(true)
-                        }
-                    }, failed: { error in
-                        frameLoopRenderThread.call {
-                            renderFailed(with: error)
-                        }
-                    })
-                    setupDone()
-                } catch {
-                    setupFailed(with: error)
-                }
-            }
-        } else {
-            do {
-                try self.render(node, with: currentDrawable, force: force, completed: { texture in
-                    renderDone()
-                    node.didRender(texture: texture, force: force)
-                    done(true)
-                }, failed: { error in
-                    renderFailed(with: error)
-                })
-                setupDone()
-            } catch {
-                setupFailed(with: error)
-            }
+//        if self.renderMode.isTile {
+//            node.renderInProgress = false
+//            completion(.failure(RenderNODEError.tileRenderNotSupported))
+//            guard let nodeTileable = node as? NODE & NODETileable else {
+//                setupFailed(with: RenderError.nodeNotTileable)
+//                return
+//            }
+//            frameLoopRenderThread.call {
+//                do {
+//                    try self.tileRender(nodeTileable, force: force, completed: {
+//                        frameLoopRenderThread.call {
+//                            renderDone()
+//                            nodeTileable.didRenderTiles(force: force)
+//                            done(true)
+//                        }
+//                    }, failed: { error in
+//                        frameLoopRenderThread.call {
+//                            renderFailed(with: error)
+//                        }
+//                    })
+//                    setupDone()
+//                } catch {
+//                    setupFailed(with: error)
+//                }
+//            }
+//        } else {
+        let startFrameIndex: Int = internalDelegate.engineFrameIndex()
+        do {
+            try self.render(node,
+                            with: currentDrawable,
+                            force: force,
+                            completed: { texture in
+                                renderDone()
+                                let finalFrameIndex: Int = self.internalDelegate.engineFrameIndex()
+                                let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
+                                let renderResponse = RenderResponse(id: renderRequest.id,
+                                                                    startFrameIndex: startFrameIndex,
+                                                                    finalFrameIndex: finalFrameIndex,
+                                                                    renderTime: renderTime,
+                                                                    texture: texture)
+                                let renderPack = RenderPack(request: renderRequest, response: renderResponse)
+                                completion(.success(renderPack))
+                            }, failed: { error in
+                                renderFailed(with: error)
+                            })
+            setupDone()
+        } catch {
+            setupFailed(with: error)
         }
+//        }
     }
     
     public enum RenderError: Error {
@@ -538,98 +600,101 @@ public class Engine: LoggerDelegate {
     
     // MARK: - Tile Render
     
-    func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
-        if var nodeTileable2d = node as? NODETileable2D {
-            if (node.finalResolution.width / nodeTileable2d.tileResolution.width).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
-            }
-            if (node.finalResolution.height / nodeTileable2d.tileResolution.height).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
-            }
-            let tileCountResolution: Resolution = node.finalResolution / nodeTileable2d.tileResolution
-            
-            var tileTextures: [[MTLTexture]] = []
-            for y in 0..<tileCountResolution.h {
-                var tileTextureRow: [MTLTexture] = []
-                for x in 0..<tileCountResolution.w {
-                    logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y).", loop: true)
-                    let semaphore = DispatchSemaphore(value: 0)
-                    var didError = false
-                    try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: 0), force: force, completed: { texture in
-                        tileTextureRow.append(texture)
-                        semaphore.signal()
-                    }) { error in
-                        failed(RenderError.tileError("Tile error at x\(x) y\(y).", error))
-                        didError = true
-                        semaphore.signal()
-                    }
-                    _ = semaphore.wait(timeout: .distantFuture)
-                    if didError {
-                        throw RenderError.tileRenderCanceled
-                    }
-                }
-                tileTextures.append(tileTextureRow)
-            }
-            nodeTileable2d.tileTextures = tileTextures
-            completed()
-            
-        } else if var nodeTileable3d = node as? NODETileable3D {
-            guard let node3d = node as? NODE3D else {
-                throw RenderError.nodeNot3D
-            }
-            if (node3d.renderedResolution3d.vector.x / nodeTileable3d.tileResolution.vector.x).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in x.", loop: true)
-            }
-            if (node3d.renderedResolution3d.vector.y / nodeTileable3d.tileResolution.vector.y).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in y.", loop: true)
-            }
-            if (node3d.renderedResolution3d.vector.z / nodeTileable3d.tileResolution.vector.z).remainder(dividingBy: 1.0) != 0.0 {
-                logger.log(node: node, .warning, .render, "Tile resolution not even in z.", loop: true)
-            }
-            let tileCountResolution: Resolution3D = node3d.renderedResolution3d / nodeTileable3d.tileResolution
-            
-            var tileTextures: [[[MTLTexture]]] = []
-            for z in 0..<tileCountResolution.z {
-                var tileTextureGrid: [[MTLTexture]] = []
-                for y in 0..<tileCountResolution.y {
-                    var tileTextureRow: [MTLTexture] = []
-                    for x in 0..<tileCountResolution.x {
-                        logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y) z\(z).", loop: true)
-                        let semaphore = DispatchSemaphore(value: 0)
-                        var didError = false
-                        try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: z), force: force, completed: { texture in
-                            tileTextureRow.append(texture)
-                            semaphore.signal()
-                        }) { error in
-                            failed(RenderError.tileError("Tile error at x\(x) y\(y) z\(z).", error))
-                            didError = true
-                            semaphore.signal()
-                        }
-                        _ = semaphore.wait(timeout: .distantFuture)
-                        if didError {
-                            throw RenderError.tileRenderCanceled
-                        }
-                    }
-                    tileTextureGrid.append(tileTextureRow)
-                }
-                tileTextures.append(tileTextureGrid)
-            }
-            nodeTileable3d.tileTextures = tileTextures
-            completed()
-            
-        } else {
-            throw RenderError.nodeNotTileable
-        }
-    }
+//    func tileRender(_ node: NODE & NODETileable, force: Bool, completed: @escaping () -> (), failed: @escaping (Error) -> ()) throws {
+//        if var nodeTileable2d = node as? NODETileable2D {
+//            if (node.finalResolution.width / nodeTileable2d.tileResolution.width).remainder(dividingBy: 1.0) != 0.0 {
+//                logger.log(node: node, .warning, .render, "Tile resolution not even in width.", loop: true)
+//            }
+//            if (node.finalResolution.height / nodeTileable2d.tileResolution.height).remainder(dividingBy: 1.0) != 0.0 {
+//                logger.log(node: node, .warning, .render, "Tile resolution not even in height.", loop: true)
+//            }
+//            let tileCountResolution: Resolution = node.finalResolution / nodeTileable2d.tileResolution
+//
+//            var tileTextures: [[MTLTexture]] = []
+//            for y in 0..<tileCountResolution.h {
+//                var tileTextureRow: [MTLTexture] = []
+//                for x in 0..<tileCountResolution.w {
+//                    logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y).", loop: true)
+//                    let semaphore = DispatchSemaphore(value: 0)
+//                    var didError = false
+//                    try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: 0), force: force, completed: { texture in
+//                        tileTextureRow.append(texture)
+//                        semaphore.signal()
+//                    }) { error in
+//                        failed(RenderError.tileError("Tile error at x\(x) y\(y).", error))
+//                        didError = true
+//                        semaphore.signal()
+//                    }
+//                    _ = semaphore.wait(timeout: .distantFuture)
+//                    if didError {
+//                        throw RenderError.tileRenderCanceled
+//                    }
+//                }
+//                tileTextures.append(tileTextureRow)
+//            }
+//            nodeTileable2d.tileTextures = tileTextures
+//            completed()
+//
+//        } else if var nodeTileable3d = node as? NODETileable3D {
+//            guard let node3d = node as? NODE3D else {
+//                throw RenderError.nodeNot3D
+//            }
+//            if (node3d.renderedResolution3d.vector.x / nodeTileable3d.tileResolution.vector.x).remainder(dividingBy: 1.0) != 0.0 {
+//                logger.log(node: node, .warning, .render, "Tile resolution not even in x.", loop: true)
+//            }
+//            if (node3d.renderedResolution3d.vector.y / nodeTileable3d.tileResolution.vector.y).remainder(dividingBy: 1.0) != 0.0 {
+//                logger.log(node: node, .warning, .render, "Tile resolution not even in y.", loop: true)
+//            }
+//            if (node3d.renderedResolution3d.vector.z / nodeTileable3d.tileResolution.vector.z).remainder(dividingBy: 1.0) != 0.0 {
+//                logger.log(node: node, .warning, .render, "Tile resolution not even in z.", loop: true)
+//            }
+//            let tileCountResolution: Resolution3D = node3d.renderedResolution3d / nodeTileable3d.tileResolution
+//
+//            var tileTextures: [[[MTLTexture]]] = []
+//            for z in 0..<tileCountResolution.z {
+//                var tileTextureGrid: [[MTLTexture]] = []
+//                for y in 0..<tileCountResolution.y {
+//                    var tileTextureRow: [MTLTexture] = []
+//                    for x in 0..<tileCountResolution.x {
+//                        logger.log(node: node, .detail, .render, "Render Tile at x\(x) y\(y) z\(z).", loop: true)
+//                        let semaphore = DispatchSemaphore(value: 0)
+//                        var didError = false
+//                        try render(node, with: nil, tileIndex: TileIndex(x: x, y: y, z: z), force: force, completed: { texture in
+//                            tileTextureRow.append(texture)
+//                            semaphore.signal()
+//                        }) { error in
+//                            failed(RenderError.tileError("Tile error at x\(x) y\(y) z\(z).", error))
+//                            didError = true
+//                            semaphore.signal()
+//                        }
+//                        _ = semaphore.wait(timeout: .distantFuture)
+//                        if didError {
+//                            throw RenderError.tileRenderCanceled
+//                        }
+//                    }
+//                    tileTextureGrid.append(tileTextureRow)
+//                }
+//                tileTextures.append(tileTextureGrid)
+//            }
+//            nodeTileable3d.tileTextures = tileTextures
+//            completed()
+//
+//        } else {
+//            throw RenderError.nodeNotTileable
+//        }
+//    }
     
     // MARK: - Main Render
     
     func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, tileIndex: TileIndex? = nil, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
         
+//        print("RENDER::::::::::::::", node.name, node.finalResolution)
+//        if node.finalResolution == ._128 {
+//            print("---------------128-------------")
+//        }
+        
         let bits = node.overrideBits ?? internalDelegate.bits
         let device = internalDelegate.metalDevice!
-        
-        var node = node
         
         if tileIndex != nil {
             guard node is NODETileable else {
@@ -666,26 +731,7 @@ public class Engine: LoggerDelegate {
         
         // MARK: Template
         
-//        let needsInTexture = node is NODEInIO
-//        let hasInTexture: Bool
-//        if tileIndex != nil {
-//            if node is NODE3D {
-//                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable3D)?.tileTextures != nil
-//            } else {
-//                hasInTexture = needsInTexture && ((node as! NODEInIO).inputList.first as? NODETileable2D)?.tileTextures != nil
-//            }
-//        } else {
-//            hasInTexture = needsInTexture && (node as! NODEInIO).inputList.first?.texture != nil
-//        }
-//        let needsContent = node.contentLoaded != nil
-//        let hasContent = node.contentLoaded == true
-//        let needsGenerated = node is NODEGenerator
-//        let hasGenerated = !node.bypass
-        let template: Bool = false //((needsInTexture && !hasInTexture) || (needsContent && !hasContent) || (needsGenerated && !hasGenerated)) && !(node is NODE3D)
-//        if template {
-//            logger.log(node: node, .debug, .render, "Template.", loop: true)
-//        }
-        
+        let template: Bool = false
         
         // MARK: Input Texture
         
@@ -782,16 +828,16 @@ public class Engine: LoggerDelegate {
             customTexture = customRenderedTexture
         }
         // FIXME: Cleanup. Called in delegate already.
-//        else if node.customRenderActive {
-//            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
-//                throw RenderError.custom("CustomRenderDelegate not set")
-//            }
-//            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
-//                throw RenderError.nilCustomTexture
-//            }
-//            customTexture = customRenderedTexture
-//        }
-        
+ //        else if node.customRenderActive {
+ //            guard let customRenderDeleagte = node as? CustomRenderDelegate else {
+ //                throw RenderError.custom("CustomRenderDelegate not set")
+ //            }
+ //            guard let customRenderedTexture = customRenderDeleagte.customRender(drawableTexture, with: commandBuffer) else {
+ //                throw RenderError.nilCustomTexture
+ //            }
+ //            customTexture = customRenderedTexture
+ //        }
+
         let customRenderActive = node.customRenderActive || node.customMergerRenderActive
         if customRenderActive, let customTexture = customTexture {
             inputTexture = customTexture
@@ -852,11 +898,6 @@ public class Engine: LoggerDelegate {
         if let mergerEffectNode = node as? NODEMergerEffect {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
-//        if template {
-//            unifroms.append(self.template ? 1 : 0)
-//            unifroms.append(Float(width))
-//            unifroms.append(Float(height))
-//        }
         if node.shaderNeedsAspect || template {
             unifroms.append(Float(width) / Float(height))
         }
@@ -900,8 +941,8 @@ public class Engine: LoggerDelegate {
         
         // MARK: Uniform Arrays
         
-        // Hardcoded at 128
-        // Defined as ARRMAX in shaders
+        /// Hardcoded at 128
+        /// Defined as ARRMAX in shaders
         let uniformArrayMaxLimit = node.uniformArrayMaxLimit ?? 128
         
         var uniformArray: [[Float]] = node.uniformArray.map { uniformValues -> [Float] in
@@ -1230,22 +1271,8 @@ public class Engine: LoggerDelegate {
         
         // MARK: Render
         
-        node.rendering = true
-        
-//        if #available(iOS 11.0, *) {
-//            let sharedCaptureManager = MTLCaptureManager.shared()
-//            let myCaptureScope = sharedCaptureManager.makeCaptureScope(device: metalDevice)
-//            myCaptureScope.label = "PixelKit GPU Capture Scope"
-//            sharedCaptureManager.defaultCaptureScope = myCaptureScope
-//            myCaptureScope.begin()
-//        }
-        
-        // CHECK
-        
         commandBuffer.addCompletedHandler({ _ in
-            
-            node.rendering = false
-            
+                        
             if let error = commandBuffer.error {
                 failed(error)
                 return
@@ -1274,19 +1301,7 @@ public class Engine: LoggerDelegate {
         commandBuffer.commit()
         if renderInSync {
             commandBuffer.waitUntilCompleted()
-//            commandBuffer.waitUntilScheduled()
         }
-        
-//        let synchronous: Bool = true
-//        if synchronous {
-//            commandBuffer.waitUntilCompleted()
-//        }
-
-//        if #available(iOS 11.0, *) {
-//            let sharedCaptureManager = MTLCaptureManager.shared()
-//            guard !sharedCaptureManager.isCapturing else { fatalError() }
-//            sharedCaptureManager.defaultCaptureScope?.end()
-//        }
         
     }
     

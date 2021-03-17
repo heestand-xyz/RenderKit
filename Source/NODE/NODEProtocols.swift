@@ -8,13 +8,19 @@
 
 import CoreGraphics
 import Metal
+import Combine
 
 public protocol NODEDelegate: AnyObject {
     func nodeDidRender(_ node: NODE)
 }
 
-public protocol NODEIn {}
-public protocol NODEOut {}
+public protocol NODEIn {
+    func didUpdateInputConnections()
+}
+public protocol NODEOut {
+    var renderPromisePublisher: PassthroughSubject<RenderRequest, Never> { get }
+    var renderPublisher: PassthroughSubject<RenderPack, Never> { get }
+}
 
 public protocol NODEInSingle: NODEIn {
     var input: (NODE & NODEOut)? { get set }

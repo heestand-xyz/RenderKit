@@ -58,16 +58,15 @@ public class LiveWrap: Identifiable {
             }
             if updateResolution {
                 node.applyResolution {
-                    node.setNeedsRender()
+                    node.render()
                 }
             } else {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
     
-    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false, funcName: String = #function) {
-        print(name, ">>>", funcName)
+    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
         super.init(name: name, value: wrappedValue, min: min, max: max)
@@ -91,10 +90,10 @@ public class LiveWrap: Identifiable {
             }
             if updateResolution {
                 node.applyResolution {
-                    node.setNeedsRender()
+                    node.render()
                 }
             } else {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
@@ -123,10 +122,10 @@ public class LiveWrap: Identifiable {
             }
             if updateResolution {
                 node.applyResolution {
-                    node.setNeedsRender()
+                    node.render()
                 }
             } else {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
@@ -155,10 +154,10 @@ public class LiveWrap: Identifiable {
             }
             if updateResolution {
                 node.applyResolution {
-                    node.setNeedsRender()
+                    node.render()
                 }
             } else {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
@@ -183,7 +182,7 @@ public class LiveWrap: Identifiable {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            node.render()
         }
     }
     
@@ -206,7 +205,7 @@ public class LiveWrap: Identifiable {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            node.render()
         }
     }
     
@@ -229,7 +228,7 @@ public class LiveWrap: Identifiable {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.setNeedsRender()
+            node.render()
         }
     }
     
@@ -253,7 +252,7 @@ public class LiveWrap: Identifiable {
                 return
             }
             node.applyResolution {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
@@ -341,10 +340,10 @@ extension Enumable {
             }
             if updateResolution {
                 node.applyResolution {
-                    node.setNeedsRender()
+                    node.render()
                 }
             } else {
-                node.setNeedsRender()
+                node.render()
             }
         }
     }
