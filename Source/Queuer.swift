@@ -15,9 +15,9 @@ public class Queuer {
     
     weak var delegate: QueuerDelegate?
     
-    enum QueuerError: LocalizedError {
+    public enum QueuerError: LocalizedError {
         case duplicate
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .duplicate:
                 return "Queuer Error - Duplicate"
@@ -33,7 +33,7 @@ public class Queuer {
     private var uniqueQueue: [Item] = []
     
     func frameLoop() {
-        render()
+//        render()
     }
     
     func check() {
@@ -71,7 +71,6 @@ public class Queuer {
     }
     
     public func add(request: RenderRequest, completion: @escaping (Result<Void, Error>) -> ()) {
-        print("Queuer Add")
         newQueue.append(Item(request: request, completion: completion))
         DispatchQueue.main.async {
             self.check()
