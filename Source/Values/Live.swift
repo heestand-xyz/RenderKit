@@ -12,7 +12,8 @@ public class LiveWrap: Identifiable {
     public var defaultValue: Floatable
     public var minimumValue: Floatable?
     public var maximumValue: Floatable?
-    
+    public var incrementValue: Floatable?
+
     public var node: NODE!
     
     public enum LiveType {
@@ -35,12 +36,14 @@ public class LiveWrap: Identifiable {
                 name: String,
                 value: Floatable,
                 min: Floatable? = nil,
-                max: Floatable? = nil) {
+                max: Floatable? = nil,
+                inc: Floatable? = nil) {
         self.type = type
         self.name = name
         defaultValue = value
         minimumValue = min
         maximumValue = max
+        incrementValue = inc
     }
     
 }
@@ -66,10 +69,10 @@ public class LiveWrap: Identifiable {
         }
     }
     
-    public init(wrappedValue: F, name: String, min: F? = nil, max: F? = nil, updateResolution: Bool = false) {
+    public init(wrappedValue: F, name: String, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
-        super.init(name: name, value: wrappedValue, min: min, max: max)
+        super.init(name: name, value: wrappedValue)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! F }
         setFloats = { self.wrappedValue = F(floats: $0) }
@@ -162,10 +165,10 @@ public class LiveWrap: Identifiable {
         }
     }
     
-    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat> = 0.0...1.0, updateResolution: Bool = false) {
+    public init(wrappedValue: CGFloat, name: String, range: ClosedRange<CGFloat> = 0.0...1.0, increment: CGFloat = 0.25, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
-        super.init(type: .float, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
+        super.init(type: .float, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, inc: increment)
         get = { self.wrappedValue }
         set = { self.wrappedValue = $0 as! CGFloat }
         setFloats = { self.wrappedValue = CGFloat(floats: $0) }
