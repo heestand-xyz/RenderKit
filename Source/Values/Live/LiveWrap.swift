@@ -45,7 +45,7 @@ public class LiveWrap: Identifiable {
                 inc: Floatable? = nil) {
         
         precondition(!typeName.contains(" "))
-        precondition(typeName.first!.isUppercase)
+        precondition(typeName.first!.isLowercase)
         
         func camelToTitleCased(_ string: String) -> String {
             if string.count <= 1 {
