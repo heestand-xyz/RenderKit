@@ -10,6 +10,7 @@ import CoreGraphics
 import MetalKit
 import VideoToolbox
 import Accelerate
+import Resolution
 
 public struct Texture {
     

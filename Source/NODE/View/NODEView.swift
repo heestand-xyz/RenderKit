@@ -10,6 +10,7 @@ import MetalKit
 #if canImport(SwiftUI)
 import SwiftUI
 #endif
+import Resolution
 
 #if os(macOS)
 @available(OSX 10.15, *)

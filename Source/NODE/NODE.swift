@@ -8,6 +8,7 @@
 import Metal
 import simd
 import CoreVideo
+import Resolution
 
 public protocol NODE {
     

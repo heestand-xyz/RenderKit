@@ -13,10 +13,11 @@ let package = Package(
         .library(name: "RenderKit", targets: ["RenderKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/heestand-xyz/PixelColor.git", from: "1.1.5"),
+        .package(url: "https://github.com/heestand-xyz/PixelColor", from: "1.1.5"),
+        .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.0"),
     ],
     targets: [
-        .target(name: "RenderKit", dependencies: ["PixelColor"], path: "Source"),
+        .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution"], path: "Source"),
         .testTarget(name: "RenderKitTests", dependencies: ["RenderKit"]),
     ]
 )

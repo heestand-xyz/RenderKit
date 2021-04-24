@@ -9,6 +9,7 @@
 import CoreGraphics
 import Metal
 import QuartzCore.CoreAnimation
+import Resolution
 
 public enum RenderThread {
     case none

@@ -8,6 +8,7 @@
 
 
 import MetalKit
+import Resolution
 
 public enum ViewInterpolation: String, CaseIterable {
     case linear

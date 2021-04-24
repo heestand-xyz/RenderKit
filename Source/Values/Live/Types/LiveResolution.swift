@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Resolution
 
 @propertyWrapper public class LiveResolution: LiveWrap {
     
