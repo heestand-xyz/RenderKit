@@ -21,6 +21,7 @@ public protocol NODE {
     var shaderName: String { get }
     
     var view: NODEView { get }
+    var additionalViews: [NODEView] { get set }
     
     var overrideBits: Bits? { get }
     
@@ -71,6 +72,8 @@ public protocol NODE {
     
     func isEqual(to node: NODE) -> Bool
     
+    func addView() -> NODEView
+    func removeView(_ view: NODEView)
 }
 
 extension NODE {

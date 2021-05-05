@@ -447,34 +447,81 @@ public class Engine: LoggerDelegate {
     public func renderNODE(_ node: NODE,
                            renderRequest: RenderRequest,
                            completion: @escaping (RenderResult) -> ()) {
+        
         logger.log(node: node, .info, .render, "Render NODE", loop: true)
+        
+        func wait(for currentDrawable: CAMetalDrawable, nodeView: NODEView, completion: @escaping () -> ()) {
+            nodeView.metalView.readyToRender = {
+                nodeView.metalView.readyToRender = nil
+                completion()
+            }
+            #if os(iOS) || os(tvOS)
+            nodeView.metalView.setNeedsDisplay()
+            #elseif os(macOS)
+            let size: CGSize = node.finalResolution.size
+            let frame: CGRect = CGRect(origin: .zero, size: size)
+            nodeView.metalView.setNeedsDisplay(frame)
+            #endif
+        }
+        
+        func renderAdditional(completion: @escaping () -> ()) {
+            var additionalViews: [NODEView] = node.additionalViews
+            func next() {
+                if additionalViews.isEmpty {
+                    completion()
+                } else {
+                    renderNextAdditional(nodeView: additionalViews.remove(at: 0))
+                }
+            }
+            func renderNextAdditional(nodeView: NODEView) {
+                guard let currentDrawable: CAMetalDrawable = nodeView.metalView.currentDrawable else {
+                    next()
+                    return
+                }
+                wait(for: currentDrawable, nodeView: nodeView) {
+                    self.renderNODE(node,
+                                    renderRequest: renderRequest,
+                                    with: currentDrawable,
+                                    completion: { _ in
+                                        next()
+                                    })
+                }
+            }
+            next()
+        }
+        
         frameLoopRenderThread.call {
             if frameLoopRenderThread == .main && node.view.superview != nil {
+                
                 guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
                     completion(.failure(RenderNODEError.currentDrawableNotFound))
                     return
                 }
-                node.view.metalView.readyToRender = {
-                    node.view.metalView.readyToRender = nil
+                
+                wait(for: currentDrawable, nodeView: node.view) {
                     self.renderNODE(node,
                                     renderRequest: renderRequest,
                                     with: currentDrawable,
-                                    completion: completion)
+                                    completion: { result in
+                                        renderAdditional {
+                                            completion(result)
+                                        }
+                                    })
                 }
-                #if os(iOS) || os(tvOS)
-                node.view.metalView.setNeedsDisplay()
-                #elseif os(macOS)
-                let size: CGSize = node.finalResolution.size
-                let frame: CGRect = CGRect(origin: .zero, size: size)
-                node.view.metalView.setNeedsDisplay(frame)
-                #endif
+                
             } else {
+                
                 self.renderNODE(node,
                                 renderRequest: renderRequest,
                                 with: nil,
-                                completion: completion)
+                                completion: { result in
+                                    renderAdditional {
+                                        completion(result)
+                                    }
+                                })
             }
         }
+        
     }
     private func renderNODE(_ node: NODE,
                             renderRequest: RenderRequest,

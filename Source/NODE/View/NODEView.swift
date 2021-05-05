@@ -44,7 +44,9 @@ public typealias _View = UIView
 #elseif os(macOS)
 public typealias _View = NSView
 #endif
-open class NODEView: _View {
+open class NODEView: _View, Identifiable {
+    
+    public let id: UUID
     
     let render: Render
     
@@ -75,6 +77,8 @@ open class NODEView: _View {
     #endif
     
     public init(with render: Render, pixelFormat: MTLPixelFormat) {
+        
+        id = UUID()
         
         self.render = render
         
@@ -215,6 +219,10 @@ open class NODEView: _View {
     
     public func destroy() {
         metalView.destroy()
+    }
+    
+    static func == (lhs: NODEView, rhs: NODEView) -> Bool {
+        lhs.id == rhs.id
     }
     
     required public init?(coder aDecoder: NSCoder) {
