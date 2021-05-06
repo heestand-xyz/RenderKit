@@ -732,8 +732,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     func didRender(node: NODE, renderTime: Double, success: Bool) {
         if success {
             logger.log(node: node, .info, .render, "NODE Did Render - Success", loop: true)
-            lastRenderTimes[node.id] = renderTime
             didRenderFPX()
+            lastRenderTimes[node.id] = renderTime
             frameCountSinceLastRender = 0
         } else {
             logger.log(node: node, .info, .render, "NODE Did Render - Failed", loop: true)
