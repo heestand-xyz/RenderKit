@@ -10,7 +10,7 @@
 import MetalKit
 import Resolution
 
-public enum ViewInterpolation: String, CaseIterable {
+public enum ViewInterpolation: String, Codable, CaseIterable {
     case linear
     case trilinear
     case nearest

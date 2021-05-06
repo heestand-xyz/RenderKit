@@ -87,7 +87,7 @@ public struct Vertex {
 
 // MARK: - Metal Uniform
 
-public class MetalUniform {
+public class MetalUniform: Codable {
     public var name: String
     public var value: CGFloat
     public init(name: String, value: CGFloat = 0.0) {
@@ -257,7 +257,7 @@ public enum BlendMode: String, Enumable {
 
 // MARK: - Interpolation
 
-public enum InterpolateMode: String, Codable, CaseIterable {
+public enum PixelInterpolation: String, Codable, CaseIterable {
     case nearest
     case linear
 //    #if !os(tvOS) && !targetEnvironment(simulator)
@@ -272,7 +272,7 @@ public enum InterpolateMode: String, Codable, CaseIterable {
 
 // MARK: - Extend
 
-public enum ExtendMode: String, Enumable {
+public enum ExtendMode: String, Codable, Enumable {
     case hold
     case zero
     case loop

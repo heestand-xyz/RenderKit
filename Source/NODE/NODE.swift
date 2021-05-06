@@ -10,7 +10,7 @@ import simd
 import CoreVideo
 import Resolution
 
-public protocol NODE {
+public protocol NODE: Codable {
     
     var id: UUID { get }
     var typeName: String { get }
