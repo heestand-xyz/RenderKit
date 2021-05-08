@@ -42,7 +42,7 @@ public protocol NODE: Codable {
     var finalResolution: Resolution { get }
 
     var vertexUniforms: [CGFloat] { get }
-    var shaderNeedsAspect: Bool { get }
+    var shaderNeedsResolution: Bool { get }
     
     var pipeline: MTLRenderPipelineState! { get set }
     var sampler: MTLSamplerState! { get set }

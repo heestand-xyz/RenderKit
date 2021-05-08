@@ -17,7 +17,9 @@ let package = Package(
         .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.0"),
     ],
     targets: [
-        .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution"], path: "Source"),
+        .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution"], path: "Source", resources: [
+            .process("Shaders/*")
+        ]),
         .testTarget(name: "RenderKitTests", dependencies: ["RenderKit"]),
     ]
 )

@@ -946,7 +946,9 @@ public class Engine: LoggerDelegate {
         if let mergerEffectNode = node as? NODEMergerEffect {
             unifroms.append(Float(mergerEffectNode.placement.index))
         }
-        if node.shaderNeedsAspect || template {
+        if node.shaderNeedsResolution || template {
+            unifroms.append(Float(width))
+            unifroms.append(Float(height))
             unifroms.append(Float(width) / Float(height))
         }
         if node is NODEGenerator {

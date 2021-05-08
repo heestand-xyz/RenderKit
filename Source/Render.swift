@@ -24,7 +24,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: Metal Lib
     
-    let metalLibURL: URL
+//    let metalLibURL: URL
     
     // MARK: Engine
     
@@ -123,15 +123,15 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     public var metalDevice: MTLDevice!
     public var commandQueue: MTLCommandQueue!
     public var textureCache: CVMetalTextureCache!
-    public var metalLibrary: MTLLibrary!
+//    public var metalLibrary: MTLLibrary!
     var quadVertecis: Vertices!
     var quadVertexShader: MTLFunction!
     
     // MARK: - Life Cycle
     
-    public init(metalLibURL: URL) {
+    public init(/*metalLibURL: URL*/) {
         
-        self.metalLibURL = metalLibURL
+//        self.metalLibURL = metalLibURL
         
         engine = Engine()
         queuer = Queuer()
@@ -154,7 +154,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         
         do {
             textureCache = try makeTextureCache()
-            metalLibrary = try loadMetalShaderLibrary()
+//            metalLibrary = try loadMetalShaderLibrary()
             quadVertecis = try makeQuadVertecis()
             quadVertexShader = try loadQuadVertexShader()
         } catch {
@@ -333,11 +333,11 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         case runtimeERROR(String)
     }
     
-    func loadMetalShaderLibrary() throws -> MTLLibrary {
-        do {
-            return try metalDevice.makeLibrary(filepath: metalLibURL.path)
-        } catch { throw error }
-    }
+//    func loadMetalShaderLibrary() throws -> MTLLibrary {
+//        do {
+//            return try metalDevice.makeLibrary(filepath: metalLibURL.path)
+//        } catch { throw error }
+//    }
     
     // MARK: Quad
     
@@ -369,6 +369,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     }
     
     func loadQuadVertexShader() throws -> MTLFunction {
+        let metalLibrary: MTLLibrary = try metalDevice.makeDefaultLibrary(bundle: Bundle.module)
         guard let vtxShader = metalLibrary.makeFunction(name: "quadVTX") else {
             throw QuadError.runtimeERROR("Quad Vertex Shader failed to make.")
         }
@@ -377,13 +378,13 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     // MARK: Vertex
     
-    public func makeVertexShader(_ vertexShaderName: String, with customMetalLibrary: MTLLibrary? = nil) throws -> MTLFunction {
-        let lib = (customMetalLibrary ?? metalLibrary)!
-        guard let vtxShader = lib.makeFunction(name: vertexShaderName) else {
-            throw QuadError.runtimeERROR("Custom Vertex Shader failed to make.")
-        }
-        return vtxShader
-    }
+//    public func makeVertexShader(_ vertexShaderName: String, with customMetalLibrary: MTLLibrary? = nil) throws -> MTLFunction {
+//        let lib = (customMetalLibrary ?? metalLibrary)!
+//        guard let vtxShader = lib.makeFunction(name: vertexShaderName) else {
+//            throw QuadError.runtimeERROR("Custom Vertex Shader failed to make.")
+//        }
+//        return vtxShader
+//    }
     
     // MARK: Cache
     
@@ -411,25 +412,26 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         case sampler(String)
         case metalCode
         case metalError(Error, MTLFunction)
+        case metalLibraryError
         case metalErrorError
         case notFound(String)
     }
     
     // MARK: Frag
     
-    public func makeFrag(_ shaderName: String, with customMetalLibrary: MTLLibrary? = nil, from node: NODE) throws -> MTLFunction {
-        let frag: MTLFunction
-        if let metalNode = node as? NODEMetal {
-            return try makeMetalFrag(shaderName, from: metalNode)
-        } else {
-            let lib = (customMetalLibrary ?? metalLibrary)!
-            guard let shaderFrag = lib.makeFunction(name: shaderName) else {
-                throw ShaderError.notFound(shaderName)
-            }
-            frag = shaderFrag
-        }
-        return frag
-    }
+//    public func makeFrag(_ shaderName: String, with customMetalLibrary: MTLLibrary? = nil, from node: NODE) throws -> MTLFunction {
+//        let frag: MTLFunction
+//        if let metalNode = node as? NODEMetal {
+//            return try makeMetalFrag(shaderName, from: metalNode)
+//        } else {
+//            let lib = (customMetalLibrary ?? metalLibrary)!
+//            guard let shaderFrag = lib.makeFunction(name: shaderName) else {
+//                throw ShaderError.notFound(shaderName)
+//            }
+//            frag = shaderFrag
+//        }
+//        return frag
+//    }
     
     public func makeMetalFrag(_ shaderName: String, from metalNode: NODEMetal) throws -> MTLFunction {
         let frag: MTLFunction
@@ -441,6 +443,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
             frag = metalFrag
         } catch {
             logger.log(.error, nil, "Metal error in \"\(shaderName)\".", e: error)
+            guard let metalLibrary: MTLLibrary = try? metalDevice.makeDefaultLibrary(bundle: Bundle.module) else {
+                throw ShaderError.metalLibraryError
+            }
             guard let errorFrag = metalLibrary.makeFunction(name: "error") else {
                 throw ShaderError.metalErrorError
             }
