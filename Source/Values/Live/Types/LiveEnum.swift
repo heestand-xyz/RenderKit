@@ -36,5 +36,35 @@ import Foundation
         set = { self.wrappedValue = E(rawIndex: $0 as! Int) }
         setFloats = { self.wrappedValue = E(rawIndex: Int(floats: $0)) }
     }
+    
+    public override func getLiveCodable() -> LiveCodable {
+        LiveCodableEnum(caseTypeName: wrappedValue.typeName, typeName: typeName)
+    }
 
+    public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        guard let liveCodableEnum: LiveCodableEnum = liveCodable as? LiveCodableEnum else { return }
+        wrappedValue = E(typeName: liveCodableEnum.caseTypeName) ?? E.allCases.first!
+    }
+
+}
+
+public class LiveCodableEnum: LiveCodable {
+    var caseTypeName: String
+    init(caseTypeName: String, typeName: String) {
+        self.caseTypeName = caseTypeName
+        super.init(typeName: typeName, type: .enum)
+    }
+    enum CodingKeys: CodingKey {
+        case caseTypeName
+    }
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        caseTypeName = try container.decode(String.self, forKey: .caseTypeName)
+        try super.init(from: decoder)
+    }
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(caseTypeName, forKey: .caseTypeName)
+        try super.encode(to: encoder)
+    }
 }

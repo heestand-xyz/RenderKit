@@ -8,6 +8,39 @@
 import Foundation
 import CoreGraphics
 
+public enum LiveType: String, Codable {
+    
+    case bool
+    case int
+    case float
+    case point
+    case size
+    case color
+    case resolution
+    case `enum`
+    
+    public var liveCodableType: LiveCodable.Type {
+        switch self {
+        case .bool:
+            return LiveCodableBool.self
+        case .int:
+            return LiveCodableInt.self
+        case .float:
+            return LiveCodableFloat.self
+        case .point:
+            return LiveCodablePoint.self
+        case .size:
+            return LiveCodableSize.self
+        case .color:
+            return LiveCodableColor.self
+        case .resolution:
+            return LiveCodableResolution.self
+        case .enum:
+            return LiveCodableEnum.self
+        }
+    }
+}
+
 public class LiveWrap: Identifiable {
     
     public var name: String
@@ -20,23 +53,13 @@ public class LiveWrap: Identifiable {
 
     public var node: NODE!
     
-    public enum LiveType {
-        case bool
-        case int
-        case float
-        case point
-        case size
-        case color
-        case resolution
-        case enumable
-    }
-    public let type: LiveType?
+    public let type: LiveType
     
     public var get: (() -> (Floatable))!
     public var set: ((Floatable) -> ())!
     public var setFloats: (([CGFloat]) -> ())!
 
-    public init(type: LiveType? = nil,
+    public init(type: LiveType,
                 typeName: String,
                 name: String? = nil,
                 value: Floatable,
@@ -73,5 +96,20 @@ public class LiveWrap: Identifiable {
         incrementValue = inc
         
     }
+    
+    public func getLiveCodable() -> LiveCodable {
+        LiveCodable(typeName: typeName, type: type)
+    }
+    
+    public func setLiveCodable(_ liveCodable: LiveCodable) {}
         
+}
+
+public class LiveCodable: Codable {
+    public var typeName: String
+    public let type: LiveType
+    init(typeName: String, type: LiveType) {
+        self.typeName = typeName
+        self.type = type
+    }
 }

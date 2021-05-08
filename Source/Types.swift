@@ -111,14 +111,15 @@ public enum Placement: String, Enumable {
         case .center: return 3
         }
     }
+    public var typeName: String { rawValue }
     public var name: String {
-            switch self {
-            case .fit: return "Fit"
-            case .fill: return "Fill"
-            case .center: return "Center"
-            case .stretch: return "Stretch"
-            }
+        switch self {
+        case .fit: return "Fit"
+        case .fill: return "Fill"
+        case .center: return "Center"
+        case .stretch: return "Stretch"
         }
+    }
 }
 
 // MARK: - Blend
@@ -230,28 +231,30 @@ public enum BlendMode: String, Enumable {
         }
     }
     
+    public var typeName: String { rawValue }
+    
     public var name: String {
-            switch self {
-            case .over: return "Over"
-            case .under: return "Under"
-            case .add: return "Add"
-            case .addWithAlpha: return "Add with Alpha"
-            case .multiply: return "Multiply"
-            case .difference: return "Difference"
-            case .subtract: return "Subtract"
-            case .subtractWithAlpha: return "Subtract with Alpha"
-            case .maximum: return "Maximum"
-            case .minimum: return "Minimum"
-            case .gamma: return "Gamma"
-            case .power: return "Power"
-            case .divide: return "Divide"
-            case .average: return "Average"
-            case .cosine: return "Cosine"
-            case .inside: return "Inside"
-            case .outside: return "Outside"
-            case .exclusiveOr: return "Exclusive Or"
-            }
+        switch self {
+        case .over: return "Over"
+        case .under: return "Under"
+        case .add: return "Add"
+        case .addWithAlpha: return "Add with Alpha"
+        case .multiply: return "Multiply"
+        case .difference: return "Difference"
+        case .subtract: return "Subtract"
+        case .subtractWithAlpha: return "Subtract with Alpha"
+        case .maximum: return "Maximum"
+        case .minimum: return "Minimum"
+        case .gamma: return "Gamma"
+        case .power: return "Power"
+        case .divide: return "Divide"
+        case .average: return "Average"
+        case .cosine: return "Cosine"
+        case .inside: return "Inside"
+        case .outside: return "Outside"
+        case .exclusiveOr: return "Exclusive Or"
         }
+    }
     
 }
 
@@ -311,14 +314,15 @@ public enum ExtendMode: String, Codable, Enumable {
         case .mirror: return 3
         }
     }
+    public var typeName: String { rawValue }
     public var name: String {
-            switch self {
-            case .hold: return "Hold"
-            case .zero: return "Zero"
-            case .loop: return "Loop"
-            case .mirror: return "Mirror"
-            }
+        switch self {
+        case .hold: return "Hold"
+        case .zero: return "Zero"
+        case .loop: return "Loop"
+        case .mirror: return "Mirror"
         }
+    }
 }
 
 // MARK: - Tile Index

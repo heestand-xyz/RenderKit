@@ -10,6 +10,7 @@ import CoreGraphics
 public protocol Enumable: CaseIterable, Floatable {
     var index: Int { get }
     var name: String { get }
+    var typeName: String { get }
 }
 
 public extension Enumable {
@@ -36,8 +37,19 @@ public extension Enumable {
     static var names: [String] {
         Self.allCases.map(\.name)
     }
-    init(name: String) {
-        self = Self.allCases.first(where: { $0.name == name }) ?? Self.allCases.first!
+    init?(name: String) {
+        guard let enumCase = Self.allCases.first(where: { $0.name == name }) else { return nil }
+        self = enumCase
+    }
+}
+
+public extension Enumable {
+    static var typeNames: [String] {
+        Self.allCases.map(\.typeName)
+    }
+    init?(typeName: String) {
+        guard let enumCase = Self.allCases.first(where: { $0.typeName == typeName }) else { return nil }
+        self = enumCase
     }
 }
 

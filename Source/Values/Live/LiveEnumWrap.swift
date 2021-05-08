@@ -13,6 +13,12 @@ public class LiveEnumWrap: LiveWrap {
     public var dynamicTypeNames: [String] {
         names.map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
     }
+    public var currentCaseDynamicTypeName: String {
+        let rawIndex: Int = self.get() as! Int
+        guard let index: Int = rawIndices.firstIndex(of: rawIndex) else { return "" }
+        guard index < dynamicTypeNames.count else { return "" }
+        return dynamicTypeNames[index]
+    }
     public var defaultCaseDynamicTypeName: String {
         let rawIndex: Int = defaultValue as! Int
         guard let index: Int = rawIndices.firstIndex(of: rawIndex) else { return "" }
@@ -22,7 +28,7 @@ public class LiveEnumWrap: LiveWrap {
     public init(_ typeName: String, name: String? = nil, rawIndex: Int, rawIndices: [Int], names: [String]) {
         self.rawIndices = rawIndices
         self.names = names
-        super.init(type: .enumable, typeName: typeName, name: name, value: rawIndex)
+        super.init(type: .enum, typeName: typeName, name: name, value: rawIndex)
     }
     public func setCase(typeName: String) {
         guard let index: Int = dynamicTypeNames.firstIndex(where: { $0 == typeName }) else { return }

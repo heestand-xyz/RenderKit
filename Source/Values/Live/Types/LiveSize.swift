@@ -27,5 +27,35 @@ import CoreGraphics
         set = { self.wrappedValue = $0 as! CGSize }
         setFloats = { self.wrappedValue = CGSize(floats: $0) }
     }
+    
+    public override func getLiveCodable() -> LiveCodable {
+        LiveCodableSize(size: wrappedValue, typeName: typeName)
+    }
+    
+    public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        guard let liveCodableSize: LiveCodableSize = liveCodable as? LiveCodableSize else { return }
+        wrappedValue = liveCodableSize.size
+    }
+    
+}
 
+public class LiveCodableSize: LiveCodable {
+    var size: CGSize
+    init(size: CGSize, typeName: String) {
+        self.size = size
+        super.init(typeName: typeName, type: .size)
+    }
+    enum CodingKeys: CodingKey {
+        case size
+    }
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        size = try container.decode(CGSize.self, forKey: .size)
+        try super.init(from: decoder)
+    }
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(size, forKey: .size)
+        try super.encode(to: encoder)
+    }
 }
