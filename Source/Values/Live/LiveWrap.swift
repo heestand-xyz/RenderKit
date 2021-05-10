@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreGraphics
+import Combine
 
 public enum LiveType: String, Codable {
     
@@ -58,6 +59,8 @@ public class LiveWrap: Identifiable {
     public var get: (() -> (Floatable))!
     public var set: ((Floatable) -> ())!
     public var setFloats: (([CGFloat]) -> ())!
+    
+    public lazy var currentValueSubject: CurrentValueSubject<Floatable, Never> = .init(defaultValue)
 
     public init(type: LiveType,
                 typeName: String,
@@ -111,5 +114,12 @@ public class LiveCodable: Codable {
     init(typeName: String, type: LiveType) {
         self.typeName = typeName
         self.type = type
+    }
+}
+
+extension LiveWrap: Equatable {
+    
+    public static func == (lhs: LiveWrap, rhs: LiveWrap) -> Bool {
+        lhs.typeName == rhs.typeName
     }
 }

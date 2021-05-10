@@ -25,6 +25,7 @@ import Foundation
             } else {
                 node.render()
             }
+            currentValueSubject.send(wrappedValue)
         }
     }
     

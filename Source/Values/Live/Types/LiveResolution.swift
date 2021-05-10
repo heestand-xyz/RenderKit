@@ -20,6 +20,7 @@ import Resolution
             node.applyResolution {
                 node.render()
             }
+            currentValueSubject.send(wrappedValue)
         }
     }
     

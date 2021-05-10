@@ -17,6 +17,7 @@ import CoreGraphics
                 return
             }
             node.render()
+            currentValueSubject.send(wrappedValue)
         }
     }
     

@@ -59,7 +59,20 @@ open class NODEView: _View, Identifiable {
     }
     public var resolutionSize: CGSize?
 
-    public var boundsReady: Bool { return bounds.width > 0 }
+    public var boundsReady: Bool {
+        if Thread.isMainThread {
+            return bounds.width > 0
+        }
+        var boundsReady: Bool = false
+        let group = DispatchGroup()
+        group.enter()
+        DispatchQueue.main.async {
+            boundsReady = self.bounds.width > 0
+            group.leave()
+        }
+        group.wait()
+        return boundsReady
+    }
 
     /// Defaults to `.aspectFit`.
     public var placement: Placement = .fit { didSet { layoutPlacement() } }

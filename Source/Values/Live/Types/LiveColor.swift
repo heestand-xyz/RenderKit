@@ -17,6 +17,7 @@ import PixelColor
                 return
             }
             node.render()
+            currentValueSubject.send(wrappedValue)
         }
     }
     
