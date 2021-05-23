@@ -55,13 +55,13 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public var finalNode: NODE?
     
-    public var linkedNodes: [NODE] = []
+    public var linkedNodes: [WeakNODE] = []
     
     /// Render Time is in Milliseconds
     public var lastRenderTimes: [UUID: Double] = [:]
 
     public func linkIndex(of node: NODE) -> Int? {
-        for (i, linkedNode) in linkedNodes.enumerated() {
+        for (i, linkedNode) in linkedNodes.compactMap(\.node).enumerated() {
             if linkedNode.isEqual(to: node) {
                 return i
             }
@@ -267,9 +267,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 
     public func listenToFramesUntil(callback: @escaping () -> (ListenState)) {
         let id = UUID()
-        frameCallbacks.append((id: id, callback: {
+        frameCallbacks.append((id: id, callback: { [weak self] in
             if callback() == .done {
-                self.unlistenToFrames(for: id)
+                self?.unlistenToFrames(for: id)
             }
         }))
     }
@@ -297,7 +297,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public func delay(frames: Int, done: @escaping () -> ()) {
         let startFrameIndex = frameIndex
-        listenToFramesUntil(callback: {
+        listenToFramesUntil(callback: { [weak self] in
+            guard let self = self else { return .done }
             if self.frameIndex >= startFrameIndex + frames {
                 done()
                 return .done
@@ -311,12 +312,12 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     
     public func add(node: NODE) {
         logger.log(node: node, .detail, .connection, "Linked Node \"\(node.name)\"")
-        linkedNodes.append(node)
+        linkedNodes.append(WeakNODE(node))
     }
     
     public func remove(node: NODE) {
-        for (i, linkedNode) in linkedNodes.enumerated() {
-            if linkedNode.isEqual(to: node) {
+        for (i, linkedNode) in linkedNodes.map(\.node).enumerated() {
+            if linkedNode?.isEqual(to: node) == true {
                 lastRenderTimes.removeValue(forKey: node.id)
                 linkedNodes.remove(at: i)
                 break
@@ -622,7 +623,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
 
 extension Render: QueuerDelegate {
     func queuerNode(id: UUID) -> NODE? {
-        linkedNodes.first { node in
+        linkedNodes.compactMap(\.node).first { node in
             node.id == id
         }
     }

@@ -24,9 +24,9 @@ import PixelColor
     public init(wrappedValue: PixelColor, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue
         super.init(type: .color, typeName: typeName, name: name, value: wrappedValue)
-        get = { self.wrappedValue }
-        set = { self.wrappedValue = $0 as! PixelColor }
-        setFloats = { self.wrappedValue = PixelColor(floats: $0) }
+        get = { [weak self] in self?.wrappedValue ?? .clear }
+        set = { [weak self] in self?.wrappedValue = $0 as! PixelColor }
+        setFloats = { [weak self] in self?.wrappedValue = PixelColor(floats: $0) }
     }
     
     public override func getLiveCodable() -> LiveCodable {

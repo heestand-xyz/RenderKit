@@ -17,8 +17,8 @@ import Resolution
                 print("RenderKit Live property wrapper not linked to node.")
                 return
             }
-            node.applyResolution {
-                node.render()
+            node.applyResolution { [weak node] in
+                node?.render()
             }
             currentValueSubject.send(wrappedValue)
         }
@@ -27,9 +27,9 @@ import Resolution
     public init(wrappedValue: Resolution, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue
         super.init(type: .resolution, typeName: typeName, name: name, value: wrappedValue, min: 1, max: 3_840)
-        get = { self.wrappedValue }
-        set = { self.wrappedValue = $0 as! Resolution }
-        setFloats = { self.wrappedValue = Resolution(floats: $0) }
+        get = { [weak self] in self?.wrappedValue ?? .square(-1) }
+        set = { [weak self] in self?.wrappedValue = $0 as! Resolution }
+        setFloats = { [weak self] in self?.wrappedValue = Resolution(floats: $0) }
     }
     
     public override func getLiveCodable() -> LiveCodable {

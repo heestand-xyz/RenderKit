@@ -66,9 +66,10 @@ open class NODEView: _View, Identifiable {
         var boundsReady: Bool = false
         let group = DispatchGroup()
         group.enter()
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            defer { group.leave() }
+            guard let self = self else { return }
             boundsReady = self.bounds.width > 0
-            group.leave()
         }
         group.wait()
         return boundsReady
@@ -218,12 +219,12 @@ open class NODEView: _View, Identifiable {
     #endif
     
     func checkAutoRes() {
-        for node in render.linkedNodes {
+        for node in render.linkedNodes.compactMap(\.node) {
             if let nodeRes = node as? NODEResolution {
                 // TODO: Check if not auto
                 if nodeRes.resolution.size != resolutionSize {
-                    node.applyResolution {
-                        node.render()
+                    node.applyResolution { [weak node] in
+                        node?.render()
                     }
                 }
             }

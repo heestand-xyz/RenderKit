@@ -19,8 +19,8 @@ import CoreGraphics
                 return
             }
             if updateResolution {
-                node.applyResolution {
-                    node.render()
+                node.applyResolution { [weak node] in
+                    node?.render()
                 }
             } else {
                 node.render()
@@ -33,9 +33,9 @@ import CoreGraphics
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
         super.init(type: .float, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, inc: increment)
-        get = { self.wrappedValue }
-        set = { self.wrappedValue = $0 as! CGFloat }
-        setFloats = { self.wrappedValue = CGFloat(floats: $0) }
+        get = { [weak self] in self?.wrappedValue ?? -1.0 }
+        set = { [weak self] in self?.wrappedValue = $0 as! CGFloat }
+        setFloats = { [weak self] in self?.wrappedValue = CGFloat(floats: $0) }
     }
     
     public override func getLiveCodable() -> LiveCodable {

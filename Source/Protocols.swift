@@ -11,18 +11,18 @@ import Metal
 //    func pixelFrameLoop()
 //}
 
-public protocol ManualRenderDelegate {
+public protocol ManualRenderDelegate: AnyObject {
     func pixelNeedsManualRender()
 }
 
-public protocol CustomRenderDelegate {
+public protocol CustomRenderDelegate: AnyObject {
     func customRender(_ texture: MTLTexture, with commandBuffer: MTLCommandBuffer) -> MTLTexture?
 }
 
-public protocol CustomMergerRenderDelegate {
+public protocol CustomMergerRenderDelegate: AnyObject {
     func customRender(a textureA: MTLTexture, b textureB: MTLTexture, with commandBuffer: MTLCommandBuffer) -> MTLTexture?
 }
 
-public protocol CustomGeometryDelegate {
+public protocol CustomGeometryDelegate: AnyObject {
     func customVertices() -> Vertices?
 }

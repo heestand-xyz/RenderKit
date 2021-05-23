@@ -72,8 +72,8 @@ public class Queuer {
     
     public func add(request: RenderRequest, completion: @escaping (Result<Void, Error>) -> ()) {
         newQueue.append(Item(request: request, completion: completion))
-        DispatchQueue.main.async {
-            self.check()
+        DispatchQueue.main.async { [weak self] in
+            self?.check()
         }
     }
 

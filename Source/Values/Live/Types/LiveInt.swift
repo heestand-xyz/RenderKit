@@ -19,8 +19,8 @@ import Foundation
                 return
             }
             if updateResolution {
-                node.applyResolution {
-                    node.render()
+                node.applyResolution { [weak node] in
+                    node?.render()
                 }
             } else {
                 node.render()
@@ -33,9 +33,9 @@ import Foundation
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
         super.init(type: .int, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
-        get = { self.wrappedValue }
-        set = { self.wrappedValue = $0 as! Int }
-        setFloats = { self.wrappedValue = Int(floats: $0) }
+        get = { [weak self] in self?.wrappedValue ?? -1 }
+        set = { [weak self] in self?.wrappedValue = $0 as! Int }
+        setFloats = { [weak self] in self?.wrappedValue = Int(floats: $0) }
     }
     
     public override func getLiveCodable() -> LiveCodable {

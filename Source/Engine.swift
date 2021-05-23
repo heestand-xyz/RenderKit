@@ -56,7 +56,7 @@ public protocol EngineDelegate {
 }
 
 protocol EngineInternalDelegate {
-    var linkedNodes: [NODE] { get set }
+    var linkedNodes: [WeakNODE] { get set }
     var commandQueue: MTLCommandQueue! { get set }
     var metalDevice: MTLDevice! { get set }
     var bits: Bits { get set }
@@ -478,19 +478,21 @@ public class Engine: LoggerDelegate {
                     next()
                     return
                 }
-                wait(for: currentDrawable, nodeView: nodeView) {
-                    self.renderNODE(node,
-                                    renderRequest: renderRequest,
-                                    with: currentDrawable,
-                                    completion: { _ in
+                wait(for: currentDrawable, nodeView: nodeView) { [weak self] in
+                    self?.renderNODE(node,
+                                     renderRequest: renderRequest,
+                                     with: currentDrawable,
+                                     completion: { _ in
                                         next()
-                                    })
+                                     })
                 }
             }
             next()
         }
         
-        frameLoopRenderThread.call {
+        frameLoopRenderThread.call { [weak self, weak node] in
+            guard let self = self else { return }
+            guard let node = node else { return }
             if frameLoopRenderThread == .main && node.view.superview != nil {
                 
                 guard let currentDrawable: CAMetalDrawable = node.view.metalView.currentDrawable else {
@@ -498,15 +500,15 @@ public class Engine: LoggerDelegate {
                     return
                 }
                 
-                wait(for: currentDrawable, nodeView: node.view) {
-                    self.renderNODE(node,
-                                    renderRequest: renderRequest,
-                                    with: currentDrawable,
-                                    completion: { result in
+                wait(for: currentDrawable, nodeView: node.view) { [weak self] in
+                    self?.renderNODE(node,
+                                     renderRequest: renderRequest,
+                                     with: currentDrawable,
+                                     completion: { result in
                                         renderAdditional {
                                             completion(result)
                                         }
-                                    })
+                                     })
                 }
                 
             } else {
@@ -528,7 +530,6 @@ public class Engine: LoggerDelegate {
                             with currentDrawable: CAMetalDrawable? = nil,
                             force: Bool = false,
                             completion: @escaping (RenderResult) -> ()) {
-        var node = node
         guard !node.bypass || node is NODEGenerator else {
             logger.log(node: node, .debug, .render, "Render bypassed.", loop: true)
             completion(.failure(RenderNODEError.bypassed))
@@ -552,21 +553,21 @@ public class Engine: LoggerDelegate {
             internalDelegate?.didSetup(node: node, success: false)
             completion(.failure(error))
         }
-        func renderDone() {
+        func renderDone(node: NODE) {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
             let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
             self.logger.log(node: node, .info, .render, "Rendered Done at \(node.finalResolution) \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
             node.renderInProgress = false
             internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: true)
         }
-        func renderFailed(with error: Error) {
+        func renderFailed(with error: Error, node: NODE) {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
             let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
             var ioafMsg: String? = nil
             let err = error.localizedDescription
             if err.contains("IOAF") {
-                frameLoopRenderThread.call {
-                    self.metalErrorCodeCallback?(.IOAF(error))
+                frameLoopRenderThread.call { [weak self] in
+                    self?.metalErrorCodeCallback?(.IOAF(error))
                 }
                 ioafMsg = "IOAF. Sorry, this is an Metal GPU error, usually seen on older devices. Error: \(err)"
             }
@@ -606,8 +607,10 @@ public class Engine: LoggerDelegate {
             try self.render(node,
                             with: currentDrawable,
                             force: force,
-                            completed: { texture in
-                                renderDone()
+                            completed: { [weak self, weak node] texture in
+                                guard let self = self else { return }
+                                guard let node = node else { return }
+                                renderDone(node: node)
                                 let finalFrameIndex: Int = self.internalDelegate.engineFrameIndex()
                                 let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
                                 let renderResponse = RenderResponse(id: renderRequest.id,
@@ -617,8 +620,9 @@ public class Engine: LoggerDelegate {
                                                                     texture: texture)
                                 let renderPack = RenderPack(request: renderRequest, response: renderResponse)
                                 completion(.success(renderPack))
-                            }, failed: { error in
-                                renderFailed(with: error)
+                            }, failed: { [weak node] error in
+                                guard let node = node else { return }
+                                renderFailed(with: error, node: node)
                             })
             setupDone()
         } catch {
@@ -1321,8 +1325,10 @@ public class Engine: LoggerDelegate {
         
         // MARK: Render
         
-        commandBuffer.addCompletedHandler({ _ in
-                        
+        commandBuffer.addCompletedHandler({ [weak self, weak node] _ in
+            guard let self = self else { return }
+            guard let node = node else { return }
+
             if let error = commandBuffer.error {
                 failed(error)
                 return

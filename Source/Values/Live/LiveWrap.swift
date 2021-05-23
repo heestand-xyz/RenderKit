@@ -52,7 +52,7 @@ public class LiveWrap: Identifiable {
     public var maximumValue: Floatable?
     public var incrementValue: Floatable?
 
-    public var node: NODE!
+    public weak var node: NODE?
     
     public let type: LiveType
     

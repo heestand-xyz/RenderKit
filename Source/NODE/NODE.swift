@@ -10,7 +10,7 @@ import simd
 import CoreVideo
 import Resolution
 
-public protocol NODE: Codable {
+public protocol NODE: AnyObject, Codable {
     
     var id: UUID { get }
     var typeName: String { get }
@@ -87,6 +87,13 @@ extension NODE {
         return false
     }
     
+}
+
+public struct WeakNODE {
+    public weak var node: NODE?
+    public init(_ node: NODE) {
+        self.node = node
+    }
 }
 
 // MARK: - 3D

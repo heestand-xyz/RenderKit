@@ -24,9 +24,9 @@ import CoreGraphics
     public init(wrappedValue: CGPoint, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue
         super.init(type: .point, typeName: typeName, name: name, value: wrappedValue, min: CGPoint(x: -1.0, y: -1.0), max: CGPoint(x: 1.0, y: 1.0))
-        get = { self.wrappedValue }
-        set = { self.wrappedValue = $0 as! CGPoint }
-        setFloats = { self.wrappedValue = CGPoint(floats: $0) }
+        get = { [weak self] in self?.wrappedValue ?? CGPoint(x: -1.0, y: -1.0) }
+        set = { [weak self] in self?.wrappedValue = $0 as! CGPoint }
+        setFloats = { [weak self] in self?.wrappedValue = CGPoint(floats: $0) }
     }
     
     public override func getLiveCodable() -> LiveCodable {
