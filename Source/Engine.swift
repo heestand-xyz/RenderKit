@@ -940,43 +940,43 @@ public class Engine: LoggerDelegate {
         
         // MARK: Uniforms
         
-        var unifroms: [Float] = []
+        var uniforms: [Float] = []
         if !template {
-            unifroms = node.uniforms.map { uniform -> Float in return Float(uniform) }
+            uniforms = node.uniforms.map { uniform -> Float in return Float(uniform) }
         }
         if let genNode = node as? NODEGenerator, !template {
-            unifroms.append(genNode.premultiply ? 1 : 0)
+            uniforms.append(genNode.premultiply ? 1 : 0)
         }
         if let mergerEffectNode = node as? NODEMergerEffect {
-            unifroms.append(Float(mergerEffectNode.placement.index))
+            uniforms.append(Float(mergerEffectNode.placement.index))
         }
         if node.shaderNeedsResolution || template {
-            unifroms.append(Float(width))
-            unifroms.append(Float(height))
-            unifroms.append(Float(width) / Float(height))
+            uniforms.append(Float(width))
+            uniforms.append(Float(height))
+            uniforms.append(Float(width) / Float(height))
         }
         if node is NODEGenerator {
-            unifroms.append(tileIndex != nil ? 1 : 0)
-            unifroms.append(Float(tileIndex?.x ?? 0))
-            unifroms.append(Float(tileIndex?.y ?? 0))
+            uniforms.append(tileIndex != nil ? 1 : 0)
+            uniforms.append(Float(tileIndex?.x ?? 0))
+            uniforms.append(Float(tileIndex?.y ?? 0))
             if node is NODE3D {
-                unifroms.append(Float(tileIndex?.z ?? 0))
+                uniforms.append(Float(tileIndex?.z ?? 0))
             }
-            unifroms.append(Float(tileCountX))
-            unifroms.append(Float(tileCountY))
+            uniforms.append(Float(tileCountX))
+            uniforms.append(Float(tileCountY))
             if node is NODE3D {
-                unifroms.append(Float(tileCountZ))
+                uniforms.append(Float(tileCountZ))
             }
-            unifroms.append(Float(tileFraction))
+            uniforms.append(Float(tileFraction))
         }
-        if !unifroms.isEmpty {
-            let size = MemoryLayout<Float>.size * unifroms.count
+        if !uniforms.isEmpty {
+            let size = MemoryLayout<Float>.size * uniforms.count
             guard let uniformsBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformsBuffer.contents()
-            memcpy(bufferPointer, &unifroms, size)
+            memcpy(bufferPointer, &uniforms, size)
             if node is NODE3D {
                 (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsBuffer, offset: 0, index: 0)
             } else {
