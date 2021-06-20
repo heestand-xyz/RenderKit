@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/heestand-xyz/PixelColor",
         "state": {
           "branch": null,
-          "revision": "e280589903814ee7fefdda6cf308ddb820ea1595",
-          "version": "1.1.5"
+          "revision": "f2408f208c541a3463ced1a288235683dcf73ca8",
+          "version": "1.2.2"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/heestand-xyz/Resolution",
         "state": {
           "branch": null,
-          "revision": "3c3dc0cde53f26518b8de90be8df55a4f67bb0e5",
-          "version": "1.0.0"
+          "revision": "587be77040ec27fd0eb903ae189cd3b89518eea4",
+          "version": "1.0.2"
         }
       }
     ]
