@@ -75,8 +75,9 @@ public class Engine: LoggerDelegate {
     public var deleagte: EngineDelegate?
     var internalDelegate: EngineInternalDelegate!
     
-//    public enum RenderMode {
-//        case manual
+    public enum RenderMode {
+        case manual
+        case auto
 //        case manualTiles
 //        case frameTree
 //        case frameLoop
@@ -94,8 +95,8 @@ public class Engine: LoggerDelegate {
 //        public var isTile: Bool {
 //            [.manualTiles, .frameLoopTiles].contains(self)
 //        }
-//    }
-//    public var renderMode: Engine.RenderMode = .frameLoop
+    }
+    public var renderMode: Engine.RenderMode = .auto
     
     var frameTreeRendering: Bool = false
     
