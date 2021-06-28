@@ -12,6 +12,8 @@ import Resolution
 
 public protocol NODE: AnyObject, Codable {
     
+    var renderObject: Render { get }
+    
     var id: UUID { get }
     var typeName: String { get }
     var name: String { get }
@@ -35,6 +37,7 @@ public protocol NODE: AnyObject, Codable {
     var uniformIndexArrayMaxLimit: Int? { get }
     
     var renderInProgress: Bool { get set }
+    var renderQueue: [RenderRequest] { get set }
     var renderIndex: Int { get set }
     var bypass: Bool { get set }
     var contentLoaded: Bool? { get set }
@@ -65,15 +68,15 @@ public protocol NODE: AnyObject, Codable {
     var texture: MTLTexture? { get set }
     
     func applyResolution(applied: @escaping () -> ())
-//    func render()
-    func render()
-//    func didRender(texture: MTLTexture, force: Bool)
     func destroy()
     
     func isEqual(to node: NODE) -> Bool
     
     func addView() -> NODEView
     func removeView(_ view: NODEView)
+    
+    func render()
+    func didRender(renderPack: RenderPack)
 }
 
 extension NODE {
