@@ -16,8 +16,10 @@ public enum LiveType: String, Codable {
     case float
     case point
     case size
+    case vector
     case color
     case resolution
+    case resolution3d
     case `enum`
     
     public var liveCodableType: LiveCodable.Type {
@@ -32,10 +34,14 @@ public enum LiveType: String, Codable {
             return LiveCodablePoint.self
         case .size:
             return LiveCodableSize.self
+        case .vector:
+            return LiveCodableVector.self
         case .color:
             return LiveCodableColor.self
         case .resolution:
             return LiveCodableResolution.self
+        case .resolution3d:
+            return LiveCodableResolution3D.self
         case .enum:
             return LiveCodableEnum.self
         }

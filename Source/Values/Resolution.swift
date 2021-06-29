@@ -22,3 +22,4 @@ extension Resolution {
 }
 
 extension Resolution: Floatable {}
+extension Resolution3D: Floatable {}

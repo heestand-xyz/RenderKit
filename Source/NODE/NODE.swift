@@ -9,6 +9,7 @@ import Metal
 import simd
 import CoreVideo
 import Resolution
+import Combine
 
 public protocol NODE: AnyObject, Codable {
     
@@ -22,7 +23,7 @@ public protocol NODE: AnyObject, Codable {
     
     var shaderName: String { get }
     
-    var view: NODEView { get }
+    var view: NODEView! { get }
     var additionalViews: [NODEView] { get set }
     
     var overrideBits: Bits? { get }
@@ -131,7 +132,11 @@ public protocol NODECustom: NODEContent {
 
 // MARK: - Effects
 
-public protocol NODEEffect: NODE {}
+public protocol NODEEffect: NODE, NODEInIO, NODEOutIO {
+    var renderPromisePublisher: PassthroughSubject<RenderRequest, Never> { get }
+    var renderPublisher: PassthroughSubject<RenderPack, Never> { get }
+    var cancellableIns: [AnyCancellable] { get set }
+}
 
 public protocol NODESingleEffect: NODEEffect {}
 public protocol NODEMergerEffect: NODEEffect {
