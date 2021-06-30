@@ -557,7 +557,11 @@ public class Engine: LoggerDelegate {
         func renderDone(node: NODE) {
             let renderTime = CFAbsoluteTimeGetCurrent() - renderStartTime
             let renderTimeMs = Double(Int(round(renderTime * 10_000))) / 10
-            self.logger.log(node: node, .info, .render, "Rendered Done at \(node.finalResolution) \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
+            var finalResolutionText: String = "\(node.finalResolution)"
+            if let node3d = node as? NODE3D {
+                finalResolutionText = "\(node3d.finalResolution3d)"
+            }
+            self.logger.log(node: node, .info, .render, "Render Done at \(finalResolutionText) \(force ? "Forced. " : "")[\(renderTimeMs)ms]", loop: true)
             node.renderInProgress = false
             internalDelegate.didRender(node: node, renderTime: renderTimeMs, success: true)
         }
@@ -1283,22 +1287,22 @@ public class Engine: LoggerDelegate {
         
         // MARK: Threads
         
-//        if let node3d = node as? NODE3D {
-//            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
-//            let width = node3d.pipeline3d.threadExecutionWidth
-//            let w = width
-//            let h = max / w
-//            let l = 1
+        if let node3d = node as? NODE3D {
+            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
+            let width = node3d.pipeline3d.threadExecutionWidth
+            let w = width
+            let h = max / w
+            let l = 1
 //            let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: l)
 //            let threadsPerGrid = MTLSize(width: Int(ceil(CGFloat(width) / CGFloat(w))),
 //                                         height: Int(ceil(CGFloat(height) / CGFloat(h))),
 //                                         depth: Int(ceil(CGFloat(depth) / CGFloat(l))))
-//            let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
-//            let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
-//            #if !os(tvOS)
-//            (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
-//            #endif
-//        }
+            let threadsPerThreadgroup = MTLSize(width: 8, height: 8, depth: 8)
+            let threadsPerGrid = MTLSize(width: width, height: height, depth: depth)
+            #if !os(tvOS)
+            (commandEncoder as! MTLComputeCommandEncoder).dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+            #endif
+        }
         
         // MARK: Encode
         

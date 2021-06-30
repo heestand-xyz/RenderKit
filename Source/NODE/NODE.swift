@@ -107,6 +107,7 @@ public struct WeakNODE {
 
 public protocol NODE3D: NODE {
     var renderedResolution3d: Resolution3D { get }
+    var finalResolution3d: Resolution3D { get set }
     var pipeline3d: MTLComputePipelineState! { get set }
 }
 

@@ -104,13 +104,13 @@ public class Logger {
     public func logAll(padding: Bool = false, limit: Bool = false) {
         level = .detail
         loopLimitActive = limit
+        source = true
         self.padding = padding
     }
     
     public func logDebug(padding: Bool = false, limit: Bool = false) {
         logAll(padding: padding, limit: limit)
         level = .debug
-        source = true
         time = true
     }
     
