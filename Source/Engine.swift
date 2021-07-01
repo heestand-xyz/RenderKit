@@ -1250,12 +1250,16 @@ public class Engine: LoggerDelegate {
                 throw RenderError.vertexTexture
             }
             
-            if !(node is NODE3D) {
+            if node is NODE3D {
+//                (commandEncoder as! MTLComputeCommandEncoder)
+            } else {
                 (commandEncoder as! MTLRenderCommandEncoder).setVertexTexture(vtxNodeInTexture, index: 0)
             }
             
-            let sampler = try internalDelegate.makeSampler(interpolate: .linear, extend: .clampToEdge, mipFilter: .linear, compare: .never)
-            if !(node is NODE3D) {
+            if node is NODE3D {
+//                (commandEncoder as! MTLComputeCommandEncoder)
+            } else {
+                let sampler = try internalDelegate.makeSampler(interpolate: .linear, extend: .clampToEdge, mipFilter: .linear, compare: .never)
                 (commandEncoder as! MTLRenderCommandEncoder).setVertexSamplerState(sampler, index: 0)
             }
             
