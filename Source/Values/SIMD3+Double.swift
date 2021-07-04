@@ -19,7 +19,9 @@ extension SIMD3: Floatable where Scalar == Double {
             self = SIMD3<Double>(x: 0.0, y: 0.0, z: 0.0)
             return
         }
-        self = SIMD3<Double>(x: floats[0], y: floats[1], z: floats[2])
+        self = SIMD3<Double>(x: Double(floats[0]),
+                             y: Double(floats[1]),
+                             z: Double(floats[2]))
     }
     
 }
