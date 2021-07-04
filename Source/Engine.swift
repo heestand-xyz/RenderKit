@@ -741,7 +741,7 @@ public class Engine: LoggerDelegate {
 //        }
 //    }
     
-    // MARK: - Main Render
+    // MARK: - Main Render -
     
     func render(_ node: NODE, with currentDrawable: CAMetalDrawable?, tileIndex: TileIndex? = nil, force: Bool, completed: @escaping (MTLTexture) -> (), failed: @escaping (Error) -> ()) throws {
         
