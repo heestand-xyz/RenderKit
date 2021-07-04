@@ -14,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/heestand-xyz/PixelColor", from: "1.2.2"),
-        .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.2"),
+        .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.3"),
     ],
     targets: [
         .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution"], path: "Source"),
