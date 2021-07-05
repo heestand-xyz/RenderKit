@@ -159,11 +159,13 @@ public protocol NODEResolution3D {
 
 // MARK: - Metal
 
-public protocol NODEMetal {
-//    var metalFileName: String { get }
+public protocol NODEMetal: AnyObject {
+    var metalUniforms: [MetalUniform] { get }
+    var code: String { get set }
     var metalBaseCode: String { get }
     var metalCode: String? { get }
-    var metalUniforms: [MetalUniform] { get }
+    var metalConsole: String? { get set }
+    var metalConsolePublisher: Published<String?>.Publisher { get }
 }
 
 // MARK: - Out Path
