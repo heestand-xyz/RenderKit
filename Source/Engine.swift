@@ -653,6 +653,7 @@ public class Engine: LoggerDelegate {
         case tileError(String, Error)
         case tileRenderCanceled
         case noSampler
+        case noPipeline
     }
     
     // MARK: - Tile Render
@@ -931,6 +932,10 @@ public class Engine: LoggerDelegate {
         if let node3d = node as? NODE3D {
             (commandEncoder as! MTLComputeCommandEncoder).setComputePipelineState(node3d.pipeline3d)
         } else {
+            if node.pipeline == nil {
+                commandEncoder.endEncoding()
+                throw RenderError.noPipeline
+            }
             (commandEncoder as! MTLRenderCommandEncoder).setRenderPipelineState(node.pipeline)
         }
         
