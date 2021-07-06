@@ -101,6 +101,9 @@ extension NODE {
             DispatchQueue.main.async { [weak self] in
                 self?.render()
             }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.render()
+            }
         }
         if let nodeIn: NODEIn = self as? NODEIn {
             nodeIn.didUpdateInputConnections()
