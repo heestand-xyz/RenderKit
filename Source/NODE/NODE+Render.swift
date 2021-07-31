@@ -11,12 +11,25 @@ import Foundation
 extension NODE {
     
     #if swift(>=5.5)
+    
     @available(iOS 15.0, *)
     @available(tvOS 15.0, *)
     @available(macOS 12.0, *)
-    public func manuallyRender() async throws {
+    public func renderDirect() async throws {
+        if let nodeInIO = self as? NODEInIO {
+            for node in nodeInIO.inputList {
+                try await node.renderDirect()
+            }
+        }
+        try await renderCurrentDirect()
+    }
+    
+    @available(iOS 15.0, *)
+    @available(tvOS 15.0, *)
+    @available(macOS 12.0, *)
+    public func renderCurrentDirect() async throws {
         return try await withCheckedThrowingContinuation { continuation in
-            manuallyRender { result in
+            renderCurrentDirect { result in
                 switch result {
                 case .success:
                     continuation.resume()
@@ -26,9 +39,10 @@ extension NODE {
             }
         }
     }
+    
     #endif
     
-    public func manuallyRender(completion: @escaping (Result<MTLTexture, Error>) -> ()) {
+    public func renderCurrentDirect(completion: @escaping (Result<MTLTexture, Error>) -> ()) {
         let frameIndex = renderObject.frameIndex
         let renderRequest = RenderRequest(frameIndex: frameIndex, node: self, completion: nil)
         renderObject.engine.renderNODE(self, renderRequest: renderRequest) { [weak self] result in
