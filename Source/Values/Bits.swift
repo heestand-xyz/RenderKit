@@ -26,6 +26,14 @@ public enum Bits: Int, Codable, CaseIterable {
         case ._32: return .rgba32Float // invalid pixel format 125
         }
     }
+    public var isRedAndBlueSwapped: Bool {
+        switch self {
+        case ._8, ._10:
+            return true
+        default:
+            return false
+        }
+    }
     public var monochromePixelFormat: MTLPixelFormat {
         switch self {
         case ._8: return .r8Unorm

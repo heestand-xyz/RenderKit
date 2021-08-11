@@ -103,6 +103,10 @@ public enum Placement: String, Enumable {
     case fill
     case center
     case stretch
+    @available(*, deprecated, renamed: "fill")
+    public static let aspectFill: Placement = .fill
+    @available(*, deprecated, renamed: "fit")
+    public static let aspectFit: Placement = .fit
     public var index: Int {
         switch self {
         case .stretch: return 0
