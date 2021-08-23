@@ -18,8 +18,11 @@ import PixelColor
             }
             node.render()
             currentValueSubject.send(wrappedValue)
+            didSetValue?()
         }
     }
+    
+    public var didSetValue: (() -> ())?
     
     public init(wrappedValue: PixelColor, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue

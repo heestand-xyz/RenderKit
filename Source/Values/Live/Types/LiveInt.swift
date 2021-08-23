@@ -26,8 +26,11 @@ import Foundation
                 node.render()
             }
             currentValueSubject.send(wrappedValue)
+            didSetValue?()
         }
     }
+    
+    public var didSetValue: (() -> ())?
     
     public init(wrappedValue: Int, _ typeName: String, name: String? = nil, range: ClosedRange<Int>, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue

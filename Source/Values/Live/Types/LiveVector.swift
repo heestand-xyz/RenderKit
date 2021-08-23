@@ -18,8 +18,11 @@ import simd
             }
             node.render()
             currentValueSubject.send(wrappedValue)
+            didSetValue?()
         }
     }
+    
+    public var didSetValue: (() -> ())?
     
     public init(wrappedValue: SIMD3<Double>, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue

@@ -18,8 +18,11 @@ import CoreGraphics
             }
             node.render()
             currentValueSubject.send(wrappedValue)
+            didSetValue?()
         }
     }
+    
+    public var didSetValue: (() -> ())?
     
     public init(wrappedValue: CGSize, _ typeName: String, name: String? = nil) {
         self.wrappedValue = wrappedValue
