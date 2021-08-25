@@ -86,7 +86,6 @@ public class NODEMetalView: MTKView {
     override public func draw(_ rect: CGRect) {
         if rect.width > 0 && rect.height > 0 {
             if resolution != nil {
-                render.logger.log(.detail, .view, "View is Ready to Render.", loop: true)
                 readyToRender?()
             } else {
                 render.logger.log(.warning, .view, "View Resolution not set.", loop: true)
