@@ -77,8 +77,12 @@ extension NODE {
     public func queueRender(_ renderRequest: RenderRequest) {
         
         guard !bypass else {
-            #warning("Bypass should Render Outs")
             renderObject.logger.log(node: self, .detail, .render, "Queue Render Bypassed", loop: true)
+            if let nodeOut: NODEOutIO = self as? NODEOutIO {
+                for nodePath in nodeOut.outputPathList {
+                    nodePath.nodeIn.render()
+                }
+            }
             return
         }
 

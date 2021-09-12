@@ -124,6 +124,8 @@ public class Logger {
     
     public func log(prefix: String? = nil, node: NODE? = nil, _ level: LogLevel, _ category: LogCategory?, _ message: String, loop: Bool = false, clean: Bool = false, e error: Error? = nil, _ file: String = #file, _ function: String = #function, _ line: Int = #line) {
         
+        #if DEBUG
+        
         guard delegate != nil else {
             print("Logger delegate not set...")
             return
@@ -169,6 +171,7 @@ public class Logger {
         callbacks.forEach({ $0(format(log: log), log) })
         if !silent { print(format(log: log)) }
 
+        #endif
     }
     
     public func formatClean(log: Log) -> String {
