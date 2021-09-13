@@ -160,7 +160,7 @@ public protocol NODEResolution3D {
 // MARK: - Metal
 
 public protocol NODEMetal: AnyObject {
-    var metalUniforms: [MetalUniform] { get }
+    var metalUniforms: [MetalUniform] { get set }
     var code: String { get set }
     var metalBaseCode: String { get }
     var metalCode: String? { get }
