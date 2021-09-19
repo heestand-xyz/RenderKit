@@ -36,6 +36,7 @@ public protocol NODEInMulti: NODEIn {
 public protocol NODEInIO: NODEIn {
     var inputList: [NODE & NODEOut] { get set }
     var connectedIn: Bool { get }
+    var cancellableIns: [AnyCancellable] { get set }
 }
 public protocol NODEOutIO: NODEOut {
 //    var outputPathList: NODE.WeakOutPaths { get set }

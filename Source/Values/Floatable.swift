@@ -6,15 +6,6 @@ public protocol Floatable: Codable {
     init(floats: [CGFloat])
 }
 
-//extension Floatable {
-//    static func == (lhs: Floatable, rhs: Floatable) -> Bool {
-//        lhs.floats == rhs.floats
-//    }
-//    static func != (lhs: Floatable, rhs: Floatable) -> Bool {
-//        lhs.floats != rhs.floats
-//    }
-//}
-
 extension Bool: Floatable {
     public var floats: [CGFloat] { [self ? 1.0 : 0.0] }
     public init(floats: [CGFloat]) {

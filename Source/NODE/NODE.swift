@@ -145,6 +145,14 @@ public protocol NODEMergerEffect: NODEEffect {
 }
 public protocol NODEMultiEffect: NODEEffect {}
 
+// MARK: - Output
+
+public protocol NODEOutput: NODE, NODEInIO {
+    var renderPromisePublisher: PassthroughSubject<RenderRequest, Never> { get }
+    var renderPublisher: PassthroughSubject<RenderPack, Never> { get }
+    var cancellableIns: [AnyCancellable] { get set }
+}
+
 // MARK: - Resolution
 
 public protocol NODEResolution {
