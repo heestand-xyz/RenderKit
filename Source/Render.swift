@@ -164,6 +164,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         #if os(iOS) || os(tvOS)
         if [.main, .none].contains(frameLoopRenderThread) {
             displayLink = CADisplayLink(target: self, selector: #selector(self.frameLoop))
+            if #available(iOS 15.0, *) {
+                displayLink!.preferredFrameRateRange = CAFrameRateRange(minimum: 10, maximum: 120, preferred: 120)
+            }
             displayLink!.add(to: RunLoop.main, forMode: .common)
         } else {
             let frameTime: Double = 1.0 / Double(self.fpsMax)
