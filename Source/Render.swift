@@ -550,6 +550,34 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         }
     }
     
+    public func embedMetalColorCode(uniforms: [MetalUniform],
+                                    whiteCode: String,
+                                    redCode: String,
+                                    greenCode: String,
+                                    blueCode: String,
+                                    alphaCode: String,
+                                    metalBaseCode: String) throws -> String {
+        do {
+            var metalCode: String = metalBaseCode
+            let uniformsCode: String = try dynamicUniforms(uniforms: uniforms)
+            metalCode = try insert(uniformsCode, in: metalCode, at: "uniforms")
+            let comment: String = "/// PixelKit Dynamic Shader Code"
+            metalCode = try insert("\(comment)\n\n\n\(whiteCode)\n", in: metalCode, at: "white")
+            metalCode = try insert("\(comment)\n\n\n\(redCode)\n", in: metalCode, at: "red")
+            metalCode = try insert("\(comment)\n\n\n\(greenCode)\n", in: metalCode, at: "green")
+            metalCode = try insert("\(comment)\n\n\n\(blueCode)\n", in: metalCode, at: "blue")
+            metalCode = try insert("\(comment)\n\n\n\(alphaCode)\n", in: metalCode, at: "alpha")
+            #if DEBUG
+            if logger.dynamicShaderCode {
+                print("\nDynamic Shader Code:\n\n\(metalCode)\n\n")
+            }
+            #endif
+            return metalCode
+        } catch {
+            throw error
+        }
+    }
+    
     func dynamicUniforms(uniforms: [MetalUniform]) throws -> String {
         var code = ""
         for (i, uniform) in uniforms.enumerated() {

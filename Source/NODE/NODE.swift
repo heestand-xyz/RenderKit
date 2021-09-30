@@ -169,7 +169,7 @@ public protocol NODEResolution3D {
 
 public protocol NODEMetal: AnyObject {
     var metalUniforms: [MetalUniform] { get set }
-    var code: String { get set }
+//    var code: String { get set }
     var metalBaseCode: String { get }
     var metalCode: String? { get }
     var metalConsole: String? { get set }
