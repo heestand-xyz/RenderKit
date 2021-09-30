@@ -169,11 +169,22 @@ public protocol NODEResolution3D {
 
 public protocol NODEMetal: AnyObject {
     var metalUniforms: [MetalUniform] { get set }
-//    var code: String { get set }
     var metalBaseCode: String { get }
     var metalCode: String? { get }
     var metalConsole: String? { get set }
     var metalConsolePublisher: Published<String?>.Publisher { get }
+}
+
+public protocol NODEMetalCode: NODEMetal {
+    var code: String { get set }
+}
+
+public protocol NODEMetalScript: NODEMetal {
+    var whiteScript: String { get set }
+    var redScript: String { get set }
+    var greenScript: String { get set }
+    var blueScript: String { get set }
+    var alphaScript: String { get set }
 }
 
 // MARK: - Out Path
