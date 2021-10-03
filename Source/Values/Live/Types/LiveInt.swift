@@ -33,10 +33,10 @@ import Foundation
     
     public var didSetValue: (() -> ())?
     
-    public init(wrappedValue: Int, _ typeName: String, name: String? = nil, range: ClosedRange<Int>, updateResolution: Bool = false) {
+    public init(wrappedValue: Int, _ typeName: String, name: String? = nil, range: ClosedRange<Int>, clamped: Bool = false, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
-        super.init(type: .int, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound)
+        super.init(type: .int, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, clamped: clamped)
         get = { [weak self] in self?.wrappedValue ?? -1 }
         set = { [weak self] in self?.wrappedValue = $0 as! Int }
         setFloats = { [weak self] in self?.wrappedValue = Int(floats: $0) }

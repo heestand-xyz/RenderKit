@@ -33,10 +33,10 @@ import CoreGraphics
     
     public var didSetValue: (() -> ())?
     
-    public init(wrappedValue: CGFloat, _ typeName: String, name: String? = nil, range: ClosedRange<CGFloat> = 0.0...1.0, increment: CGFloat = 0.25, updateResolution: Bool = false) {
+    public init(wrappedValue: CGFloat, _ typeName: String, name: String? = nil, range: ClosedRange<CGFloat> = 0.0...1.0, increment: CGFloat = 0.25, clamped: Bool = false, updateResolution: Bool = false) {
         self.wrappedValue = wrappedValue
         self.updateResolution = updateResolution
-        super.init(type: .float, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, inc: increment)
+        super.init(type: .float, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, inc: increment, clamped: clamped)
         get = { [weak self] in self?.wrappedValue ?? -1.0 }
         set = { [weak self] in self?.wrappedValue = $0 as! CGFloat }
         setFloats = { [weak self] in self?.wrappedValue = CGFloat(floats: $0) }

@@ -57,6 +57,7 @@ public class LiveWrap: Identifiable {
     public var minimumValue: Floatable?
     public var maximumValue: Floatable?
     public var incrementValue: Floatable?
+    public var clamped: Bool
 
     public weak var node: NODE?
     
@@ -74,7 +75,8 @@ public class LiveWrap: Identifiable {
                 value: Floatable,
                 min: Floatable? = nil,
                 max: Floatable? = nil,
-                inc: Floatable? = nil) {
+                inc: Floatable? = nil,
+                clamped: Bool = false) {
         
         precondition(!typeName.contains(" "))
         precondition(typeName.first!.isLowercase)
@@ -103,6 +105,7 @@ public class LiveWrap: Identifiable {
         minimumValue = min
         maximumValue = max
         incrementValue = inc
+        self.clamped = clamped
         
     }
     
