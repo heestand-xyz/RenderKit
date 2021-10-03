@@ -19,6 +19,7 @@ import PixelColor
             node.render()
             currentValueSubject.send(wrappedValue)
             didSetValue?()
+            changed()
         }
     }
     

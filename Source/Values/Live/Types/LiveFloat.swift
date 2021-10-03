@@ -27,6 +27,7 @@ import CoreGraphics
             }
             currentValueSubject.send(wrappedValue)
             didSetValue?()
+            changed()
         }
     }
     

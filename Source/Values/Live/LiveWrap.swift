@@ -111,6 +111,10 @@ public class LiveWrap: Identifiable {
     }
     
     public func setLiveCodable(_ liveCodable: LiveCodable) {}
+    
+    func changed() {
+        node?.liveValueChanged()
+    }
         
 }
 

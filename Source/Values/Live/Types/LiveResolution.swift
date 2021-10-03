@@ -22,6 +22,7 @@ import Resolution
             }
             currentValueSubject.send(wrappedValue)
             didSetValue?()
+            changed()
         }
     }
     

@@ -19,6 +19,7 @@ import simd
             node.render()
             currentValueSubject.send(wrappedValue)
             didSetValue?()
+            changed()
         }
     }
     

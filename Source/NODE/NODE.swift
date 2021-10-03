@@ -76,6 +76,8 @@ public protocol NODE: AnyObject, Codable {
     func addView() -> NODEView
     func removeView(_ view: NODEView)
     
+    func liveValueChanged()
+    
     func render()
     func didRender(renderPack: RenderPack)
     

@@ -27,6 +27,7 @@ import Foundation
             }
             currentValueSubject.send(wrappedValue)
             didSetValue?()
+            changed()
         }
     }
     
