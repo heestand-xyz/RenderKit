@@ -100,6 +100,9 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         return 60
         #endif
     } else { return 1 } }
+    public var secondsPerFrame: Double {
+        1.0 / Double(fps)
+    }
     public var maxSecondsPerFrame: Double {
         1.0 / Double(fpsMax)
     }

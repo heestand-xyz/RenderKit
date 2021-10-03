@@ -10,6 +10,7 @@ import simd
 import CoreVideo
 import Resolution
 import Combine
+import PixelColor
 
 public protocol NODE: AnyObject, Codable {
     
@@ -27,6 +28,8 @@ public protocol NODE: AnyObject, Codable {
     var additionalViews: [NODEView] { get set }
     
     var overrideBits: Bits? { get }
+    
+    var clearColor: PixelColor { get set }
     
     var liveList: [LiveWrap] { get }
     var values: [Floatable] { get }

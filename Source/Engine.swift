@@ -922,7 +922,7 @@ public class Engine: LoggerDelegate {
             let renderPassDescriptor = MTLRenderPassDescriptor()
             renderPassDescriptor.colorAttachments[0].texture = drawableTexture
             renderPassDescriptor.colorAttachments[0].loadAction = .clear
-            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
+            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: node.clearColor.red, green: node.clearColor.green, blue: node.clearColor.blue, alpha: node.clearColor.alpha)
             guard let renderCommandEncoder: MTLRenderCommandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
                 throw RenderError.commandEncoder
             }
@@ -1282,7 +1282,9 @@ public class Engine: LoggerDelegate {
         // MARK: Draw
         
         if !(node is NODE3D) {
-            (commandEncoder as! MTLRenderCommandEncoder).drawPrimitives(type: vertices.type, vertexStart: 0, vertexCount: vertices.vertexCount, instanceCount: 1)
+            if vertices.vertexCount >= 1 {
+                (commandEncoder as! MTLRenderCommandEncoder).drawPrimitives(type: vertices.type, vertexStart: 0, vertexCount: vertices.vertexCount, instanceCount: 1)
+            }
         }
         
         // Render Time

@@ -80,7 +80,7 @@ public struct Vertex {
     public var buffer3d: [Float] {
         return [x,y,z,s,t].map({ Float($0) })
     }
-    public init(x: CGFloat, y: CGFloat, z: CGFloat = 0.0, s: CGFloat, t: CGFloat) {
+    public init(x: CGFloat, y: CGFloat, z: CGFloat = 0.0, s: CGFloat = 0.0, t: CGFloat = 0.0) {
         self.x = x; self.y = y; self.z = z; self.s = s; self.t = t
     }
 }
