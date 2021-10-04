@@ -208,6 +208,7 @@ public struct Texture {
     public enum ImagePlacement {
         case fill
         case fit
+        case stretch
     }
     
     public static func resize(_ image: _Image, to size: CGSize, placement: ImagePlacement = .fill) -> _Image {
@@ -236,6 +237,12 @@ public struct Texture {
                 height: image.size.width / size.width > image.size.height / size.height ?
                     size.height : image.size.height * (size.width / image.size.width)
             )
+        case .stretch:
+            #if os(macOS)
+            frame = CGRect(origin: .zero, size: CGSize(width: size.width / 2.0, height: size.height / 2.0))
+            #else
+            frame = CGRect(origin: .zero, size: CGSize(width: size.width, height: size.height))
+            #endif
         }
 
         #if os(iOS) || os(tvOS)
@@ -260,26 +267,6 @@ public struct Texture {
         #endif
         
         return resized_image
-    }
-    
-    public static func image(from pixelBuffer: CVPixelBuffer) -> _Image? {
-        guard let cgImage = cgImage(from: pixelBuffer) else { return nil }
-        let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer),
-                          height: CVPixelBufferGetHeight(pixelBuffer))
-        #if os(macOS)
-        return NSImage(cgImage: cgImage, size: size)
-        #else
-        return UIImage(cgImage: cgImage)
-        #endif
-    }
-    
-    public static func cgImage(from pixelBuffer: CVPixelBuffer) -> CGImage? {
-        let ciImage = ciImage(from: pixelBuffer)
-        return ciImage.cgImage
-    }
-    
-    public static func ciImage(from pixelBuffer: CVPixelBuffer) -> CIImage {
-        CIImage(cvImageBuffer: pixelBuffer)
     }
     
     /// Check out makeTextureFromCache first...
@@ -793,6 +780,45 @@ public struct Texture {
             return cgImage
             #endif
         }
+    }
+    
+    public static func image(from ciImage: CIImage) -> _Image? {
+        #if os(macOS)
+        guard let colorSpace = ciImage.colorSpace else { return nil }
+        guard let cgImage = cgImage(from: ciImage, at: ciImage.extent.size, colorSpace: colorSpace, bits: ._8) else { return nil }
+        return NSImage(cgImage: cgImage, size: ciImage.extent.size)
+        #else
+        return UIImage(ciImage: ciImage)
+        #endif
+    }
+    
+    public static func image(from pixelBuffer: CVPixelBuffer) -> _Image? {
+        guard let cgImage = cgImage(from: pixelBuffer) else { return nil }
+        let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer),
+                          height: CVPixelBufferGetHeight(pixelBuffer))
+        #if os(macOS)
+        return NSImage(cgImage: cgImage, size: size)
+        #else
+        return UIImage(cgImage: cgImage)
+        #endif
+    }
+    
+    public static func cgImage(from pixelBuffer: CVPixelBuffer) -> CGImage? {
+        let ciImage = ciImage(from: pixelBuffer)
+        return ciImage.cgImage
+    }
+    
+    public static func ciImage(from pixelBuffer: CVPixelBuffer) -> CIImage {
+        CIImage(cvImageBuffer: pixelBuffer)
+    }
+    
+    public static func ciImage(from image: _Image) -> CIImage? {
+        #if os(macOS)
+        guard let data = image.tiffRepresentation else { return nil }
+        return CIImage(data: data)
+        #else
+        return CIImage(image: image)
+        #endif
     }
 
     public static func image(from cgImage: CGImage, at size: CGSize) -> _Image {
