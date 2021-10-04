@@ -12,6 +12,30 @@ import VideoToolbox
 import Accelerate
 import Resolution
 
+public protocol ChannelType {
+    static var bits: Bits { get }
+    var as8bit: UInt8 { get }
+    var as32bit: Float { get }
+}
+extension UInt8: ChannelType {
+    public static let bits: Bits = ._8
+    public var as8bit: UInt8 {
+        self
+    }
+    public var as32bit: Float {
+        Float(self) / 255
+    }
+}
+extension Float: ChannelType {
+    public static let bits: Bits = ._32
+    public var as8bit: UInt8 {
+        UInt8(min(max(self * 255, 0), 255))
+    }
+    public var as32bit: Float {
+        self
+    }
+}
+
 public struct Texture {
     
     public enum TextureError: Error {
@@ -238,6 +262,22 @@ public struct Texture {
         return resized_image
     }
     
+    public static func image(from pixelBuffer: CVPixelBuffer) -> _Image? {
+        guard let cgImage = cgImage(from: pixelBuffer) else { return nil }
+        let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer),
+                          height: CVPixelBufferGetHeight(pixelBuffer))
+        #if os(macOS)
+        return NSImage(cgImage: cgImage, size: size)
+        #else
+        return UIImage(cgImage: cgImage)
+        #endif
+    }
+    
+    public static func cgImage(from pixelBuffer: CVPixelBuffer) -> CGImage? {
+        let ciImage = ciImage(from: pixelBuffer)
+        return ciImage.cgImage
+    }
+    
     public static func ciImage(from pixelBuffer: CVPixelBuffer) -> CIImage {
         CIImage(cvImageBuffer: pixelBuffer)
     }
@@ -266,6 +306,213 @@ public struct Texture {
         return texture
     }
     
+    @available(iOS 14.0, tvOS 14.0, macOS 11.0, *)
+    public static func makeTextureViaRawData<T: ChannelType>(from pixelBuffer: CVPixelBuffer, bits: Bits, on metalDevice: MTLDevice, sourceZero: T, sourceOne: T, normalize: Bool = false, invertGreen: Bool = false) throws -> MTLTexture {
+        
+        #if os(macOS)
+        var bits: Bits = bits
+        if bits == ._16 {
+            bits = ._8
+        }
+        #endif
+        
+        let channelCount: Int
+        switch CVPixelBufferGetPixelFormatType(pixelBuffer) {
+        case 1278226534: // OneComponent32Float
+            channelCount = 1
+        case 843264102: // TwoComponent32Float
+            channelCount = 2
+        default:
+            channelCount = 4
+        }
+        
+        let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer),
+                          height: CVPixelBufferGetHeight(pixelBuffer))
+        let width: Int = Int(size.width)
+        let height: Int = Int(size.height)
+        
+        let count: Int = width * height * channelCount
+        
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        defer {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+        }
+        
+        guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else {
+            throw TextureError.makeTexture("CVPixelBufferGetBaseAddress Failed")
+        }
+        
+        let buffer = baseAddress.assumingMemoryBound(to: T.self)
+
+        func channel(at index: Int) -> Any? {
+            guard index < count else {
+                fatalError("Pixel Channel Index out of Range")
+            }
+            let channel: T = buffer[index]
+            switch bits {
+            case ._8:
+                if normalize {
+                    switch T.bits {
+                    case ._8:
+                        return UInt8(128 + min(channel as! UInt8, 127))
+                    case ._32:
+                        var value = UInt8(min(max((0.5 + (channel as! Float)) * 255, 0), 255))
+                        if invertGreen {
+                            if index % channelCount == 1 {
+                                value = 255 - value
+                            }
+                        }
+                        return value
+                    default:
+                        return nil
+                    }
+                } else {
+                    return channel.as8bit
+                }
+            case ._16:
+                if normalize {
+                    return nil
+                }
+                switch T.bits {
+                case ._8:
+                    #if !os(macOS)
+                    return Float16(Int(channel as! UInt8)) / Float16(255.0)
+                    #endif
+                    return nil
+                case ._16:
+                    return channel
+                case ._32:
+                    #if !os(macOS)
+                    return Float16(channel as! Float)
+                    #endif
+                    return nil
+                default:
+                    return nil
+                }
+            case ._32:
+                if normalize {
+                    return nil
+                }
+                return channel.as32bit
+            default:
+                return nil
+            }
+        }
+        
+        var targetZero: Any {
+            switch bits {
+            case ._8:
+                return UInt8(0)
+            case ._16:
+                #if !os(macOS)
+                return Float16(0.0)
+                #endif
+                return 0.0
+            case ._32:
+                return Float(0.0)
+            default:
+                return 0.0
+            }
+        }
+        
+        var targetOne: Any {
+            switch bits {
+            case ._8:
+                return UInt8(255)
+            case ._16:
+                #if !os(macOS)
+                return Float16(1.0)
+                #endif
+                return 1.0
+            case ._32:
+                return Float(1.0)
+            default:
+                return 1.0
+            }
+        }
+
+        var channels8: [UInt8] = []
+        #if !os(macOS)
+        var channels16: [Float16] = []
+        #endif
+        var channels32: [Float] = []
+        
+        for y in 0..<height {
+            for x in 0..<width {
+                
+                let index: Int = y * width * channelCount + x * channelCount
+            
+                let red = channel(at: index) ?? targetZero
+                let green = channelCount >= 2 ? channel(at: index + 1) ?? targetZero : targetZero
+                let blue = channelCount >= 3 ? channel(at: index + 2) ?? targetZero : targetZero
+                let alpha = channelCount == 4 ? channel(at: index + 3) ?? targetZero : targetOne
+                
+                switch bits {
+                case ._8:
+                    channels8.append(contentsOf: [
+                        blue as! UInt8,
+                        green as! UInt8,
+                        red as! UInt8,
+                        alpha as! UInt8
+                    ])
+                case ._16:
+                    #if !os(macOS)
+                    channels16.append(contentsOf: [
+                        blue as! Float16,
+                        green as! Float16,
+                        red as! Float16,
+                        alpha as! Float16
+                    ])
+                    #else
+                    break
+                    #endif
+                case ._32:
+                    channels32.append(contentsOf: [
+                        blue as! Float,
+                        green as! Float,
+                        red as! Float,
+                        alpha as! Float
+                    ])
+                default:
+                    break
+                }
+                
+            }
+        }
+        
+        let texture = try emptyTexture(size: size,
+                                       bits: bits,
+                                       on: metalDevice,
+                                       write: false)
+        
+        let bytesPerChannel: Int = bits.rawValue / 8
+        let bytesPerRow = width * 4 * bytesPerChannel
+        
+        let mtlOrigin = MTLOrigin(x: 0, y: 0, z: 0)
+        let mtlSize = MTLSize(width: width,
+                              height: height,
+                              depth: 1)
+        let region = MTLRegion(origin: mtlOrigin,
+                               size: mtlSize)
+        
+        switch bits {
+        case ._8:
+            texture.replace(region: region, mipmapLevel: 0, withBytes: channels8, bytesPerRow: bytesPerRow)
+        case ._16:
+            #if !os(macOS)
+            texture.replace(region: region, mipmapLevel: 0, withBytes: channels16, bytesPerRow: bytesPerRow)
+            #else
+            throw TextureError.copy("Bits (16) Not Supported on macOS")
+            #endif
+        case ._32:
+            texture.replace(region: region, mipmapLevel: 0, withBytes: channels32, bytesPerRow: bytesPerRow)
+        default:
+            throw TextureError.copy("Bits (\(bits.rawValue)) Not Supported")
+        }
+        
+        return texture
+    }
+    
     public static func makeTextureFromCache(from pixelBuffer: CVPixelBuffer, bits: Bits, in textureCache: CVMetalTextureCache) throws -> MTLTexture {
         
         let width = CVPixelBufferGetWidth(pixelBuffer)
@@ -277,6 +524,8 @@ public struct Texture {
         switch CVPixelBufferGetPixelFormatType(pixelBuffer) {
         case 1278226534: // OneComponent32Float
             pixelFormat = Bits._32.monochromePixelFormat
+        case 843264102: // TwoComponent32Float
+            pixelFormat = bits.pixelFormat
         default:
             switch channelCount {
             case 4: pixelFormat = bits.pixelFormat
@@ -288,8 +537,8 @@ public struct Texture {
         var imageTexture: CVMetalTexture?
         let result = CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixelBuffer, nil, pixelFormat, width, height, 0, &imageTexture)
         
-        guard let unwrappedImageTexture = imageTexture,
-              let texture = CVMetalTextureGetTexture(unwrappedImageTexture),
+        guard let imageTexture = imageTexture,
+              let texture = CVMetalTextureGetTexture(imageTexture),
               result == kCVReturnSuccess else {
             throw TextureError.makeTexture("Pixel Buffer to Metal Texture Converion Faied with result: \(result)")
         }
@@ -307,29 +556,17 @@ public struct Texture {
     }
     
     public static func emptyTexture(size: CGSize, bits: Bits, on metalDevice: MTLDevice, write: Bool = false/*, makeIOSurface: Bool = false*/) throws -> MTLTexture {
+        
         guard size.width > 0 && size.height > 0 else { throw TextureError.emptyFail }
+        
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: bits.pixelFormat, width: Int(size.width), height: Int(size.height), mipmapped: true)
+        
         descriptor.usage = MTLTextureUsage(rawValue: write ? (MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue) : (MTLTextureUsage.renderTarget.rawValue | MTLTextureUsage.shaderRead.rawValue))
-//        descriptor.swizzle...
-//        let emptyTexture: MTLTexture
-//        if makeIOSurface {
-//            guard var ioSurface: IOSurface = IOSurface(properties: [
-//                IOSurfacePropertyKey.pixelFormat : bits.pixelFormat,
-//                IOSurfacePropertyKey.width : Int(size.width),
-//                IOSurfacePropertyKey.height : Int(size.height)
-//            ]) else {
-//                throw TextureError.emptyFail
-//            }
-//            guard let texture = metalDevice.makeTexture(descriptor: descriptor, iosurface: ioSurface.ref, plane: 0) else {
-//                throw TextureError.emptyFail
-//            }
-//            emptyTexture = texture
-//        } else {
+        
         guard let texture = metalDevice.makeTexture(descriptor: descriptor) else {
             throw TextureError.emptyFail
         }
-//            emptyTexture = texture
-//        }
+        
         return texture
     }
     
