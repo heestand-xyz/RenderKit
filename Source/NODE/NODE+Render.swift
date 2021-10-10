@@ -11,23 +11,23 @@ import Foundation
 extension NODE {
     
 //    #if swift(>=5.5)
-//    
+//
 //    @available(iOS 15.0, *)
 //    @available(tvOS 15.0, *)
 //    @available(macOS 12.0, *)
-//    public func renderDirect() async throws {
+//    public func renderAllAsync() async throws {
 //        if let nodeInIO = self as? NODEInIO {
 //            for node in nodeInIO.inputList {
-//                try await node.renderDirect()
+//                try await node.renderAllAsync()
 //            }
 //        }
-//        try await renderCurrentDirect()
+//        try await renderAsync()
 //    }
-//    
+//
 //    @available(iOS 15.0, *)
 //    @available(tvOS 15.0, *)
 //    @available(macOS 12.0, *)
-//    public func renderCurrentDirect() async throws {
+//    public func renderAsync() async throws {
 //        return try await withCheckedThrowingContinuation { continuation in
 //            renderCurrentDirect { result in
 //                switch result {
@@ -39,8 +39,13 @@ extension NODE {
 //            }
 //        }
 //    }
-//    
+//
 //    #endif
+    
+    public func renderCurrentDirectInBackground(completion: @escaping (Result<MTLTexture, Error>) -> ()) {
+        frameLoopRenderThread = .background
+        renderCurrentDirect(completion: completion)
+    }
     
     public func renderCurrentDirect(completion: @escaping (Result<MTLTexture, Error>) -> ()) {
         let frameIndex = renderObject.frameIndex

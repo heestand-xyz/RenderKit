@@ -1,6 +1,5 @@
 import CoreGraphics
 
-
 public protocol Floatable: Codable {
     var floats: [CGFloat] { get }
     init(floats: [CGFloat])
