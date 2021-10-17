@@ -750,6 +750,40 @@ public struct Texture {
     
     // MARK: - Conversions
     
+    public static func sampleBuffer(texture: MTLTexture, colorSpace: CGColorSpace, bits: Bits) -> CMSampleBuffer? {
+        
+        let size = CGSize(width: texture.width, height: texture.height)
+        guard let pixelBuffer: CVPixelBuffer = try? Texture.pixelBuffer(from: texture, at: size, colorSpace: colorSpace, bits: bits) else {
+            return nil
+        }
+        
+        return sampleBuffer(pixelBuffer: pixelBuffer)
+    }
+    
+    public static func sampleBuffer(pixelBuffer: CVPixelBuffer) -> CMSampleBuffer? {
+        
+        var info = CMSampleTimingInfo()
+        info.presentationTimeStamp = .zero
+        info.duration = .zero
+        info.decodeTimeStamp = .zero
+        
+        var formatDesc: CMFormatDescription!
+        CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pixelBuffer, formatDescriptionOut: &formatDesc)
+        guard formatDesc != nil else {
+            return nil
+        }
+        
+        var sampleBuffer: CMSampleBuffer?
+        
+        CMSampleBufferCreateReadyWithImageBuffer(allocator: kCFAllocatorDefault,
+                                                 imageBuffer: pixelBuffer,
+                                                 formatDescription: formatDesc,
+                                                 sampleTiming: &info,
+                                                 sampleBufferOut: &sampleBuffer);
+        return sampleBuffer
+        
+    }
+    
     public static func cgImage(from texture: MTLTexture, colorSpace: CGColorSpace, bits: Bits, vFlip: Bool = true) -> CGImage? {
         guard let ciImage: CIImage = ciImage(from: texture, colorSpace: colorSpace) else { return nil }
         let size = CGSize(width: texture.width, height: texture.height)

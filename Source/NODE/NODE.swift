@@ -83,7 +83,7 @@ public protocol NODE: AnyObject, Codable {
     
     func render()
     func didRender(renderPack: RenderPack)
-    
+
     func didConnect()
     func didDisconnect()
 }
