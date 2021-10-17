@@ -750,10 +750,10 @@ public struct Texture {
     
     // MARK: - Conversions
     
-    public static func sampleBuffer(texture: MTLTexture, colorSpace: CGColorSpace, bits: Bits) -> CMSampleBuffer? {
+    public static func sampleBuffer(texture: MTLTexture, colorSpace: CGColorSpace, bits: Bits, vFlip: Bool = true) -> CMSampleBuffer? {
         
         let size = CGSize(width: texture.width, height: texture.height)
-        guard let pixelBuffer: CVPixelBuffer = try? Texture.pixelBuffer(from: texture, at: size, colorSpace: colorSpace, bits: bits) else {
+        guard let pixelBuffer: CVPixelBuffer = try? Texture.pixelBuffer(from: texture, at: size, colorSpace: colorSpace, bits: bits, vFlip: vFlip) else {
             return nil
         }
         
