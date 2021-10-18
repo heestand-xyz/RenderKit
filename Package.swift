@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "RenderKit", targets: ["RenderKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/heestand-xyz/PixelColor", from: "1.2.2"),
+        .package(url: "https://github.com/heestand-xyz/PixelColor", from: "1.2.4"),
         .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.3"),
     ],
     targets: [
