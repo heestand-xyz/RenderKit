@@ -896,8 +896,8 @@ public struct Texture {
     }
     
     public static func pixelBuffer(from cgImage: CGImage, colorSpace: CGColorSpace, bits: Bits) throws -> CVPixelBuffer {
-        var maybePixelBuffer: CVPixelBuffer?
-        let attrs: [CFString: Any] = [
+        var optionalPixelBuffer: CVPixelBuffer?
+        let attributes: [CFString: Any] = [
             kCVPixelBufferPixelFormatTypeKey: Int(bits.os) as CFNumber,
             kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
             kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!,
@@ -907,9 +907,9 @@ public struct Texture {
                                          cgImage.width,
                                          cgImage.height,
                                          bits.os,
-                                         attrs as CFDictionary,
-                                         &maybePixelBuffer)
-        guard status == kCVReturnSuccess, let pixelBuffer = maybePixelBuffer else {
+                                         attributes as CFDictionary,
+                                         &optionalPixelBuffer)
+        guard status == kCVReturnSuccess, let pixelBuffer = optionalPixelBuffer else {
             throw PixelBufferError.status("CVPixelBufferCreate failed with status \(status)")
         }
         let flags = CVPixelBufferLockFlags(rawValue: 0)
