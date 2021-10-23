@@ -943,6 +943,20 @@ public struct Texture {
     
     // MARK: - Raw
     
+    public static func texture(raw: UnsafeMutablePointer<UInt8>, size: CGSize, on device: MTLDevice) throws -> MTLTexture {
+        let bytesPerRow: Int = Int(size.width) * 4
+        let capacity: Int = bytesPerRow * Int(size.height)
+        let texture = try emptyTexture(size: size, bits: ._8, on: device)
+        let region = MTLRegion(origin: MTLOrigin(x: 0, y: 0, z: 0),
+                               size: MTLSize(width: Int(size.width),
+                                             height: Int(size.height),
+                                             depth: 1))
+        raw.withMemoryRebound(to: UInt8.self, capacity: capacity) { rawPointer in
+            texture.replace(region: region, mipmapLevel: 0, withBytes: rawPointer, bytesPerRow: bytesPerRow)
+        }
+        return texture
+    }
+    
     public static func raw8(texture: MTLTexture) throws -> [UInt8] {
         guard let bits = Bits.bits(for: texture.pixelFormat) else {
             throw TextureError.raw("Raw 8 - Texture bits out of range.")
