@@ -43,10 +43,11 @@ import Foundation
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableInt(intValue: wrappedValue, typeName: typeName)
+        LiveCodableInt(intValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableInt: LiveCodableInt = liveCodable as? LiveCodableInt else { return }
         wrappedValue = liveCodableInt.intValue
     }
@@ -55,9 +56,9 @@ import Foundation
 
 public class LiveCodableInt: LiveCodable {
     var intValue: Int
-    init(intValue: Int, typeName: String) {
+    init(intValue: Int, typeName: String, visibilityDepth: Int) {
         self.intValue = intValue
-        super.init(typeName: typeName, type: .int)
+        super.init(typeName: typeName, type: .int, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case intValue

@@ -34,10 +34,11 @@ import simd
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableVector(vector: wrappedValue, typeName: typeName)
+        LiveCodableVector(vector: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableVector: LiveCodableVector = liveCodable as? LiveCodableVector else { return }
         wrappedValue = liveCodableVector.vector
     }
@@ -46,9 +47,9 @@ import simd
 
 public class LiveCodableVector: LiveCodable {
     var vector: SIMD3<Double>
-    init(vector: SIMD3<Double>, typeName: String) {
+    init(vector: SIMD3<Double>, typeName: String, visibilityDepth: Int) {
         self.vector = vector
-        super.init(typeName: typeName, type: .vector)
+        super.init(typeName: typeName, type: .vector, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case vector

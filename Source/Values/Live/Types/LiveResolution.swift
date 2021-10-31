@@ -37,10 +37,11 @@ import Resolution
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableResolution(resolution: wrappedValue, typeName: typeName)
+        LiveCodableResolution(resolution: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableResolution: LiveCodableResolution = liveCodable as? LiveCodableResolution else { return }
         wrappedValue = liveCodableResolution.resolution
     }
@@ -49,9 +50,9 @@ import Resolution
 
 public class LiveCodableResolution: LiveCodable {
     var resolution: Resolution
-    init(resolution: Resolution, typeName: String) {
+    init(resolution: Resolution, typeName: String, visibilityDepth: Int) {
         self.resolution = resolution
-        super.init(typeName: typeName, type: .resolution)
+        super.init(typeName: typeName, type: .resolution, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case resolution

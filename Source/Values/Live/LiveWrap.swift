@@ -63,6 +63,8 @@ public class LiveWrap: Identifiable {
     
     public let type: LiveType
     
+    public var visibilityDepth: Int
+    
     public var get: (() -> (Floatable))!
     public var set: ((Floatable) -> ())!
     public var setFloats: (([CGFloat]) -> ())!
@@ -107,13 +109,17 @@ public class LiveWrap: Identifiable {
         incrementValue = inc
         self.clamped = clamped
         
+        visibilityDepth = 0
+        
     }
     
     public func getLiveCodable() -> LiveCodable {
-        LiveCodable(typeName: typeName, type: type)
+        LiveCodable(typeName: typeName, type: type, visibilityDepth: visibilityDepth)
     }
     
-    public func setLiveCodable(_ liveCodable: LiveCodable) {}
+    public func setLiveCodable(_ liveCodable: LiveCodable) {
+        visibilityDepth = liveCodable.visibilityDepth
+    }
     
     func changed() {
         node?.liveValueChanged()
@@ -124,9 +130,22 @@ public class LiveWrap: Identifiable {
 public class LiveCodable: Codable {
     public var typeName: String
     public let type: LiveType
-    init(typeName: String, type: LiveType) {
+    public var visibilityDepth: Int
+    init(typeName: String, type: LiveType, visibilityDepth: Int) {
         self.typeName = typeName
         self.type = type
+        self.visibilityDepth = visibilityDepth
+    }
+    enum CodingKeys: CodingKey {
+        case typeName
+        case type
+        case visibilityDepth
+    }
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        typeName = try container.decode(String.self, forKey: .typeName)
+        type = try container.decode(LiveType.self, forKey: .type)
+        visibilityDepth = try container.decodeIfPresent(Int.self, forKey: .visibilityDepth) ?? 0
     }
 }
 

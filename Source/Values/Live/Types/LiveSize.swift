@@ -34,10 +34,11 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableSize(size: wrappedValue, typeName: typeName)
+        LiveCodableSize(size: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableSize: LiveCodableSize = liveCodable as? LiveCodableSize else { return }
         wrappedValue = liveCodableSize.size
     }
@@ -46,9 +47,9 @@ import CoreGraphics
 
 public class LiveCodableSize: LiveCodable {
     var size: CGSize
-    init(size: CGSize, typeName: String) {
+    init(size: CGSize, typeName: String, visibilityDepth: Int) {
         self.size = size
-        super.init(typeName: typeName, type: .size)
+        super.init(typeName: typeName, type: .size, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case size

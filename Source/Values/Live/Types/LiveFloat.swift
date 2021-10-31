@@ -43,10 +43,11 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableFloat(floatValue: wrappedValue, typeName: typeName)
+        LiveCodableFloat(floatValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableFloat: LiveCodableFloat = liveCodable as? LiveCodableFloat else { return }
         wrappedValue = liveCodableFloat.floatValue
     }
@@ -55,9 +56,9 @@ import CoreGraphics
 
 public class LiveCodableFloat: LiveCodable {
     var floatValue: CGFloat
-    init(floatValue: CGFloat, typeName: String) {
+    init(floatValue: CGFloat, typeName: String, visibilityDepth: Int) {
         self.floatValue = floatValue
-        super.init(typeName: typeName, type: .float)
+        super.init(typeName: typeName, type: .float, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case floatValue

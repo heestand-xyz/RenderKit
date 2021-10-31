@@ -34,10 +34,11 @@ import PixelColor
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableColor(color: wrappedValue, typeName: typeName)
+        LiveCodableColor(color: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodableColor: LiveCodableColor = liveCodable as? LiveCodableColor else { return }
         wrappedValue = liveCodableColor.color
     }
@@ -46,9 +47,9 @@ import PixelColor
 
 public class LiveCodableColor: LiveCodable {
     var color: PixelColor
-    init(color: PixelColor, typeName: String) {
+    init(color: PixelColor, typeName: String, visibilityDepth: Int) {
         self.color = color
-        super.init(typeName: typeName, type: .color)
+        super.init(typeName: typeName, type: .color, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case color

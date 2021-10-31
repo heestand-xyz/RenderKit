@@ -34,10 +34,11 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodablePoint(point: wrappedValue, typeName: typeName)
+        LiveCodablePoint(point: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
+        super.setLiveCodable(liveCodable)
         guard let liveCodablePoint: LiveCodablePoint = liveCodable as? LiveCodablePoint else { return }
         wrappedValue = liveCodablePoint.point
     }
@@ -46,9 +47,9 @@ import CoreGraphics
 
 public class LiveCodablePoint: LiveCodable {
     var point: CGPoint
-    init(point: CGPoint, typeName: String) {
+    init(point: CGPoint, typeName: String, visibilityDepth: Int) {
         self.point = point
-        super.init(typeName: typeName, type: .point)
+        super.init(typeName: typeName, type: .point, visibilityDepth: visibilityDepth)
     }
     enum CodingKeys: CodingKey {
         case point
