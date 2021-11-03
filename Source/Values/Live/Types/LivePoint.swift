@@ -5,6 +5,7 @@
 //  Created by Anton Heestand on 2021-04-22.
 //
 
+import Foundation
 import CoreGraphics
 
 @propertyWrapper public class LivePoint: LiveWrap {
@@ -34,7 +35,7 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodablePoint(point: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodablePoint(point: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -47,9 +48,9 @@ import CoreGraphics
 
 public class LiveCodablePoint: LiveCodable {
     var point: CGPoint
-    init(point: CGPoint, typeName: String, visibilityDepth: Int) {
+    init(point: CGPoint, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.point = point
-        super.init(typeName: typeName, type: .point, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .point, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case point

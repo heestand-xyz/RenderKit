@@ -5,6 +5,7 @@
 //  Created by Anton Heestand on 2021-04-22.
 //
 
+import Foundation
 import PixelColor
 
 @propertyWrapper public class LiveColor: LiveWrap {
@@ -34,7 +35,7 @@ import PixelColor
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableColor(color: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableColor(color: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -47,9 +48,9 @@ import PixelColor
 
 public class LiveCodableColor: LiveCodable {
     var color: PixelColor
-    init(color: PixelColor, typeName: String, visibilityDepth: Int) {
+    init(color: PixelColor, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.color = color
-        super.init(typeName: typeName, type: .color, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .color, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case color

@@ -5,6 +5,7 @@
 //  Created by Anton Heestand on 2021-04-22.
 //
 
+import Foundation
 import CoreGraphics
 
 @propertyWrapper public class LiveFloat: LiveWrap {
@@ -43,7 +44,7 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableFloat(floatValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableFloat(floatValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -56,9 +57,9 @@ import CoreGraphics
 
 public class LiveCodableFloat: LiveCodable {
     var floatValue: CGFloat
-    init(floatValue: CGFloat, typeName: String, visibilityDepth: Int) {
+    init(floatValue: CGFloat, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.floatValue = floatValue
-        super.init(typeName: typeName, type: .float, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .float, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case floatValue

@@ -5,6 +5,7 @@
 //  Created by Anton Heestand on 2021-04-22.
 //
 
+import Foundation
 import CoreGraphics
 
 @propertyWrapper public class LiveSize: LiveWrap {
@@ -34,7 +35,7 @@ import CoreGraphics
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableSize(size: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableSize(size: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -47,9 +48,9 @@ import CoreGraphics
 
 public class LiveCodableSize: LiveCodable {
     var size: CGSize
-    init(size: CGSize, typeName: String, visibilityDepth: Int) {
+    init(size: CGSize, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.size = size
-        super.init(typeName: typeName, type: .size, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .size, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case size

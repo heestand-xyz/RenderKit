@@ -5,6 +5,7 @@
 //  Created by Anton Heestand on 2021-04-22.
 //
 
+import Foundation
 import simd
 
 @propertyWrapper public class LiveVector: LiveWrap {
@@ -34,7 +35,7 @@ import simd
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableVector(vector: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableVector(vector: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -47,9 +48,9 @@ import simd
 
 public class LiveCodableVector: LiveCodable {
     var vector: SIMD3<Double>
-    init(vector: SIMD3<Double>, typeName: String, visibilityDepth: Int) {
+    init(vector: SIMD3<Double>, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.vector = vector
-        super.init(typeName: typeName, type: .vector, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .vector, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case vector

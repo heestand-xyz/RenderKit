@@ -37,7 +37,7 @@ import Resolution
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableResolution3D(resolution3d: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableResolution3D(resolution3d: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -50,9 +50,9 @@ import Resolution
 
 public class LiveCodableResolution3D: LiveCodable {
     var resolution3d: Resolution3D
-    init(resolution3d: Resolution3D, typeName: String, visibilityDepth: Int) {
+    init(resolution3d: Resolution3D, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.resolution3d = resolution3d
-        super.init(typeName: typeName, type: .resolution3d, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .resolution3d, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case resolution3d

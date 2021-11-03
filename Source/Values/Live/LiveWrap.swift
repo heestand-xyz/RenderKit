@@ -64,6 +64,7 @@ public class LiveWrap: Identifiable {
     public let type: LiveType
     
     public var visibilityDepth: Int
+    public var externalConnectedIDs: [UUID]
     
     public var get: (() -> (Floatable))!
     public var set: ((Floatable) -> ())!
@@ -110,42 +111,50 @@ public class LiveWrap: Identifiable {
         self.clamped = clamped
         
         visibilityDepth = 0
-        
+        externalConnectedIDs = []
     }
     
     public func getLiveCodable() -> LiveCodable {
-        LiveCodable(typeName: typeName, type: type, visibilityDepth: visibilityDepth)
+        LiveCodable(typeName: typeName, type: type, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public func setLiveCodable(_ liveCodable: LiveCodable) {
         visibilityDepth = liveCodable.visibilityDepth
+        externalConnectedIDs = liveCodable.externalConnectedIDs
     }
     
     func changed() {
         node?.liveValueChanged()
     }
-        
 }
 
 public class LiveCodable: Codable {
+    
     public var typeName: String
     public let type: LiveType
     public var visibilityDepth: Int
-    init(typeName: String, type: LiveType, visibilityDepth: Int) {
+    public var externalConnectedIDs: [UUID]
+    
+    init(typeName: String, type: LiveType, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.typeName = typeName
         self.type = type
         self.visibilityDepth = visibilityDepth
+        self.externalConnectedIDs = externalConnectedIDs
     }
+    
     enum CodingKeys: CodingKey {
         case typeName
         case type
         case visibilityDepth
+        case externalConnectedIDs
     }
+    
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         typeName = try container.decode(String.self, forKey: .typeName)
         type = try container.decode(LiveType.self, forKey: .type)
         visibilityDepth = try container.decodeIfPresent(Int.self, forKey: .visibilityDepth) ?? 0
+        externalConnectedIDs = try container.decodeIfPresent([UUID].self, forKey: .externalConnectedIDs) ?? []
     }
 }
 

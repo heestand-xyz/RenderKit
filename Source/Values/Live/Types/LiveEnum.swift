@@ -43,7 +43,7 @@ import Foundation
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableEnum(caseTypeName: wrappedValue.typeName, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableEnum(caseTypeName: wrappedValue.typeName, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
 
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -56,9 +56,9 @@ import Foundation
 
 public class LiveCodableEnum: LiveCodable {
     var caseTypeName: String
-    init(caseTypeName: String, typeName: String, visibilityDepth: Int) {
+    init(caseTypeName: String, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.caseTypeName = caseTypeName
-        super.init(typeName: typeName, type: .enum, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .enum, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case caseTypeName

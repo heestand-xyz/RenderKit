@@ -43,7 +43,7 @@ import Foundation
     }
     
     public override func getLiveCodable() -> LiveCodable {
-        LiveCodableBool(boolValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth)
+        LiveCodableBool(boolValue: wrappedValue, typeName: typeName, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     
     public override func setLiveCodable(_ liveCodable: LiveCodable) {
@@ -56,9 +56,9 @@ import Foundation
 
 public class LiveCodableBool: LiveCodable {
     var boolValue: Bool
-    init(boolValue: Bool, typeName: String, visibilityDepth: Int) {
+    init(boolValue: Bool, typeName: String, visibilityDepth: Int, externalConnectedIDs: [UUID]) {
         self.boolValue = boolValue
-        super.init(typeName: typeName, type: .bool, visibilityDepth: visibilityDepth)
+        super.init(typeName: typeName, type: .bool, visibilityDepth: visibilityDepth, externalConnectedIDs: externalConnectedIDs)
     }
     enum CodingKeys: CodingKey {
         case boolValue
