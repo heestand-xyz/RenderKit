@@ -93,13 +93,15 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     public var fps: Int { return min(_fps, fpsMax) }
     var _finalFps: Int = -1
     public var finalFps: Int? { return finalNode != nil && _finalFps != -1 ? min(_finalFps, fpsMax) : nil }
-    public var fpsMax: Int { if #available(iOS 10.3, *) {
-        #if os(iOS) || os(tvOS)
-        return UIScreen.main.maximumFramesPerSecond
-        #elseif os(macOS)
-        return 60
+    public var fpsMax: Int {
+        #if os(macOS)
+        let id = CGMainDisplayID()
+        guard let display = CGDisplayCopyDisplayMode(id) else { return 60 }
+        return Int(display.refreshRate)
+        #else
+        return Int(UIScreen.main.maximumFramesPerSecond)
         #endif
-    } else { return 1 } }
+    }
     public var secondsPerFrame: Double {
         1.0 / Double(fps)
     }
