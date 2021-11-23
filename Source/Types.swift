@@ -28,7 +28,7 @@ public struct Vector: Equatable {
 
 // MARK: - Pixel
 
-public struct Pixel {
+public struct RenderPixel {
     public let x: Int
     public let y: Int
     public let uv: CGVector
@@ -41,7 +41,7 @@ public struct Pixel {
     }
 }
 
-public struct Voxel {
+public struct RenderVoxel {
     public let x: Int
     public let y: Int
     public let z: Int
