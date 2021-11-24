@@ -214,17 +214,22 @@ public struct Texture {
     
     public static func resize(_ image: _Image, to size: CGSize, placement: ImagePlacement = .fill) -> _Image {
         
+        #if os(macOS)
         let sourceFrame: CGRect
         switch placement {
         case .fit, .fill, .stretch:
-            sourceFrame = CGRect(x: 0,y: 0, width: image.size.width, height: image.size.height)
+            sourceFrame = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
         case .crop:
-            let aspect: CGFloat = (image.size.width / size.width) / (image.size.height / size.height)
-            sourceFrame = CGRect(x: aspect > 1.0 ? (image.size.width - image.size.height) / 2 : 0,
-                                 y: aspect < 1.0 ? (image.size.height - image.size.width) / 2 : 0,
-                                 width: aspect > 1.0 ? image.size.height : image.size.width,
-                                 height: aspect < 1.0 ? image.size.width : image.size.height)
+            sourceFrame = CGRect(x: image.size.width / size.width > image.size.height / size.height ?
+                                 0.5 * (image.size.width - (image.size.width * (size.width / size.height) * (image.size.height / image.size.width))) : 0,
+                                 y: image.size.width / size.width < image.size.height / size.height ?
+                                 0.5 * (image.size.height - (image.size.height * (size.height / size.width) * (image.size.width / image.size.height))) : 0,
+                                 width: image.size.width / size.width > image.size.height / size.height ?
+                                 (image.size.width * (size.width / size.height) * (image.size.height / image.size.width)) : image.size.width,
+                                 height: image.size.width / size.width < image.size.height / size.height ?
+                                 (image.size.height * (size.height / size.width) * (image.size.width / image.size.height)) : image.size.height)
         }
+        #endif
         
         var destinationFrame: CGRect
         switch placement {
@@ -260,12 +265,16 @@ public struct Texture {
             #if os(macOS)
             destinationFrame = CGRect(origin: .zero, size: CGSize(width: size.width / 2.0, height: size.height / 2.0))
             #else
-            let aspect: CGFloat = (image.size.width / size.width) / (image.size.height / size.height)
-            let scale: CGFloat = aspect > 1.0 ? size.height / image.size.height : size.width / image.size.width
-            destinationFrame = CGRect(x: sourceFrame.minX * -scale,
-                                      y: sourceFrame.minY * -scale,
-                                      width: image.size.width * scale,
-                                      height: image.size.height * scale)
+            destinationFrame = CGRect(
+                x: image.size.width / size.width < image.size.height / size.height ?
+                    0 : (size.width - image.size.width * (size.height / image.size.height)) / 2,
+                y: image.size.width / size.width > image.size.height / size.height ?
+                    0 : (size.height - image.size.height * (size.width / image.size.width)) / 2,
+                width: image.size.width / size.width < image.size.height / size.height ?
+                    size.width : image.size.width * (size.height / image.size.height),
+                height: image.size.width / size.width > image.size.height / size.height ?
+                    size.height : image.size.height * (size.width / image.size.width)
+            )
             #endif
         }
         
@@ -280,7 +289,7 @@ public struct Texture {
        
         let sourceRect = NSMakeRect(sourceFrame.minX, sourceFrame.minY, sourceFrame.width, sourceFrame.height)
         let destSize = NSMakeSize(destinationFrame.width, destinationFrame.height)
-        let destRect = NSMakeRect(0, 0, destSize.width, destSize.height)
+        let destRect = NSMakeRect(destinationFrame.minX, destinationFrame.minY, destSize.width, destSize.height)
         let newImage = NSImage(size: destSize)
         newImage.lockFocus()
         image.draw(in: destRect, from: sourceRect, operation: .sourceOver, fraction: 1.0)
@@ -289,6 +298,8 @@ public struct Texture {
         let resized_image = NSImage(data: newImage.tiffRepresentation!)!
         
         #endif
+        
+        print("------->", size, destinationFrame.size, resized_image.resolution)
 
         return resized_image
     }
