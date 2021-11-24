@@ -209,14 +209,27 @@ public struct Texture {
         case fill
         case fit
         case stretch
+        case crop
     }
     
     public static func resize(_ image: _Image, to size: CGSize, placement: ImagePlacement = .fill) -> _Image {
         
-        let frame: CGRect
+        let sourceFrame: CGRect
+        switch placement {
+        case .fit, .fill, .stretch:
+            sourceFrame = CGRect(x: 0,y: 0, width: image.size.width, height: image.size.height)
+        case .crop:
+            let aspect: CGFloat = (image.size.width / size.width) / (image.size.height / size.height)
+            sourceFrame = CGRect(x: aspect > 1.0 ? (image.size.width - image.size.height) / 2 : 0,
+                                 y: aspect < 1.0 ? (image.size.height - image.size.width) / 2 : 0,
+                                 width: aspect > 1.0 ? image.size.height : image.size.width,
+                                 height: aspect < 1.0 ? image.size.width : image.size.height)
+        }
+        
+        var destinationFrame: CGRect
         switch placement {
         case .fit:
-            frame = CGRect(
+            destinationFrame = CGRect(
                 x: image.size.width / size.width > image.size.height / size.height ?
                     0 : (size.width - image.size.width * (size.height / image.size.height)) / 2,
                 y: image.size.width / size.width < image.size.height / size.height ?
@@ -227,7 +240,7 @@ public struct Texture {
                     size.height : image.size.height * (size.width / image.size.width)
             )
         case .fill:
-            frame = CGRect(
+            destinationFrame = CGRect(
                 x: image.size.width / size.width < image.size.height / size.height ?
                     0 : (size.width - image.size.width * (size.height / image.size.height)) / 2,
                 y: image.size.width / size.width > image.size.height / size.height ?
@@ -239,23 +252,34 @@ public struct Texture {
             )
         case .stretch:
             #if os(macOS)
-            frame = CGRect(origin: .zero, size: CGSize(width: size.width / 2.0, height: size.height / 2.0))
+            destinationFrame = CGRect(origin: .zero, size: CGSize(width: size.width / 2.0, height: size.height / 2.0))
             #else
-            frame = CGRect(origin: .zero, size: CGSize(width: size.width, height: size.height))
+            destinationFrame = CGRect(origin: .zero, size: CGSize(width: size.width, height: size.height))
+            #endif
+        case .crop:
+            #if os(macOS)
+            destinationFrame = CGRect(origin: .zero, size: CGSize(width: size.width / 2.0, height: size.height / 2.0))
+            #else
+            let aspect: CGFloat = (image.size.width / size.width) / (image.size.height / size.height)
+            let scale: CGFloat = aspect > 1.0 ? size.height / image.size.height : size.width / image.size.width
+            destinationFrame = CGRect(x: sourceFrame.minX * -scale,
+                                      y: sourceFrame.minY * -scale,
+                                      width: image.size.width * scale,
+                                      height: image.size.height * scale)
             #endif
         }
-
+        
         #if os(iOS) || os(tvOS)
         
         UIGraphicsBeginImageContext(size)
-        image.draw(in: frame)
+        image.draw(in: destinationFrame)
         let resized_image = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         
         #elseif os(macOS)
        
-        let sourceRect = NSMakeRect(0, 0, image.size.width, image.size.height)
-        let destSize = NSMakeSize(frame.width, frame.height)
+        let sourceRect = NSMakeRect(sourceFrame.minX, sourceFrame.minY, sourceFrame.width, sourceFrame.height)
+        let destSize = NSMakeSize(destinationFrame.width, destinationFrame.height)
         let destRect = NSMakeRect(0, 0, destSize.width, destSize.height)
         let newImage = NSImage(size: destSize)
         newImage.lockFocus()
@@ -265,7 +289,7 @@ public struct Texture {
         let resized_image = NSImage(data: newImage.tiffRepresentation!)!
         
         #endif
-        
+
         return resized_image
     }
     
@@ -701,7 +725,7 @@ public struct Texture {
         guard textures.filter({ texture -> Bool in
             texture.width == width && texture.height == height
         }).count == textures.count else {
-            throw TextureError.multi("Passed textures are not all the same resolution.")
+            throw TextureError.multi("Passed textures are not all the same resolution: [\(textures.map(\.resolution.description).joined(separator: ", "))]")
         }
         let descriptor = MTLTextureDescriptor()
         descriptor.pixelFormat = textures.first!.pixelFormat
