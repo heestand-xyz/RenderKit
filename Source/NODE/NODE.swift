@@ -44,6 +44,7 @@ public protocol NODE: AnyObject, Codable {
     var renderQueue: [RenderRequest] { get set }
     var renderIndex: Int { get set }
     var bypass: Bool { get set }
+    var canRender: Bool { get set }
     var contentLoaded: Bool? { get set }
     
     var finalResolution: Resolution { get }

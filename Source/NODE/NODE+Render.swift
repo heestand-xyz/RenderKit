@@ -5,6 +5,16 @@
 import MetalKit
 import Foundation
 
+enum NODERenderError: LocalizedError {
+    case cantRender
+    var errorDescription: String? {
+        switch self {
+        case .cantRender:
+            return "Can't Render"
+        }
+    }
+}
+
 extension NODE {
     
 //    #if swift(>=5.5)
@@ -45,6 +55,10 @@ extension NODE {
     }
     
     public func renderCurrentDirect(completion: @escaping (Result<MTLTexture, Error>) -> ()) {
+        guard canRender else {
+            completion(.failure(NODERenderError.cantRender))
+            return
+        }
         let frameIndex = renderObject.frameIndex
         let renderRequest = RenderRequest(frameIndex: frameIndex, node: self, completion: nil)
         renderObject.engine.renderNODE(self, renderRequest: renderRequest) { [weak self] result in
@@ -60,6 +74,10 @@ extension NODE {
     
     public func render(completion: ((Result<RenderResponse, Error>) -> ())? = nil,
                        via upstreamRenderRequest: RenderRequest) {
+        guard canRender else {
+            completion?(.failure(NODERenderError.cantRender))
+            return
+        }
         renderObject.logger.log(node: self, .detail, .render, "Render Requested with Completion Handler", loop: true)
         let frameIndex = renderObject.frameIndex
         let renderRequest = RenderRequest(frameIndex: frameIndex, node: self, completion: completion, via: upstreamRenderRequest)
@@ -77,6 +95,8 @@ extension NODE {
     }
     
     public func queueRender(_ renderRequest: RenderRequest) {
+        
+        guard canRender else { return }
         
         guard !bypass else {
             renderObject.logger.log(node: self, .detail, .render, "Queue Render Bypassed", loop: true)
