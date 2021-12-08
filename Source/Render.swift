@@ -98,7 +98,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         let id = CGMainDisplayID()
         guard let display = CGDisplayCopyDisplayMode(id) else { return 60 }
         let fps = Int(display.refreshRate)
-        return fps != 0 ? fps : 120
+        return fps != 0 ? fps : 60
         #else
         return Int(UIScreen.main.maximumFramesPerSecond)
         #endif
