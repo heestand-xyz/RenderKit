@@ -97,7 +97,8 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         #if os(macOS)
         let id = CGMainDisplayID()
         guard let display = CGDisplayCopyDisplayMode(id) else { return 60 }
-        return Int(display.refreshRate)
+        let fps = Int(display.refreshRate)
+        return fps != 0 ? fps : 120
         #else
         return Int(UIScreen.main.maximumFramesPerSecond)
         #endif
