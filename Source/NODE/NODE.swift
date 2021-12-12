@@ -12,7 +12,7 @@ import Resolution
 import Combine
 import PixelColor
 
-public protocol NODE: AnyObject, Codable {
+public protocol NODE: AnyObject {
     
     var renderObject: Render { get }
     
@@ -119,7 +119,7 @@ public protocol NODE3D: NODE {
 
 // MARK: - Content
 
-public protocol NODEContent: NODE {}
+public protocol NODEContent: NODE, NODEOutIO {}
 
 public protocol NODEResource: NODEContent {
     var resourceTexture: MTLTexture? { get set }

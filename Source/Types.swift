@@ -96,6 +96,15 @@ public class MetalUniform: Codable {
     }
 }
 
+public struct MetalVariable: Codable {
+    public var name: String
+    public var value: CGFloat
+    public init(name: String, value: CGFloat = 0.0) {
+        self.name = name
+        self.value = value
+    }
+}
+
 // MARK: - Placement
 
 public enum Placement: String, Enumable {
