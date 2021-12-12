@@ -7,6 +7,7 @@
 
 import Foundation
 import Resolution
+import PixelColor
 
 public protocol NodeModel: Codable {
     
@@ -35,6 +36,8 @@ public protocol NodeResourceContentModel: NodeContentModel {}
 public protocol NodeGeneratorContentModel: NodeContentModel {
     var premultiply: Bool { get set }
     var resolution: Resolution { get set }
+    var backgroundColor: PixelColor { get set }
+    var color: PixelColor { get set }
 }
 
 public protocol Node3DGeneratorContentModel: NodeContentModel {
