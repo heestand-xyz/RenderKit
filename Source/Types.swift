@@ -88,20 +88,36 @@ public struct Vertex {
 // MARK: - Metal Uniform
 
 public class MetalUniform: Codable {
+    
     public var name: String
-    public var value: CGFloat
-    public init(name: String, value: CGFloat = 0.0) {
+    
+    public var value: CGFloat {
+        didSet { didChangeValue?() }
+    }
+    
+    public var didChangeValue: (() -> ())?
+    
+    public init(name: String,
+                value: CGFloat = 0.0) {
         self.name = name
         self.value = value
     }
-}
-
-public struct MetalVariable: Codable {
-    public var name: String
-    public var value: CGFloat
-    public init(name: String, value: CGFloat = 0.0) {
-        self.name = name
-        self.value = value
+    
+    enum CodingKeys: CodingKey {
+        case name
+        case value
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        value = try container.decode(CGFloat.self, forKey: .value)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(value, forKey: .value)
     }
 }
 
