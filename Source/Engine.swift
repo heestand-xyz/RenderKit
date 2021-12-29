@@ -1004,126 +1004,132 @@ public class Engine: LoggerDelegate {
         
         
         // MARK: Uniform Arrays
-        
-        /// Hardcoded at 128
-        /// Defined as ARRMAX in shaders
-        let uniformArrayMaxLimit = node.uniformArrayMaxLimit ?? 128
-        
-        var uniformArray: [[Float]] = node.uniformArray.map { uniformValues -> [Float] in
-            return uniformValues.map({ uniform -> Float in return Float(uniform) })
-        }
-        
+
         var uniformArrayInUse = false
-        if !uniformArray.isEmpty && !template {
-            uniformArrayInUse = true
+
+        if let mainUniformArray: [[CGFloat]] = node.uniformArray {
             
-            var uniformArrayActive: [Bool] = uniformArray.map { _ -> Bool in return true }
+            /// Hardcoded at 128
+            /// Defined as ARRMAX in shaders
+            let uniformArrayMaxLimit = node.uniformArrayMaxLimit ?? 128
             
-            if uniformArray.count < uniformArrayMaxLimit {
-                let arrayCount = uniformArray.first!.count
-                for _ in uniformArray.count..<uniformArrayMaxLimit {
-                    var emptyArray: [Float] = []
-                    for _ in 0..<arrayCount {
-                        emptyArray.append(0.0)
+            var uniformArray: [[Float]] = mainUniformArray.map { $0.map({ Float($0) }) }
+            
+            if !template {
+                uniformArrayInUse = true
+                
+                var uniformArrayActive: [Bool] = uniformArray.map { _ -> Bool in return true }
+                
+                if uniformArray.count < uniformArrayMaxLimit {
+                    let arrayCount: Int = node.uniformArrayLength ?? 1
+                    for _ in uniformArray.count..<uniformArrayMaxLimit {
+                        var emptyArray: [Float] = []
+                        for _ in 0..<arrayCount {
+                            emptyArray.append(0.0)
+                        }
+                        uniformArray.append(emptyArray)
+                        uniformArrayActive.append(false)
                     }
-                    uniformArray.append(emptyArray)
-                    uniformArrayActive.append(false)
+                } else if uniformArray.count > uniformArrayMaxLimit {
+                    let origialCount = uniformArray.count
+                    let overflow = origialCount - uniformArrayMaxLimit
+                    for _ in 0..<overflow {
+                        uniformArray.removeLast()
+                        uniformArrayActive.removeLast()
+                    }
+                    logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)", loop: true)
                 }
-            } else if uniformArray.count > uniformArrayMaxLimit {
-                let origialCount = uniformArray.count
-                let overflow = origialCount - uniformArrayMaxLimit
-                for _ in 0..<overflow {
-                    uniformArray.removeLast()
-                    uniformArrayActive.removeLast()
+                
+                var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
+                
+                let size: Int = MemoryLayout<Float>.size * uniformFlatMap.count
+                guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
+                    commandEncoder.endEncoding()
+                    throw RenderError.uniformsBuffer
                 }
-                logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)", loop: true)
+                let bufferPointer = uniformsArraysBuffer.contents()
+                memcpy(bufferPointer, &uniformFlatMap, size)
+                if node is NODE3D {
+                    (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: 1)
+                } else {
+                    (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: 1)
+                }
+                
+                let activeSize: Int = MemoryLayout<Bool>.size * uniformArrayActive.count
+                guard let uniformsArraysActiveBuffer = device.makeBuffer(length: activeSize, options: []) else {
+                    commandEncoder.endEncoding()
+                    throw RenderError.uniformsBuffer
+                }
+                let activeBufferPointer = uniformsArraysActiveBuffer.contents()
+                memcpy(activeBufferPointer, &uniformArrayActive, activeSize)
+                if node is NODE3D {
+                    (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+                } else {
+                    (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+                }
+                
             }
             
-            var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
-            
-            let size: Int = MemoryLayout<Float>.size * uniformFlatMap.count
-            guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
-                commandEncoder.endEncoding()
-                throw RenderError.uniformsBuffer
-            }
-            let bufferPointer = uniformsArraysBuffer.contents()
-            memcpy(bufferPointer, &uniformFlatMap, size)
-            if node is NODE3D {
-                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: 1)
-            } else {
-                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: 1)
-            }
-            
-            let activeSize: Int = MemoryLayout<Bool>.size * uniformArrayActive.count
-            guard let uniformsArraysActiveBuffer = device.makeBuffer(length: activeSize, options: []) else {
-                commandEncoder.endEncoding()
-                throw RenderError.uniformsBuffer
-            }
-            let activeBufferPointer = uniformsArraysActiveBuffer.contents()
-            memcpy(activeBufferPointer, &uniformArrayActive, activeSize)
-            if node is NODE3D {
-                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
-            } else {
-                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysActiveBuffer, offset: 0, index: 2)
+            // Render Time
+            if logger.time {
+                renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
+                renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
+                logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Arrays", loop: true)
+                localRenderTime = CFAbsoluteTimeGetCurrent()
             }
             
         }
-        
-        // Render Time
-        if logger.time {
-            renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
-            renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Arrays", loop: true)
-            localRenderTime = CFAbsoluteTimeGetCurrent()
-        }
-        
         
         // MARK: Uniform Index Arrays
         
-        let uniformIndexArrayMaxLimit = node.uniformIndexArrayMaxLimit ?? 128
+        if let mainUniformIndexArray: [[Int]] = node.uniformIndexArray {
         
-        var uniformIndexArray: [[UInt32]] = node.uniformIndexArray.map({ $0.map({ UInt32($0) }) })
-        
-        if !uniformIndexArray.isEmpty && !template {
+            let uniformIndexArrayMaxLimit = node.uniformIndexArrayMaxLimit ?? 128
             
-            if uniformIndexArray.count < uniformIndexArrayMaxLimit {
-                let arrayCount = uniformIndexArray.first!.count
-                for _ in uniformIndexArray.count..<uniformIndexArrayMaxLimit {
-                    let emptyArray = [UInt32].init(repeating: 0, count: arrayCount)
-                    uniformIndexArray.append(emptyArray)
+            var uniformIndexArray: [[UInt32]] = mainUniformIndexArray.map({ $0.map({ UInt32($0) }) })
+            
+            if !uniformIndexArray.isEmpty && !template {
+                
+                if uniformIndexArray.count < uniformIndexArrayMaxLimit {
+                    let arrayCount = uniformIndexArray.first!.count
+                    for _ in uniformIndexArray.count..<uniformIndexArrayMaxLimit {
+                        let emptyArray = [UInt32].init(repeating: 0, count: arrayCount)
+                        uniformIndexArray.append(emptyArray)
+                    }
+                } else if uniformIndexArray.count > uniformIndexArrayMaxLimit {
+                    let origialCount = uniformIndexArray.count
+                    let overflow = origialCount - uniformIndexArrayMaxLimit
+                    for _ in 0..<overflow {
+                        uniformIndexArray.removeLast()
+                    }
+                    logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)", loop: true)
                 }
-            } else if uniformIndexArray.count > uniformIndexArrayMaxLimit {
-                let origialCount = uniformIndexArray.count
-                let overflow = origialCount - uniformIndexArrayMaxLimit
-                for _ in 0..<overflow {
-                    uniformIndexArray.removeLast()
+                
+                var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [UInt32] in return uniformValues }
+                
+                let size: Int = MemoryLayout<UInt32>.size * uniformFlatMap.count
+                guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
+                    commandEncoder.endEncoding()
+                    throw RenderError.uniformsBuffer
                 }
-                logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)", loop: true)
+                let bufferPointer = uniformsArraysBuffer.contents()
+                memcpy(bufferPointer, &uniformFlatMap, size)
+                if node is NODE3D {
+                    (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
+                } else {
+                    (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
+                }
+                
             }
             
-            var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [UInt32] in return uniformValues }
-            
-            let size: Int = MemoryLayout<UInt32>.size * uniformFlatMap.count
-            guard let uniformsArraysBuffer = device.makeBuffer(length: size, options: []) else {
-                commandEncoder.endEncoding()
-                throw RenderError.uniformsBuffer
-            }
-            let bufferPointer = uniformsArraysBuffer.contents()
-            memcpy(bufferPointer, &uniformFlatMap, size)
-            if node is NODE3D {
-                (commandEncoder as! MTLComputeCommandEncoder).setBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
-            } else {
-                (commandEncoder as! MTLRenderCommandEncoder).setFragmentBuffer(uniformsArraysBuffer, offset: 0, index: uniformArrayInUse ? 3 : 1)
+            // Render Time
+            if logger.time {
+                renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
+                renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
+                logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Index Arrays", loop: true)
+                localRenderTime = CFAbsoluteTimeGetCurrent()
             }
             
-        }
-        
-        // Render Time
-        if logger.time {
-            renderTime = CFAbsoluteTimeGetCurrent() - localRenderTime
-            renderTimeMs = Double(Int(round(renderTime * 1_000_000))) / 1_000
-            logger.log(node: node, .debug, .metal, "Render Time: [\(renderTimeMs)ms] Uniform Index Arrays", loop: true)
-            localRenderTime = CFAbsoluteTimeGetCurrent()
         }
         
         

@@ -35,9 +35,10 @@ public protocol NODE: AnyObject, Codable {
     var values: [Floatable] { get }
     var uniforms: [CGFloat] { get }
     var extraUniforms: [CGFloat] { get }
-    var uniformArray: [[CGFloat]] { get }
+    var uniformArray: [[CGFloat]]? { get }
     var uniformArrayMaxLimit: Int? { get }
-    var uniformIndexArray: [[Int]] { get }
+    var uniformArrayLength: Int? { get }
+    var uniformIndexArray: [[Int]]? { get }
     var uniformIndexArrayMaxLimit: Int? { get }
     
     var renderInProgress: Bool { get set }
