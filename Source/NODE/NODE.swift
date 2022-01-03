@@ -163,7 +163,7 @@ public protocol NODEOutput: NODE, NODEInIO {
 
 public protocol NODEResolution {
     var resolution: Resolution { get set }
-//    init(at resolution: Resolution)
+    init(at resolution: Resolution)
 }
 
 public protocol NODEResolution3D {
