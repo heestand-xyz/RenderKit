@@ -43,9 +43,16 @@ public protocol NodeGeneratorContentModel: NodeContentModel {
 public protocol Node3DGeneratorContentModel: NodeContentModel {
     var premultiply: Bool { get set }
     var resolution3d: Resolution3D { get set }
+    var backgroundColor: PixelColor { get set }
+    var color: PixelColor { get set }
 }
 
-public protocol NodeCustomContentModel: NodeContentModel {}
+public protocol NodeCustomContentModel: NodeContentModel {
+    var resolution: Resolution { get set }
+    var backgroundColor: PixelColor { get set }
+}
+
+public protocol NodeSpriteContentModel: NodeContentModel {}
 
 // MARK: - Effects
 
