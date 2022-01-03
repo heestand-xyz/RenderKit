@@ -52,7 +52,10 @@ public protocol NodeCustomContentModel: NodeContentModel {
     var backgroundColor: PixelColor { get set }
 }
 
-public protocol NodeSpriteContentModel: NodeContentModel {}
+public protocol NodeSpriteContentModel: NodeContentModel {
+    var resolution: Resolution { get set }
+    var backgroundColor: PixelColor { get set }
+}
 
 // MARK: - Effects
 
