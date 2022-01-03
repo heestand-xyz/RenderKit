@@ -8,8 +8,22 @@
 import Foundation
 
 public struct NodeReference: Codable {
+    
     let id: UUID
+    
     let typeName: String
     let name: String
-    let index: Int
+    
+    enum Connection: Codable {
+        case inputSingle
+        enum Merger: Codable {
+            case leading
+            case trailing
+        }
+        case inputMerger(Merger)
+        case inputMulti(Int)
+        case output
+    }
+    let connection: Connection
+    
 }
