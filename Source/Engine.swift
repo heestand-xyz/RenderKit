@@ -127,7 +127,7 @@ public class Engine: LoggerDelegate {
     var manualRenderInProgress: Bool = false
     var manualRenderCallback: (() -> ())?
     
-    // MARK: - Life Cycle
+    // MARK: - Life Cycle -
     
     init() {
         self.logger = Logger(name: "RenderKit Engine")

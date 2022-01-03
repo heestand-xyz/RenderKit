@@ -133,7 +133,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
     var quadVertecis: Vertices!
     var quadVertexShader: MTLFunction!
     
-    // MARK: - Life Cycle
+    // MARK: - Life Cycle -
     
     public init(/*metalLibURL: URL*/) {
         
