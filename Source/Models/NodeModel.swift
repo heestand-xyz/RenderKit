@@ -11,8 +11,8 @@ import PixelColor
 
 public protocol NodeModel: Codable {
     
-    var id: UUID { get }
-    var typeName: String { get }
+    var id: UUID { get set }
+    var typeName: String { get set }
     var name: String { get set }
 
     var bypass: Bool { get set }

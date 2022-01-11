@@ -11,6 +11,7 @@ import Foundation
     public var wrappedValue: Int {
         didSet {
             guard wrappedValue != oldValue else { return }
+            guard !isSkeleton else { return }
             guard let node: NODE = node else {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
