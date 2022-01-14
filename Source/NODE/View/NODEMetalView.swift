@@ -49,7 +49,7 @@ public class NODEMetalView: MTKView {
         }
     }
    
-    // MARK: - Life Cycle
+    // MARK: - Life Cycle -
     
     public init(with render: Render, pixelFormat: MTLPixelFormat) {
         

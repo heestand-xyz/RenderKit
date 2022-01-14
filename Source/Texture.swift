@@ -49,12 +49,12 @@ public struct Texture {
         case makeTexture(String)
     }
     
-    public static func buffer(from image: CGImage, at size: CGSize?, bits: Bits? = nil, swizzel: Bool = false) -> CVPixelBuffer? {
+    public static func buffer(from image: CGImage, at size: CGSize?, bits: Bits? = nil, swizzle: Bool = false) -> CVPixelBuffer? {
         guard let bits: Bits = bits ?? Bits(rawValue: image.bitsPerPixel) else {
             return nil
         }
         #if os(iOS) || os(tvOS)
-        return buffer(from: UIImage(cgImage: image), bits: bits, swizzel: swizzel)
+        return buffer(from: UIImage(cgImage: image), bits: bits, swizzle: swizzle)
         #elseif os(macOS)
         guard size != nil else { return nil }
         return buffer(from: NSImage(cgImage: image, size: size!), bits: bits)
@@ -137,7 +137,7 @@ public struct Texture {
     #elseif os(macOS)
     public typealias _Image = NSImage
     #endif
-    public static func buffer(from image: _Image, bits: Bits, swizzel: Bool = false) -> CVPixelBuffer? {
+    public static func buffer(from image: _Image, bits: Bits, swizzle: Bool = false) -> CVPixelBuffer? {
         
         #if os(iOS) || os(tvOS)
         let scale: CGFloat = image.scale
@@ -166,7 +166,7 @@ public struct Texture {
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          Int(width),
                                          Int(height),
-                                         swizzel ? kCVPixelFormatType_32ARGB : bits.os,
+                                         swizzle ? kCVPixelFormatType_32ARGB : bits.os,
                                          attrs,
                                          &pixelBuffer)
         guard (status == kCVReturnSuccess) else {
@@ -183,7 +183,7 @@ public struct Texture {
                                       bitsPerComponent: 8, //bits.rawValue,
                                       bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!),
                                       space: rgbColorSpace,
-                                      bitmapInfo: swizzel || bits.os == kCVPixelFormatType_64ARGB ? CGImageAlphaInfo.premultipliedFirst.rawValue : CGImageAlphaInfo.premultipliedLast.rawValue)
+                                      bitmapInfo: swizzle || bits.os == kCVPixelFormatType_64ARGB ? CGImageAlphaInfo.premultipliedFirst.rawValue : CGImageAlphaInfo.premultipliedLast.rawValue)
         else {
             return nil
         }
@@ -205,7 +205,7 @@ public struct Texture {
         return pixelBuffer
     }
     
-    public enum ImagePlacement {
+    public enum ImagePlacement: String, Codable {
         case fill
         case fit
         case stretch

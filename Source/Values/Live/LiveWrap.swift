@@ -68,7 +68,9 @@ public class LiveWrap: Identifiable {
     public var setFloats: (([CGFloat]) -> ())!
     
     public lazy var currentValueSubject: CurrentValueSubject<Floatable, Never> = .init(defaultValue)
-
+    
+    var isSkeleton: Bool = false
+    
     public init(type: LiveType,
                 typeName: String,
                 name: String? = nil,
@@ -118,6 +120,37 @@ public class LiveWrap: Identifiable {
     public func setLiveCodable(_ liveCodable: LiveCodable) {
         visibilityDepth = liveCodable.visibilityDepth
         externalConnectedIDs = liveCodable.externalConnectedIDs
+    }
+        
+    public static func skeleton(liveCodable: LiveCodable) -> LiveWrap {
+        let liveWrap: LiveWrap
+        switch liveCodable {
+        case is LiveCodableBool:
+            liveWrap = LiveBool(wrappedValue: false, liveCodable.typeName)
+        case is LiveCodableColor:
+            liveWrap = LiveColor(wrappedValue: .clear, liveCodable.typeName)
+        case is LiveCodableEnum:
+            liveWrap = LiveEnum(wrappedValue: EmptyLiveEnum.empty, liveCodable.typeName)
+        case is LiveCodableFloat:
+            liveWrap = LiveFloat(wrappedValue: 0.0, liveCodable.typeName)
+        case is LiveCodableInt:
+            liveWrap = LiveInt(wrappedValue: 0, liveCodable.typeName, range: 0...1)
+        case is LiveCodablePoint:
+            liveWrap = LivePoint(wrappedValue: .zero, liveCodable.typeName)
+        case is LiveCodableResolution:
+            liveWrap = LiveResolution(wrappedValue: .zero, liveCodable.typeName)
+        case is LiveCodableResolution3D:
+            liveWrap = LiveResolution3D(wrappedValue: .zero, liveCodable.typeName)
+        case is LiveCodableSize:
+            liveWrap = LiveSize(wrappedValue: .zero, liveCodable.typeName)
+        case is LiveCodableVector:
+            liveWrap = LiveVector(wrappedValue: .zero, liveCodable.typeName)
+        default:
+            fatalError("Live Codable is Unknown")
+        }
+        liveWrap.setLiveCodable(liveCodable)
+        liveWrap.isSkeleton = true
+        return liveWrap
     }
     
     func changed() {

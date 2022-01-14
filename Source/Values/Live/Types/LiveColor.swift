@@ -10,6 +10,7 @@ import PixelColor
     public var wrappedValue: PixelColor {
         didSet {
             guard wrappedValue.components != oldValue.components else { return }
+            guard !isSkeleton else { return }
             guard let node: NODE = node else {
                 print("RenderKit Live property wrapper not linked to node.")
                 return

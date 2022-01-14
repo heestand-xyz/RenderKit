@@ -11,6 +11,7 @@ import Foundation
     public var wrappedValue: E {
         didSet {
             guard wrappedValue.index != oldValue.index else { return }
+            guard !isSkeleton else { return }
             guard let node: NODE = node else {
                 print("RenderKit Live property wrapper not linked to node.")
                 return
@@ -70,4 +71,11 @@ public class LiveCodableEnum: LiveCodable {
         try container.encode(caseTypeName, forKey: .caseTypeName)
         try super.encode(to: encoder)
     }
+}
+
+enum EmptyLiveEnum: Enumable {
+    case empty
+    var index: Int { 0 }
+    var name: String { "Empty" }
+    var typeName: String { "empty" }
 }
