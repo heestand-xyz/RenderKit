@@ -33,6 +33,10 @@ public protocol NodeContentModel: NodeOutputModel {}
 
 public protocol NodeResourceContentModel: NodeContentModel {}
 
+public protocol Node3DResourceContentModel: NodeContentModel {
+    var resolution: Resolution3D { get set }
+}
+
 public protocol NodeGeneratorContentModel: NodeContentModel {
     var premultiply: Bool { get set }
     var resolution: Resolution { get set }

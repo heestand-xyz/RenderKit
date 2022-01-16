@@ -19,6 +19,7 @@ public struct Vector: Equatable {
     public let x: CGFloat
     public let y: CGFloat
     public let z: CGFloat
+    public static let zero = Vector(x: 0.0, y: 0.0, z: 0.0)
     public init(x: CGFloat, y: CGFloat, z: CGFloat) {
         self.x = x
         self.y = y
