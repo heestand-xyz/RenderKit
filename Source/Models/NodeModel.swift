@@ -42,7 +42,7 @@ public protocol NodeGeneratorContentModel: NodeContentModel {
 
 public protocol Node3DGeneratorContentModel: NodeContentModel {
     var premultiply: Bool { get set }
-    var resolution3d: Resolution3D { get set }
+    var resolution: Resolution3D { get set }
     var backgroundColor: PixelColor { get set }
     var color: PixelColor { get set }
 }
@@ -67,30 +67,6 @@ public protocol NodeMergerEffectModel: NodeEffectModel {
 }
 public protocol NodeMultiEffectModel: NodeEffectModel {}
 
-//// MARK: - Resolution
-//
-//public protocol NodeResolutionModel {
-//    var resolution: Resolution { get set }
-//}
-//
-//public protocol Node3DResolutionModel {
-//    var resolution3d: Resolution3D { get set }
-//}
-//
-//// MARK: - Metal
-//
-//public protocol NodeMetalModel {
-//    var metalUniforms: [MetalUniform] { get set }
-//}
-//
-//public protocol NodeMetalCodeModel: NodeMetalModel {
-//    var code: String { get set }
-//}
-//
-//public protocol NodeMetalScriptModel: NodeMetalModel {
-//    var whiteScript: String { get set }
-//    var redScript: String { get set }
-//    var greenScript: String { get set }
-//    var blueScript: String { get set }
-//    var alphaScript: String { get set }
-//}
+// MARK: - Closing
+
+public protocol NodeClosingModel: NodeInputModel {}
