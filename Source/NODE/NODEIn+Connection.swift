@@ -43,7 +43,7 @@ func postUpdateInputConnectionsPublishers(inputList: [NODE & NODEOut],
             }
             willRenderFromFrameIndex = renderPack.request.frameIndex
             willRenderTimer?.invalidate()
-            #warning("Max FPS is Hard Coded")
+            // FIXME: Max FPS is Hard Coded
             willRenderTimer = Timer(timeInterval: 120, repeats: false, block: { _ in
                 willRenderFromFrameIndex = nil
                 willRenderTimer = nil

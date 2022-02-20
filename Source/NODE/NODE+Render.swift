@@ -137,7 +137,7 @@ extension NODE {
                         let firstRequestFrameIndex: Int = self.renderQueue.map(\.frameIndex).sorted().first!
                         let completions = self.renderQueue.compactMap(\.completion)
                         self.renderQueue = []
-                        #warning("Merge of Many Render Requests")
+                        // FIXME: Merge of Many Render Requests
                         let renderRequest = RenderRequest(frameIndex: firstRequestFrameIndex, node: self, completion: { result in
                             completions.forEach { completion in
                                 completion(result)

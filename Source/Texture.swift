@@ -399,15 +399,17 @@ public struct Texture {
                 case ._8:
                     #if !os(macOS)
                     return Float16(Int(channel as! UInt8)) / Float16(255.0)
-                    #endif
+                    #else
                     return nil
+                    #endif
                 case ._16:
                     return channel
                 case ._32:
                     #if !os(macOS)
                     return Float16(channel as! Float)
-                    #endif
+                    #else
                     return nil
+                    #endif
                 default:
                     return nil
                 }
@@ -428,8 +430,9 @@ public struct Texture {
             case ._16:
                 #if !os(macOS)
                 return Float16(0.0)
-                #endif
+                #else
                 return 0.0
+                #endif
             case ._32:
                 return Float(0.0)
             default:
@@ -444,8 +447,9 @@ public struct Texture {
             case ._16:
                 #if !os(macOS)
                 return Float16(1.0)
-                #endif
+                #else
                 return 1.0
+                #endif
             case ._32:
                 return Float(1.0)
             default:

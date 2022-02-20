@@ -194,6 +194,12 @@ public protocol NODEMetalScript: NODEMetal {
     var alphaScript: String { get set }
 }
 
+// MARK: - TimeMachine
+
+public protocol NODETimeMachine: NODEMergerEffect {
+    func customRender(_ texture: MTLTexture, with commandBuffer: MTLCommandBuffer) -> [MTLTexture]
+}
+
 // MARK: - Out Path
 
 public struct NODEOutPath {

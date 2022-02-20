@@ -1304,12 +1304,12 @@ public class Engine: LoggerDelegate {
         
         // MARK: Threads
         
-        if let node3d = node as? NODE3D {
-            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
-            let width = node3d.pipeline3d.threadExecutionWidth
-            let w = width
-            let h = max / w
-            let l = 1
+        if node is NODE3D {
+//            let max = node3d.pipeline3d.maxTotalThreadsPerThreadgroup
+//            let width = node3d.pipeline3d.threadExecutionWidth
+//            let w = width
+//            let h = max / w
+//            let l = 1
 //            let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: l)
 //            let threadsPerGrid = MTLSize(width: Int(ceil(CGFloat(width) / CGFloat(w))),
 //                                         height: Int(ceil(CGFloat(height) / CGFloat(h))),
