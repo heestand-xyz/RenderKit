@@ -19,7 +19,7 @@ public class Logger {
     
     let prefix: String
     
-    public var active: Bool = true
+    public var active: Bool = false
     public var silent: Bool = false
     public var level: LogLevel = .default
     public var source: Bool = false
