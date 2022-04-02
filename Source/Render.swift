@@ -185,7 +185,7 @@ public class Render: EngineInternalDelegate, LoggerDelegate {
         
         queuer.delegate = self
         
-        logger.log(.info, .pixelKit, "ready to render.", clean: true)
+//        logger.log(.info, .pixelKit, "ready to render.", clean: true)
         
     }
     

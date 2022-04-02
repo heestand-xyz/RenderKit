@@ -7,12 +7,15 @@
 
 import Foundation
 import MetalKit
+import TextureMap
 
 public enum Bits: Int, Codable, CaseIterable {
+    
     case _8 = 8
     case _10 = 10
     case _16 = 16
     case _32 = 32
+    
     public var pixelFormat: MTLPixelFormat {
         switch self {
         case ._8: return .bgra8Unorm // .rgba8Unorm
@@ -26,6 +29,7 @@ public enum Bits: Int, Codable, CaseIterable {
         case ._32: return .rgba32Float // invalid pixel format 125
         }
     }
+    
     public var isRedAndBlueSwapped: Bool {
         switch self {
         case ._8, ._10:
@@ -34,6 +38,7 @@ public enum Bits: Int, Codable, CaseIterable {
             return false
         }
     }
+    
     public var monochromePixelFormat: MTLPixelFormat {
         switch self {
         case ._8: return .r8Unorm
@@ -42,6 +47,7 @@ public enum Bits: Int, Codable, CaseIterable {
         default: return .r8Unorm
         }
     }
+    
     public var monochromeWithAlphaPixelFormat: MTLPixelFormat {
         switch self {
         case ._8: return .rg8Unorm
@@ -50,6 +56,7 @@ public enum Bits: Int, Codable, CaseIterable {
         default: return .rg8Unorm
         }
     }
+    
     public var ci: CIFormat {
         switch self {
         case ._8, ._10: return .RGBA8
@@ -57,6 +64,7 @@ public enum Bits: Int, Codable, CaseIterable {
         case ._32: return .RGBAf
         }
     }
+    
     public var os: OSType {
         switch self {
         case ._8, ._10, ._16:
@@ -67,12 +75,15 @@ public enum Bits: Int, Codable, CaseIterable {
             return kCVPixelFormatType_128RGBAFloat
         }
     }
+    
     public var osARGB: OSType {
         return kCVPixelFormatType_32ARGB
     }
+    
     public var max: Int {
         return NSDecimalNumber(decimal: pow(2, self.rawValue)).intValue - 1
     }
+    
     public static func bits(for pixelFormat: MTLPixelFormat) -> Bits? {
         for bits in self.allCases {
             if bits.pixelFormat == pixelFormat {
@@ -80,5 +91,18 @@ public enum Bits: Int, Codable, CaseIterable {
             }
         }
         return nil
+    }
+    
+    public var tmBits: TMBits? {
+        switch self {
+        case ._8:
+            return ._8
+        case ._10:
+            return nil
+        case ._16:
+            return ._16
+        case ._32:
+            return nil
+        }
     }
 }
