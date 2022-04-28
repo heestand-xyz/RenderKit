@@ -1229,15 +1229,15 @@ public class Engine: LoggerDelegate {
         
         // MARK: Vertex Uniforms
         
-        var vertexUnifroms: [Float] = node.vertexUniforms.map { uniform -> Float in return Float(uniform) }
-        if !vertexUnifroms.isEmpty {
-            let size = MemoryLayout<Float>.size * vertexUnifroms.count
+        var vertexUniforms: [Float] = node.vertexUniforms.map { uniform -> Float in return Float(uniform) }
+        if !vertexUniforms.isEmpty {
+            let size = MemoryLayout<Float>.size * vertexUniforms.count
             guard let uniformsBuffer = device.makeBuffer(length: size, options: []) else {
                 commandEncoder.endEncoding()
                 throw RenderError.uniformsBuffer
             }
             let bufferPointer = uniformsBuffer.contents()
-            memcpy(bufferPointer, &vertexUnifroms, size)
+            memcpy(bufferPointer, &vertexUniforms, size)
             if !(node is NODE3D) {
                 (commandEncoder as! MTLRenderCommandEncoder).setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
             }
