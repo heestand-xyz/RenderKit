@@ -205,7 +205,7 @@ public struct Texture {
         return pixelBuffer
     }
     
-    public enum ImagePlacement: String, Codable {
+    public enum ImagePlacement: String, Equatable, Codable {
         case fill
         case fit
         case stretch

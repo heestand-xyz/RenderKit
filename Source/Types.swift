@@ -88,7 +88,7 @@ public struct Vertex {
 
 // MARK: - Metal Uniform
 
-public class MetalUniform: Codable {
+public class MetalUniform: Codable, Equatable {
     
     public var name: String
     
@@ -120,11 +120,15 @@ public class MetalUniform: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(value, forKey: .value)
     }
+    
+    public static func == (lhs: MetalUniform, rhs: MetalUniform) -> Bool {
+        lhs.name == rhs.name && lhs.value == rhs.value
+    }
 }
 
 // MARK: - Placement
 
-public enum Placement: String, Enumable {
+public enum Placement: String, Equatable, Enumable {
     case fit
     case fill
     case center
@@ -290,7 +294,7 @@ public enum BlendMode: String, Enumable {
 
 // MARK: - Interpolation
 
-public enum PixelInterpolation: String, Codable, CaseIterable {
+public enum PixelInterpolation: String, Codable, Equatable, CaseIterable {
     case nearest
     case linear
 //    #if !os(tvOS) && !targetEnvironment(simulator)
@@ -305,7 +309,7 @@ public enum PixelInterpolation: String, Codable, CaseIterable {
 
 // MARK: - Extend
 
-public enum ExtendMode: String, Codable, Enumable {
+public enum ExtendMode: String, Codable, Equatable, Enumable {
     case hold
     case zero
     case loop

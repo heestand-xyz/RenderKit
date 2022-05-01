@@ -16,6 +16,8 @@ public protocol NodeModel: Codable {
     var name: String { get set }
 
     var bypass: Bool { get set }
+    
+    func isEqual(to nodeModel: NodeModel) -> Bool
 }
 
 // MARK: - IO
@@ -74,3 +76,16 @@ public protocol NodeMultiEffectModel: NodeEffectModel {}
 // MARK: - Closing
 
 public protocol NodeClosingModel: NodeInputModel {}
+
+// MARK: - Equal
+
+extension NodeModel {
+    
+    public func isSuperEqual(to nodeModel: NodeModel) -> Bool {
+        guard id == nodeModel.id else { return false }
+        guard typeName == nodeModel.typeName else { return false }
+        guard name == nodeModel.name else { return false }
+        guard bypass == nodeModel.bypass else { return false }
+        return true
+    }
+}

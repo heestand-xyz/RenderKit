@@ -7,15 +7,15 @@
 
 import Foundation
 
-public struct NodeReference: Codable {
+public struct NodeReference: Codable, Equatable {
     
     public let id: UUID
     public let typeName: String
     public let name: String
     
-    public enum Connection: Codable {
+    public enum Connection: Codable, Equatable {
         case single
-        public enum Merger: Codable {
+        public enum Merger: Codable, Equatable {
             case leading
             case trailing
         }
