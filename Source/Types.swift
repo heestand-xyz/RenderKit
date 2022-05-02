@@ -158,7 +158,7 @@ public enum Placement: String, Equatable, Enumable {
 
 // MARK: - Blend
 
-public enum BlendMode: String, Enumable {
+public enum BlendMode: String, Equatable, Enumable {
     
     /// **over** blend mode operator: `&`
     case over
