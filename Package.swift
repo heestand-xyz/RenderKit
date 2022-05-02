@@ -15,9 +15,10 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/heestand-xyz/PixelColor", from: "1.3.2"),
         .package(url: "https://github.com/heestand-xyz/Resolution", from: "1.0.4"),
+        .package(url: "https://github.com/heestand-xyz/TextureMap", from: "0.5.1"),
     ],
     targets: [
-        .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution"], path: "Source"),
+        .target(name: "RenderKit", dependencies: ["PixelColor", "Resolution", "TextureMap"], path: "Source"),
         .testTarget(name: "RenderKitTests", dependencies: ["RenderKit"]),
     ]
 )
