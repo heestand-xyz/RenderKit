@@ -1031,13 +1031,13 @@ public class Engine: LoggerDelegate {
                         uniformArrayActive.append(false)
                     }
                 } else if uniformArray.count > uniformArrayMaxLimit {
-                    let origialCount = uniformArray.count
-                    let overflow = origialCount - uniformArrayMaxLimit
+                    let originalCount = uniformArray.count
+                    let overflow = originalCount - uniformArrayMaxLimit
                     for _ in 0..<overflow {
                         uniformArray.removeLast()
                         uniformArrayActive.removeLast()
                     }
-                    logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformArrayMaxLimit)", loop: true)
+                    logger.log(node: node, .warning, .render, "Max limit of uniform arrays exceeded. Last values will be truncated. \(originalCount) / \(uniformArrayMaxLimit)", loop: true)
                 }
                 
                 var uniformFlatMap = uniformArray.flatMap { uniformValues -> [Float] in return uniformValues }
@@ -1097,12 +1097,12 @@ public class Engine: LoggerDelegate {
                         uniformIndexArray.append(emptyArray)
                     }
                 } else if uniformIndexArray.count > uniformIndexArrayMaxLimit {
-                    let origialCount = uniformIndexArray.count
-                    let overflow = origialCount - uniformIndexArrayMaxLimit
+                    let originalCount = uniformIndexArray.count
+                    let overflow = originalCount - uniformIndexArrayMaxLimit
                     for _ in 0..<overflow {
                         uniformIndexArray.removeLast()
                     }
-                    logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(origialCount) / \(uniformIndexArrayMaxLimit)", loop: true)
+                    logger.log(node: node, .warning, .render, "Max limit of uniform index arrays exceeded. Last values will be truncated. \(originalCount) / \(uniformIndexArrayMaxLimit)", loop: true)
                 }
                 
                 var uniformFlatMap = uniformIndexArray.flatMap { uniformValues -> [UInt32] in return uniformValues }
