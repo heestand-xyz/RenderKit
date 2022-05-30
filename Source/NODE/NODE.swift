@@ -19,6 +19,8 @@ public protocol NODE: AnyObject {
     var id: UUID { get }
     var typeName: String { get }
     var name: String { get }
+    
+    var information: String? { get }
 
     var delegate: NODEDelegate? { get set }
     
