@@ -24,9 +24,9 @@ import CoreGraphics
     
     public var didSetValue: (() -> ())?
     
-    public init(wrappedValue: CGPoint, _ typeName: String, name: String? = nil) {
+    public init(wrappedValue: CGPoint, _ typeName: String, name: String? = nil, range: ClosedRange<CGFloat> = -0.5...0.5, increment: CGFloat = 0.25, clamped: Bool = false) {
         self.wrappedValue = wrappedValue
-        super.init(type: .point, typeName: typeName, name: name, value: wrappedValue, min: CGPoint(x: -1.0, y: -1.0), max: CGPoint(x: 1.0, y: 1.0))
+        super.init(type: .point, typeName: typeName, name: name, value: wrappedValue, min: range.lowerBound, max: range.upperBound, inc: increment, clamped: clamped)
         get = { [weak self] in self?.wrappedValue ?? CGPoint(x: -1.0, y: -1.0) }
         set = { [weak self] in self?.wrappedValue = $0 as! CGPoint }
         setFloats = { [weak self] in self?.wrappedValue = CGPoint(floats: $0) }
